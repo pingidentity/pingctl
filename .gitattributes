@@ -4,5 +4,5 @@
 .gitattributes    export-ignore
 .github           export-ignore
 .gitignore        export-ignore
-mkdocs.yaml       export-ignore
+mkdocs.yml        export-ignore
 docs              export-ignore

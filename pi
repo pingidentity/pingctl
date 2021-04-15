@@ -77,7 +77,7 @@ PI_TOPICS_DIR="${PI_WORK_DIR}/topics"
 test -d "${PI_TOPICS_DIR}" || mkdir -p "${PI_TOPICS_DIR}"
 
 ################################################################################
-# Ping DevOps URL & Info
+# Ping URLs & Info
 ################################################################################
 # Note: bit.ly URLs require a header to be be passed in curl (i.e. -H "User-Agent: ${PI_CMD}")
 PI_URL="https://bit.ly/${PI_CMD}-json"
@@ -124,7 +124,7 @@ trap cleanup EXIT
 ################################################################################
 # Terminal codes for echoing of RED or GREEN colors, and back to NORMAL
 ################################################################################
-if test "${COLORIZE}" == "on"; then
+if test "${PI_COLORIZE}" == "on"; then
   RED='\033[0;31m'
   GREEN='\033[0;32m'
   NORMAL='\033[0m'
@@ -268,6 +268,11 @@ USAGE_PINGONE_GET_DETAIL="${GREEN}Get PingOne Objects:${NORMAL}
 ################################################################################
 USAGE_PINGONE_ADD_DETAIL="${GREEN}Add PingOne Objects:${NORMAL}
   ${PI_CMD} pingone add group {population} {groupname}                  # Add group
+             --username {username}
+             --email {email}
+             --firstName {first-name}
+             --lastName {last-name}
+             --
   ${PI_CMD} pingone add population {population}                         # Add population
   ${PI_CMD} pingone add user  {population} {username} {first} {last}    # Add user"
 
@@ -1736,17 +1741,6 @@ cat_indent ()
 ################################################################################
 print_json_field()
 {
-    _json_data="${1}" && shift
-    test -z "${_json_data}" && return
-
-    jq -r "${_json_data}" <"${PINGONE_CALL_RESPONSE}"
-}
-
-################################################################################
-# print_json_fields
-################################################################################
-print_json_fields()
-{
   _json_data="${1}" && shift
   _jq_fields=""
   _comma=""
@@ -1762,14 +1756,79 @@ print_json_fields()
     _comma=","
   done
 
-  jq -jr "._embedded.users[] |
+  jq -jr "${_json_data} |
     ${_jq_fields}" <"${PINGONE_CALL_RESPONSE}"
 }
 
 ################################################################################
-# print_json_table
+# print_json_fields
 ################################################################################
-print_json_table()
+print_json_fields()
+{
+  _print_format="${OPT_PINGONE_o:-field}"
+  case "${_print_format}" in
+    csv|field|table) print_json_field "${@}" ;;
+    json) print_json_json "${@}" ;;
+    *) usage_command ;;
+  esac
+
+
+}
+
+
+################################################################################
+# print_json
+################################################################################
+print_json()
+{
+  _print_format="${OPT_PINGONE_o:-table}"
+  case "${_print_format}" in
+    table) print_json_sv "tsv" "${@}" ;;
+    csv) print_json_sv "csv" "${@}" ;;
+    json) print_json_json "${@}" ;;
+    *) usage_command ;;
+  esac
+}
+
+################################################################################
+# print_json_sv
+################################################################################
+print_json_sv()
+{
+  _sv="${1}" && shift
+  _json_data="${1}" && shift
+  _sort_column="${1}" && shift
+  _tableColumns=""
+  _comma=""
+
+  while true
+  do
+    _column="${1}" && shift
+    test -z "${_column}" && break
+    _tableColumns="${_tableColumns}${_comma}${_column}"
+    _comma=","
+  done
+
+  cat "${PINGONE_CALL_RESPONSE}" | jq -r "
+    ${_json_data}
+    | [sort_by(${_sort_column}) | .[]
+    |
+        {
+            ${_tableColumns}
+        }
+    ]
+    # lowercase keys |  [.[] | with_entries( .key |= ascii_downcase ] )
+    |  [.[] ]
+    # (for predictable sorting, optional)
+    |    (.[0] |keys_unsorted | @${_sv})               # print headers
+        , (.[]|.|map(.) |@${_sv})                       # print table
+    " | column -t -s "$(printf '\t')"
+}
+
+################################################################################
+# print_json_csv
+################################################################################
+print_json_csv()
 {
   _json_data="${1}" && shift
   _sort_column="${1}" && shift
@@ -1795,9 +1854,17 @@ print_json_table()
                         # lowercase keys
                         # (for predictable sorting, optional)
     |  [.[]| with_entries( .key |= ascii_downcase ) ]
-    |    (.[0] |keys_unsorted | @tsv)               # print headers
-        , (.[]|.|map(.) |@tsv)                       # print table
-    " | column -t -s "$(printf '\t')"
+    |    (.[0] |keys_unsorted | @csv)               # print headers
+        , (.[]|.|map(.) |@csv)                       # print table
+    "
+}
+
+################################################################################
+# print_json_json
+################################################################################
+print_json_json()
+{
+  jq . < "${PINGONE_CALL_RESPONSE}"
 }
 
 ################################################################################
@@ -1882,41 +1949,39 @@ pingone_list()
 
   _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
   test -z "${_resource}" && usage_command
-  _params="${*}"
 
   case "${_resource}" in
       users)
             pingone_get_call "users" ""
 
-            print_json_table "._embedded.users" \
+            print_json "._embedded.users" \
               ".username" \
               "USERNAME:.username" \
               "FIRST:.name.given" \
               "LAST:.name.family" \
+              "EMAIL:.email" \
               "POPULATION:.population.id" \
           ;;
       groups)
             pingone_get_call "groups" ""
 
-            print_json_table "._embedded.groups" \
+            print_json "._embedded.groups" \
               ".name" \
-              "MEMBERS:.directMemberCounts.users" \
-              "NAME:.name"
+              "NAME:.name" \
+              "MEMBERS:.directMemberCounts.users"
           ;;
       populations)
             pingone_get_call "populations" ""
 
-            print_json_table "._embedded.populations" \
+            print_json "._embedded.populations" \
               ".name" \
-              "ID:.id" \
-              "NAME:.name"
+              "NAME:.name" \
+              "MEMBERS:.userCount"
           ;;
       *)
           usage_command
           ;;
   esac
-
-
 }
 
 ################################################################################
@@ -1939,17 +2004,19 @@ pingone_get ()
           test -z "${_user_id}" && echo "User not found '${_username}'" && exit
 
           print_json_fields "._embedded.users[]" \
-            "Username: " ".username" \
-            "   First: " ".name.given" \
-            "    Last: " ".name.family"
+            "USERNAME: " ".username" \
+            "   FIRST: " ".name.given" \
+            "    LAST: " ".name.family"\
+            "   EMAIL: " ".email"
 
           _user_id=$(jq -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
 
-          echo "  Groups: "
-
           pingone_get_call "users/${_user_id}/memberOfGroups" ""
 
-          print_json_field "._embedded.groupMemberships[].name"
+          echo ""
+          print_json "._embedded.groupMemberships" \
+            ".name" \
+            "GROUPS:.name"
           ;;
       group)
           _name="${1}"
@@ -1957,16 +2024,22 @@ pingone_get ()
 
           pingone_get_call "groups" "filter=name eq \"${_name}\""
 
-          jq -jr '._embedded.groups[] |
-            "Group Name: ", .name, "\n"' <"${PINGONE_CALL_RESPONSE}"
-
-          echo "     Users: "
+          print_json_fields "._embedded.groups[]" \
+            "  GROUP NAME: " ".name" \
+            "MEMBER COUNT: " ".directMemberCounts.users"
 
           _group_id=$(jq -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
 
           pingone_get_call "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
 
-          print_json_field "._embedded.users[].username"
+          echo ""
+          print_json "._embedded.users" \
+            ".username" \
+            "USERS:.username" \
+            "FIRST:.name.given" \
+            "LAST:.name.family" \
+            "EMAIL:.email"
+
           ;;
       population)
           _name="${1}"
@@ -1974,16 +2047,21 @@ pingone_get ()
 
           pingone_get_call "populations" "filter=name eq \"${_name}\""
 
-          jq -jr '._embedded.populations[] |
-            "Population Name: ", .name, "\n"' <"${PINGONE_CALL_RESPONSE}"
-
-          echo "     Users: "
+          print_json_fields "._embedded.populations[]" \
+            "  POPULATION: " ".name" \
+            "MEMBER COUNT: " ".userCount"
 
           _population_id=$(jq -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
 
-          pingone_get_call "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
+          pingone_get_call "users" "filter=population.id eq \"${_population_id}\""
 
-          print_json_field "._embedded.users[].username"
+          echo ""
+          print_json "._embedded.users" \
+            ".username" \
+            "USERS:.username" \
+            "FIRST:.name.given" \
+            "LAST:.name.family" \
+            "EMAIL:.email"
           ;;
       *)
           usage_command
@@ -2182,12 +2260,17 @@ pingone_delete()
 }
 
 
-################################################################################
+###############################################################################
 # pingone_command
 ################################################################################
 pingone_command()
 {
   USAGE_CONTEXT="USAGE_PINGONE_DETAIL"
+
+  get_pingone_options "${@}"
+  # Remove the switches we parsed above.
+  shift "$(( OPTIND - 1 ))"
+
   _pingone_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
 
   test -z "${_pingone_command}" && usage_command
@@ -2262,12 +2345,53 @@ devops_command()
 
 }
 
+
+################################################################################
+# get_global_options
+################################################################################
+get_global_options()
+{
+  while getopts djco: OPT; do
+      case "$OPT" in
+          c|j)  eval "export OPT_GLOBAL_\${OPT}=true" ;;
+          d) set -x ;;
+          o) PI_OUTPUT=$OPTARG ;;
+          ?)
+              # getopts issues an error message
+              usage "Unknown Option ${OPT}"
+              ;;
+      esac
+  done
+}
+
+################################################################################
+# get_pingone_options
+################################################################################
+get_pingone_options()
+{
+  while getopts o: OPT; do
+      case "$OPT" in
+          o) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
+          ?)
+              # getopts issues an error message
+              usage "Unknown Option ${OPT}"
+              ;;
+      esac
+  done
+}
+
 ################################################################################
 # main
 ################################################################################
+
+get_global_options "${@}"
+# Remove the switches we parsed above.
+shift "$(( OPTIND - 1 ))"
+
 _pi_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
 
 test -z "${_pi_command}" && usage
+
 
 case "${_pi_command}" in
     info)
@@ -2307,5 +2431,3 @@ case "${_pi_command}" in
         usage "Unknown ${PI_CMD} command '${_pi_command}'"
         ;;
 esac
-
-

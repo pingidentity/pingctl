@@ -627,11 +627,11 @@ echo_info_variable()
 }
 
 ################################################################################
-# ping_devops_info ()
+# pi_info ()
 #
 # Prints all the variables of the ~/.pingidentity/devops file
 ################################################################################
-ping_devops_info()
+pi_info()
 {
     _show="${1}"
 
@@ -730,11 +730,11 @@ to update, you can use:
 }
 
 ################################################################################
-# ping_devops_version ()
+# pi_version ()
 #
 # Prints tool version info
 ################################################################################
-ping_devops_version()
+pi_version()
 {
     # Looks for the URL and pulls out the version.  Example should be:
     #
@@ -759,11 +759,11 @@ ping_devops_version()
 }
 
 ################################################################################
-# ping_devops_clean ()
+# pi_clean ()
 #
 # Cleans the ~/.pingidentity/${PI_CMD}
 ################################################################################
-ping_devops_clean()
+pi_clean()
 {
 
     echo
@@ -914,13 +914,16 @@ VAULT_ANNOTAION_PREAMBLE="
     #----------------------------------------------------"
 
 ################################################################################
-# ping_devops_vault ()
+# pi_vault ()
 #
 # Hashicorp Vault CLI
 ################################################################################
-ping_devops_vault()
+pi_vault()
 {
     _cmd="${1}" && shift
+
+    test -z "${_cmd}" && usage_command USAGE_VAULT_SUMMARY
+
     _remainParams="${*}"
 
     check_devops_file
@@ -1571,7 +1574,7 @@ orchestration_command()
 
 ################################################################################
 ################################################################################
-devops_config()
+pi_config()
 {
 
     ################################################################################
@@ -2245,7 +2248,7 @@ devops_command()
 
           case "${_orch_cmd}" in
               info|start|stop|rm|clean)
-                  orchestration_command "${_ping_devops_command}" "${_orch_cmd}" "${_product}" "${_params}"
+                  orchestration_command "${_pi_devops_command}" "${_orch_cmd}" "${_product}" "${_params}"
                   ;;
               *)
                   usage_command USAGE_DOCKER_KUBERNETES_DETAIL
@@ -2267,44 +2270,38 @@ _pi_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
 test -z "${_pi_command}" && usage
 
 case "${_pi_command}" in
-    config)
-        devops_config
-        ;;
-
-    topic|topics)
-        print_topic "${1}"
-        ;;
-
-    p1|pingone)
-        pingone_command "${@}"
-        ;;
-
-    devops)
-        _params="${*}"
-        devops_command ${_params}
-        ;;
-
     info)
         _params="${*}"
 
-        ping_devops_info ${_params}
+        pi_info ${_params}
+        ;;
+    config)
+        pi_config
         ;;
     version)
         _params="${*}"
 
-        ping_devops_version "${_params}"
+        pi_version "${_params}"
         ;;
     clean)
         _params="${*}"
 
-        ping_devops_clean "${_params}"
+        pi_clean "${_params}"
+        ;;
+    topic|topics)
+        print_topic "${1}"
+        ;;
+    devops)
+        _params="${*}"
+        devops_command ${_params}
+        ;;
+    p1|pingone)
+        pingone_command "${@}"
         ;;
     vault)
         _params="${*}"
 
-        test -z "${_params}" && usage_command USAGE_VAULT_SUMMARY
-
-        ping_devops_vault ${_params}
+        pi_vault ${_params}
         ;;
     *)
         usage "Unknown ${PI_CMD} command '${_pi_command}'"

@@ -1,13 +1,17 @@
 #!/usr/bin/env sh
 ########################################################################################################################
 #
-# This script is used to manage a Ping Identity environment for PingOne Docker and Kubernetes.
+# This tool is used for several Ping Identity related products including:
+#
+#   - Managing Ping Identity PingOne environment.
+#   - Managing Ping Identity DevOps environment for Docker and Kubernetes.
+#   - Managing Hashicorp Vault Secrets
 #
 # ------------
 # Installation
 # ------------
-#   brew install ping-devops
-#   brew upgrade ping-devops
+#   brew install pi
+#   brew upgrade pi
 #
 # ------------
 # Requirements
@@ -31,7 +35,7 @@ VAULT="vault"
 # requires that the aws CLI tool and probably the aws-iam-authenticator CLI tool are installed.
 #
 # Information on all the Variables can be found at:
-#    ping-devops topic devops-variables
+#    pi topic devops-variables
 ########################################################################################################################
 
 CWD=$(pwd)
@@ -219,7 +223,7 @@ USAGE_HEADER="${GREEN}##########################################################
 #  Welcome to the Ping Identity CLI (version $VERSION)
 #
 #  Documentation: https://devops.pingidentity.com
-#   GitHub Repos: https://github.com/topics/ping-devops
+#   GitHub Repos: https://github.com/topics/pi
 ################################################################################${NORMAL}"
 
 ################################################################################
@@ -323,7 +327,7 @@ ${GREEN}General Usage:${NORMAL}
   ${PI_CMD} vault                     # Hashicorp Vault Tools
 
 ${GREEN}Further help:${NORMAL}
-  https://github.com/pingidentity/ping-devops"
+  https://github.com/pingidentity/pi"
 
   exit
 }
@@ -721,8 +725,8 @@ print_update_information()
 {
   echo "
 to update, you can use:
-  macosx : brew upgrade ping-devops
-  linux  : curl -L https://bit.ly/ping-devops-install | bash"
+  macosx : brew upgrade pi
+  linux  : curl -L https://bit.ly/pi-install | bash"
 }
 
 ################################################################################
@@ -734,9 +738,9 @@ ping_devops_version()
 {
     # Looks for the URL and pulls out the version.  Example should be:
     #
-    #      url "https://github.com/pingidentity/ping-devops/archive/v0.5.0.tar.gz"
+    #      url "https://github.com/pingidentity/pi/archive/v0.5.0.tar.gz"
     #
-    _latest_tool_version=$(${CURL} https://bit.ly/ping-devops-version \
+    _latest_tool_version=$(${CURL} https://bit.ly/pi-version \
       |  grep -e '^  url ".*"$' \
       |  sed "s/.*archive\/v\(.*\)\.tar.*/\1/")
 
@@ -1242,9 +1246,9 @@ get_ping_devops_json()
     if test "${_json_version}" != "${VERSION}" &&
        test "$( echo "${_json_version}\\n${VERSION}" | sort -V | head -2 | tail -1)" = "${_json_version}"
     then
-      echo "ping-devops update required"
-      echo "           current version ${RED}${VERSION}${NORMAL}"
-      echo "  minimum required version ${GREEN}${_json_version}${NORMAL}"
+      echo "pi update required"
+      echo "       current version ${RED}${VERSION}${NORMAL}"
+      echo "  min required version ${GREEN}${_json_version}${NORMAL}"
       print_update_information
       exit
     fi
@@ -1266,7 +1270,7 @@ print_orchestration_usecase()
   if test -z "${_product_usecase}"; then
     echo_green "
 ################################################################################
-#          Available ping-devops ${_orchestation} usecase/products
+#          Available pi devops ${_orchestation} usecase/products
 ################################################################################
 "
     jq -r < "${PI_JSON}" "
@@ -1310,7 +1314,7 @@ orchestration_command()
     check_devops_file
     check_for_tool $JQ
 
-    # Example ~/.pingidentity/ping-devops/compose/pingdirectory
+    # Example ~/.pingidentity/pi/compose/pingdirectory
     _orch_dir="${PI_WORK_DIR}/${_orchestrator}"
 
     case "${_orchestrator}" in

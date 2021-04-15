@@ -1,0 +1,8 @@
+#
+# Exclude files from exporting/releasing
+#
+.gitattributes    export-ignore
+.github           export-ignore
+.gitignore        export-ignore
+mkdocs.yml        export-ignore
+docs              export-ignore

@@ -1,0 +1,46 @@
+site_name: Ping Identity CLI
+repo_name: pingidentity/pingidentity-devops-getting-started
+repo_url: https://github.com/pingidentity/pi-cli
+site_url: https://devops.pingidentity.com/
+copyright: © Copyright 2021 Ping Identity
+google_analytics: ['UA-156953351-1', 'devops.pingidentity.com']
+extra_css:
+  - mkdocs/overrides/stylesheets/extra.css
+
+theme:
+  name: material
+  custom_dir: docs/mkdocs/overrides
+  favicon: images/favicon.png
+
+  features:
+    - navigation.tabs
+    - instant
+
+  palette:
+   # scheme: preference
+    primary: indigo
+    accent: blue
+
+edit_uri: ""
+
+markdown_extensions:
+  - attr_list
+  - pymdownx.emoji
+  - admonition
+  - codehilite
+  - pymdownx.inlinehilite
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.superfences
+  - meta
+  - toc:
+      # insert a blank space before the character
+      permalink: " ¶"
+
+nav:
+  - PingIdentity CLI:
+      - Home: "README.md"
+      - License: LICENSE.md
+      - Disclaimer: DISCLAIMER.md
+      - Contributing: CONTRIBUTING.md
+  #- Release Notes:

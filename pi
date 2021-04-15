@@ -1,0 +1,2310 @@
+#!/usr/bin/env sh
+########################################################################################################################
+#
+# This script is used to manage a Ping Identity environment for PingOne Docker and Kubernetes.
+#
+# ------------
+# Installation
+# ------------
+#   brew install ping-devops
+#   brew upgrade ping-devops
+#
+# ------------
+# Requirements
+# ------------
+# The script requires the following tools to be installed:
+JQ="jq"
+BASE64="base64"
+OPENSSL="openssl"
+KUSTOMIZE="kustomize"
+KUBECTL="kubectl"
+KUBECTX="kubectx"
+KUBENS="kubens"
+ENVSUBST="envsubst"
+DOCKER="docker"
+DOCKER_COMPOSE="docker-compose"
+CURL="curl -sL "
+VAULT="vault"
+#
+# In addition, the assumption is that kubectl is configured to authenticate and apply manifests to the Kubernetes
+# cluster. For EKS clusters, this requires an AWS key and secret with the appropriate IAM policies to be configured and
+# requires that the aws CLI tool and probably the aws-iam-authenticator CLI tool are installed.
+#
+# Information on all the Variables can be found at:
+#    ping-devops topic devops-variables
+########################################################################################################################
+
+CWD=$(pwd)
+# shellcheck disable=SC2164
+# cd "$( dirname "${0}" )"
+#THIS="$( basename "${0}" )"
+#THIS_DIR=`pwd`
+
+PI_CMD="pi"
+
+STANDARD_VARIABLES="
+  PING_IDENTITY_DEVOPS_USER
+  PING_IDENTITY_DEVOPS_KEY
+  PING_IDENTITY_DEVOPS_HOME
+  PING_IDENTITY_DEVOPS_REGISTRY
+  PING_IDENTITY_DEVOPS_TAG
+  PING_IDENTITY_ACCEPT_EULA
+  VAULT_ADDR
+  VAULT_CACERT
+  VAULT_SECRET_PREFIX
+  PINGONE_ENVIRONMENT_ID
+  PINGONE_WORKER_APP_CLIENT_ID
+  PINGONE_WORKER_APP_CLIENT_SECRET"
+
+################################################################################
+# Version Info
+################################################################################
+VERSION="1.0.0"
+
+################################################################################
+# Ping Identity tools & config information
+################################################################################
+DOT_PINGIDENTITY="${HOME}/.pingidentity"
+CONFIG_FILE="${DOT_PINGIDENTITY}/config"
+PRINT_CONFIG_FILE="${HOME}/.pingidentity/config"
+PI_WORK_DIR="${DOT_PINGIDENTITY}/${PI_CMD}"
+test -d "${PI_WORK_DIR}" || mkdir -p "${PI_WORK_DIR}"
+PI_TOPICS_DIR="${PI_WORK_DIR}/topics"
+test -d "${PI_TOPICS_DIR}" || mkdir -p "${PI_TOPICS_DIR}"
+
+################################################################################
+# Ping DevOps URL & Info
+################################################################################
+# Note: bit.ly URLs require a header to be be passed in curl (i.e. -H "User-Agent: ${PI_CMD}")
+PI_URL="https://bit.ly/${PI_CMD}-json"
+PI_JSON="${PI_WORK_DIR}/.${PI_CMD}.json"
+PI_GITHUB_CONTENT="https://raw.githubusercontent.com/pingidentity/pingidentity-devops-getting-started/master"
+PI_TOPICS_URL="${PI_GITHUB_CONTENT}/docs/${PI_CMD}/topics"
+PI_TOPICS_JSON_URL="https://api.github.com/repos/pingidentity/pingidentity-devops-getting-started/contents/docs/${PI_CMD}/topics"
+PI_TOPICS_JSON="${PI_TOPICS_DIR}/topics.json"
+PI_MOTD_URL="${PI_GITHUB_CONTENT}/docs/${PI_CMD}/motd"
+PI_MOTD="${PI_WORK_DIR}/motd"
+
+################################################################################
+# Get Current Kubenetes Info
+################################################################################
+CURRENT_K8S_CONTEXT="$(kubectl config current-context 2> /dev/null)"
+CURRENT_K8S_NAMESPACE="$(kubectl config view --minify --output 'jsonpath={..namespace}' 2> /dev/null)"
+
+################################################################################
+# Check for a .pingidentity directory with propertyfile
+################################################################################
+test -d "${DOT_PINGIDENTITY}" || mkdir -p "${DOT_PINGIDENTITY}"
+
+################################################################################
+# Source devops file
+################################################################################
+# shellcheck disable=SC1090
+test -f "${CONFIG_FILE}" && . "${CONFIG_FILE}"
+
+# Temporary directory used throughout script and cleaned up at exit
+TMP_DIR="$(mktemp -d)"
+PINGONE_POST_JSON="${TMP_DIR}/pingone-post.json"
+PINGONE_CALL_RESPONSE="${TMP_DIR}/pingone-call-response.json"
+
+################################################################################
+# cleanup - Ensures that we cleanup any temporary directories we create upon exit
+################################################################################
+cleanup ()
+{
+  rm -rf "$TMP_DIR"
+}
+
+trap cleanup EXIT
+
+################################################################################
+# Terminal codes for echoing of RED or GREEN colors, and back to NORMAL
+################################################################################
+if test "${COLORIZE}" == "on"; then
+  RED='\033[0;31m'
+  GREEN='\033[0;32m'
+  NORMAL='\033[0m'
+  BOLD='\033[1m'
+else
+  RED=
+  GREEN=
+  NORMAL=
+  BOLD=
+fi
+
+################################################################################
+# echo_red - Echo message in red color
+################################################################################
+echo_red()
+{
+    echo "${RED}$*${NORMAL}"
+}
+
+################################################################################
+# echo_green - Echo message in green color
+################################################################################
+echo_green()
+{
+    echo "${GREEN}$*${NORMAL}"
+}
+
+################################################################################
+# echo_error (message) - Echo's an Error: message
+################################################################################
+echo_error()
+{
+    if test  ! -z "$*"; then
+      echo "-------------------------------------------------------------------------"
+	    echo_red "Error: ${1}"
+      echo "-------------------------------------------------------------------------"
+    fi
+}
+
+banner()
+{
+  echo "-------------------------------------------------------------------------"
+  echo "$*"
+  echo "-------------------------------------------------------------------------"
+
+}
+
+run_command()
+{
+  CMD="${1}"
+  CMD_OUTPUT="${2}"
+
+  banner "Command: ${BOLD}$CMD $(test ! -z "${CMD_OUTPUT}" && echo "> ${CMD_OUTPUT}")${NORMAL}"
+
+  test -z "${CMD_OUTPUT}" && $CMD
+  test ! -z "${CMD_OUTPUT}" && $CMD > "${CMD_OUTPUT}"
+}
+
+
+################################################################################
+# check_devops_file - Verify that the devops_file is found
+################################################################################
+check_devops_file()
+{
+  test ! -f "${CONFIG_FILE}" \
+    && echo_red "No ${PI_CMD} config found.  Please run:\n" \
+    && echo "  ${PI_CMD} config" \
+    && exit
+}
+
+################################################################################
+# check_variables - Verify that certain variables are set
+################################################################################
+check_variables()
+{
+  for _var in "${@}"; do
+    test -z "$(get_value "${_var}")" \
+      && echo_red "Variable is not set: ${_var}" \
+      && _var_check_fails=true
+  done
+
+  test ${_var_check_fails} \
+    && echo \
+    && echo "To get more information on these variables:" \
+    && echo_green "  ${PI_CMD} topic devops-variables" \
+    && echo \
+    && echo "Set this/these in your config with:" \
+    && echo_green "  ${PI_CMD} config" \
+    && echo \
+    && exit
+}
+
+
+################################################################################
+USAGE_HEADER="${GREEN}################################################################################
+#  Welcome to the Ping Identity CLI (version $VERSION)
+#
+#  Documentation: https://devops.pingidentity.com
+#   GitHub Repos: https://github.com/topics/ping-devops
+################################################################################${NORMAL}"
+
+################################################################################
+USAGE_DEVOPS_SUMMARY="${GREEN}Manage DevOps Evironments:${NORMAL}
+  ${PI_CMD} devops generate ...               # Generate DevOps Reources
+  ${PI_CMD} devops docker ...                 # Manage Docker Environments
+  ${PI_CMD} devops kubernetes ...             # Manage Kubernetes Environments"
+
+################################################################################
+USAGE_GENERATE_DETAIL="${GREEN}Generate Kubernetes/Kustomize/License Resources:${NORMAL}
+  ${PI_CMD} devops generate devops-secret                    # Ping DevOps secret
+  ${PI_CMD} devops generate tls-secret {domain}              # TLS Cert/Key (i.e. example.com)
+  ${PI_CMD} devops generate ssh-id-secret {ssh id_rsa file}  # SSH ID Key (i.e. ~/.ssh/id_rsa)
+  ${PI_CMD} devops generate license {product} {ver}          # Eval license file for product/ver
+  ${PI_CMD} devops generate license-secret {license file}    # License secret from license file
+  ${PI_CMD} devops generate license-secret {product} {ver}   # License secret for product/ver
+  ${PI_CMD} devops generate kustomization.yaml               # Skeleton kustomization.yaml"
+
+################################################################################
+USAGE_PINGONE_DETAIL="${GREEN}Manage PingOne Evironments:${NORMAL}
+  ${PI_CMD} pingone list                 # List objects
+  ${PI_CMD} pingone get                  # Get object
+
+  ${PI_CMD} pingone add                  # Add object
+  ${PI_CMD} pingone delete               # Delete object
+
+  ${PI_CMD} pingone add-user-group       # Add group to user
+  ${PI_CMD} pingone delete-user-group    # Delete group from user"
+
+################################################################################
+USAGE_PINGONE_LIST_DETAIL="${GREEN}List PingOne Objects:${NORMAL}
+  ${PI_CMD} pingone list groups                 # List groups
+  ${PI_CMD} pingone list populations            # List all populations
+  ${PI_CMD} pingone list users                  # List users"
+
+################################################################################
+USAGE_PINGONE_GET_DETAIL="${GREEN}Get PingOne Objects:${NORMAL}
+  ${PI_CMD} pingone get group        {name}     # Get group by name
+  ${PI_CMD} pingone get population   {name}     # Get population by name
+  ${PI_CMD} pingone get user         {name}     # Get user by name"
+
+################################################################################
+USAGE_PINGONE_ADD_DETAIL="${GREEN}Add PingOne Objects:${NORMAL}
+  ${PI_CMD} pingone add group {population} {groupname}                  # Add group
+  ${PI_CMD} pingone add population {population}                         # Add population
+  ${PI_CMD} pingone add user  {population} {username} {first} {last}    # Add user"
+
+################################################################################
+USAGE_PINGONE_DELETE_DETAIL="${GREEN}Delete PingOne Objects:${NORMAL}
+  ${PI_CMD} pingone delete group       {name}    # Delete group
+  ${PI_CMD} pingone delete population  {name}    # Delete population
+  ${PI_CMD} pingone delete user        {name}    # Delete user"
+
+################################################################################
+USAGE_PINGONE_ADD_USER_GROUP_DETAIL="${GREEN}Add PingOne Group to User:${NORMAL}
+  ${PI_CMD} pingone add-user-group {username} {groupname}  # Add group to user"
+
+################################################################################
+USAGE_PINGONE_DELETE_USER_GROUP_DETAIL="${GREEN}Delete PingOne Group from User:${NORMAL}
+  ${PI_CMD} pingone delete-user-group {username} {groupname}  # Delete group from user"
+
+################################################################################
+USAGE_VAULT_SUMMARY="${GREEN}Hashicorp Vault:${NORMAL}
+  ${PI_CMD} vault get-token                   # Get vault token for cli commands
+  ${PI_CMD} vault create-annotations {secret} # Create kubernetes annotaions for secret"
+
+################################################################################
+USAGE_DOCKER_KUBERNETES_DETAIL="${GREEN}Running Docker Getting Started Containers:${NORMAL}
+  ${PI_CMD} devops docker info                      # Lists all available use-cases/products
+  ${PI_CMD} devops docker info  {product}           # Information on user-case/product
+  ${PI_CMD} devops docker start {product}           # Starts services  (i.e. docker-compose up)
+  ${PI_CMD} devops docker stop  {product}           # Stops services   (i.e. docker-compose stop)
+  ${PI_CMD} devops docker rm    {product}           # Removes services (i.e. docker-compose down)
+  ${PI_CMD} devops docker clean                     # Cleans all ping_devops docker services
+
+${GREEN}Running Kubernetes Getting Started Containers:${NORMAL}
+  ${PI_CMD} devops kubernetes info                  # Lists all available use-cases/products
+  ${PI_CMD} devops kubernetes info  {product}       # Information on user-case/product
+  ${PI_CMD} devops kubernetes start {product}       # Starts services  (i.e. kubectl create)
+  ${PI_CMD} devops kubernetes rm    {product}       # Removes services (i.e. kubectl delete)
+  ${PI_CMD} devops kubernetes clean                 # Removes all ping_devops kubernetes resources"
+
+################################################################################
+# usage - Print any message sent as an error and then the usage information
+################################################################################
+usage()
+{
+  echo_error "$*"
+
+  echo "$USAGE_HEADER
+
+${GREEN}General Usage:${NORMAL}
+  ${PI_CMD} info [-v]                 # Print pi config
+  ${PI_CMD} config                    # Manage pi config
+  ${PI_CMD} version                   # Version Details and Check
+  ${PI_CMD} clean                     # Remove ~/.pingidentity/${PI_CMD}
+  ${PI_CMD} topic [ {topic-name} ]    # Short Help Topics
+
+  ${PI_CMD} devops                    # Ping DevOps Tools
+  ${PI_CMD} pingone                   # PineOne Tools
+  ${PI_CMD} vault                     # Hashicorp Vault Tools
+
+${GREEN}Further help:${NORMAL}
+  https://github.com/pingidentity/ping-devops"
+
+  exit
+}
+
+################################################################################
+# usage_command - print usage info for a specific command
+################################################################################
+usage_command()
+{
+  _usageCmd="${1}" && shift
+
+  test -z "${_usageCmd}" && _usageCmd="${USAGE_CONTEXT}"
+  test -z "${_usageCmd}" && usage
+
+  echo_error "$*"
+
+  echo "$USAGE_HEADER
+
+$(get_value "${_usageCmd}")"
+
+  echo
+  exit
+  case "${_usageCmd}" in
+    pingone)
+      echo "${USAGE_PINGONE_DETAIL}"
+      ;;
+    pingone-list)
+      echo "${USAGE_PINGONE_LIST_DETAIL}"
+      ;;
+    pingone-get)
+      echo "$(get_value _usageCmd)"
+      ;;
+    devops)
+      echo "${USAGE_DEVOPS_SUMMARY}"
+      ;;
+    generate)
+      echo "${USAGE_GENERATE_DETAIL}"
+      ;;
+    docker)
+      echo "${USAGE_DOCKER_DETAIL}"
+      ;;
+    kubernetes)
+      echo "${USAGE_KUBERNETES_DETAIL}"
+      ;;
+    vault)
+      echo "${USAGE_VAULT}"
+      ;;
+    *)
+      usage
+      ;;
+  esac
+
+  echo
+  exit
+}
+
+################################################################################
+# check_for_tool (tool_name)
+#
+# Using which command, validate that the tool_name is found
+################################################################################
+check_for_tool()
+{
+  _tool="${1}"
+  which "${_tool}" >/dev/null
+
+  test $? -eq 1 && usage "${_tool} tool not found, please install"
+}
+
+################################################################################
+# get_value (variable)
+#
+# Get the value of a vaiable, preserving the spaces
+################################################################################
+get_value ()
+{
+  if test ! -z "${1}"; then
+    IFS="%%"
+    eval printf '%s' "\${${1}}"
+    unset IFS
+  fi
+}
+
+################################################################################
+# get_value (variable)
+#
+# Get the value of a vaiable, preserving the spaces
+################################################################################
+find_setup_arg_value()
+{
+  _valToFind="${1}"
+  _findFile="${2}"
+  _defaultVal="${3}"
+
+  _valFound=$(grep "$_valToFind" "${_findFile}" | sed "s/.*$_valToFind \(.*\) .*\\\\$/\1/g")
+
+  test -z "${_valFound}" && _valFound="${_defaultVal}"
+
+  echo "${_valFound}"
+}
+
+################################################################################
+# add_bash_aliases ()
+#
+# Ensure that the bash_alias file is a part of .bash_profile
+################################################################################
+add_bash_aliases()
+{
+
+
+    PI_BASH_PROFILE="/usr/local/etc/bash_profile.${PI_CMD}"
+    BASH_PROFILE="${HOME}/.bash_profile"
+
+    # Touch the .bash_profile incase it's not setup yet
+    touch "${BASH_PROFILE}"
+
+    grep "${PI_BASH_PROFILE}" "${BASH_PROFILE}" > /dev/null
+
+    if test "${?}" = "1"; then
+        echo "
+################################################################################
+#                         Ping Identity Alias Files
+################################################################################
+
+Let's add helper alias' and functions to your shell.
+We are assuming you use bash and will add these to your ${BASH_PROFILE}
+"
+
+        echo "  OK if we add a 'source ${PI_BASH_PROFILE}' command to your ${BASH_PROFILE} (y/n) [y] ? \c"
+        read -r answer
+
+        if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+            echo "
+# Ping Identity Aliases - Added with '${PI_CMD} config' on $(date)
+test -f '${PI_BASH_PROFILE}' && source '${PI_BASH_PROFILE}'" >> "${BASH_PROFILE}"
+        fi
+    fi
+
+    grep "sourcePingIdentityFiles" "${BASH_PROFILE}" >/dev/null
+
+    if test "$?" = "1"; then
+        echo "  OK if we add a 'sourcePingIdentityFiles' command to your ${BASH_PROFILE} (y/n) [y] ? \c"
+        read -r answer
+        if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+            echo "
+# Source PingIdentity Files Alias - Added with '${PI_CMD} config' on $(date)
+sourcePingIdentityFiles" >> "${BASH_PROFILE}"
+        fi
+    fi
+}
+
+################################################################################
+# get_custom_variables ()
+#
+# Obtain a list of custom variablees
+################################################################################
+get_custom_variables()
+{
+    grep -v "^#" "${CONFIG_FILE}" | \
+    while read -r _line
+    do
+        test -z "${_line}" && continue
+        _name="${_line%%=*}"
+
+        echo "${STANDARD_VARIABLES}" | grep "${_name}" >/dev/null
+        _grepRC=$?
+
+        if test ${_grepRC} -ne 0; then
+            echo "${_name}"
+        fi
+    done
+}
+
+################################################################################
+# add_config (file, variable, default, prompt)
+#
+# Add a config variale to the devops file, using the prompt sent, and defaulting
+# if no value is provided.
+################################################################################
+add_config()
+{
+  PROPS_FILE="${1}" && shift
+  VAR_TO_SET="${1}" && shift
+  VAR_DEFAULT="${1}" && shift
+  VAR_PROMPT="${*}"
+
+  CURRENT_VALUE=$(get_value "${VAR_TO_SET}")
+  test -z "${CURRENT_VALUE}" && CURRENT_VALUE="${VAR_DEFAULT}"
+
+  echo "${VAR_PROMPT}"
+  echo "    [${GREEN}${CURRENT_VALUE}${NORMAL}] ? \c"
+  read -r answer
+  echo
+
+  if test ! -z "${answer}"; then
+    if test "${answer}" = "-"; then
+      if test -z "${VAR_TO_SET}"; then
+        echo >> "${PROPS_FILE}"
+      else
+        eval "unset \${VAR_TO_SET}"
+
+        # If the variable being uset, is a standard variable, then echo an
+        # empty value in the property file, otherwise, lose it from new
+        # property file
+        echo "${STANDARD_VARIABLES}" | grep "${VAR_TO_SET}" >/dev/null
+
+        test $? -eq 0 && echo "${VAR_TO_SET}=" >> "${PROPS_FILE}"
+      fi
+    else
+      if test -z "${VAR_TO_SET}"; then
+        echo "${answer}" >> "${PROPS_FILE}"
+      else
+        eval "export \${VAR_TO_SET}=${answer}"
+        echo "${VAR_TO_SET}=${answer}" >> "${PROPS_FILE}"
+      fi
+    fi
+  else
+    if test -z "${VAR_TO_SET}"; then
+        echo "${CURRENT_VALUE}" >> "${PROPS_FILE}"
+    else
+        echo "${VAR_TO_SET}=${CURRENT_VALUE}" >> "${PROPS_FILE}"
+    fi
+  fi
+}
+
+################################################################################
+################################################################################
+print_variable_setting_instructions()
+{
+  echo "
+################################################################################
+#  Setting Variables:
+#      [enter]     to accept current value
+#      [-]         to unset the value
+#      new value   to change value
+################################################################################
+  "
+}
+
+################################################################################
+# add_config_customize (file)
+#
+# Add a config variale to the devops file, using the prompt sent, and defaulting
+# if no value is provided.
+################################################################################
+add_config_custom()
+{
+  PROPS_FILE="${1}" && shift
+  _custom_variables="${*}"
+
+  test ! -z "${_custom_variables}" && print_variable_setting_instructions
+
+  for _varName in ${_custom_variables}; do
+      add_config "${PROPS_FILE}" "${_varName}"  ""  "Set Custom Variable '${_varName}'"
+  done
+
+  echo "
+################################################################################
+#  Add Additional Variables:
+#
+#      [enter]     to end adding additional variables
+#      NAME=VALUE  to add that variable with setting (i.e. VERBOSE=true)
+################################################################################
+  "
+
+  while true
+  do
+      echo "Enter a new NAME=VALUE [enter to end] : \c"
+
+      read -r answer
+
+      test -z "${answer}" && break
+
+      echo "$answer" >> "${PROPS_FILE}"
+  done
+}
+
+################################################################################
+# devops_add_comment (file, comment)
+#
+# Add a comment to the devops file
+################################################################################
+devops_add_comment()
+{
+  _TFILE="${1}" && shift
+  _MSG="${*}"
+
+  echo "${_MSG}"
+  echo "${_MSG}" >> "${_TFILE}"
+}
+
+echo_info_variable()
+{
+  _varToEcho="${1}"
+
+  printf "  %-30s : %s\n" "${_varToEcho}" "$(get_value "${_varToEcho}")"
+}
+
+################################################################################
+# ping_devops_info ()
+#
+# Prints all the variables of the ~/.pingidentity/devops file
+################################################################################
+ping_devops_info()
+{
+    _show="${1}"
+
+    test "${_show}" != "-v" && PINGONE_WORKER_APP_CLIENT_SECRET="*** REDACTED *** (use -v to display)"
+    test "${_show}" != "-v" && PING_IDENTITY_DEVOPS_KEY="*** REDACTED *** (use -v to display)"
+
+
+    ${CURL} ${PI_MOTD_URL} \
+              --output "${PI_MOTD}" \
+              --fail 2>/dev/null
+
+    _curl_result=$?
+
+    if test ${_curl_result} -ne 0; then
+        echo "Unable to retrieve latest news." > "${PI_MOTD}"
+    fi
+
+    # Get the MOTD
+    echo "
+################################################################################
+#     Ping Identity Information (version $VERSION)
+#
+#     Latest News from Ping Identity
+#
+$(test -f "${PI_MOTD}" && sed 's/^/#     /' < "${PI_MOTD}")
+#"
+
+echo "################################################################################
+#     PingOne variables sourced from ${PRINT_CONFIG_FILE}
+################################################################################
+"
+    echo_info_variable PINGONE_ENVIRONMENT_ID
+    echo_info_variable PINGONE_WORKER_APP_CLIENT_ID
+    echo_info_variable PINGONE_WORKER_APP_CLIENT_SECRET
+    echo
+
+echo "################################################################################
+#     DevOps variables sourced from ${PRINT_CONFIG_FILE}
+################################################################################
+"
+
+    echo_info_variable PING_IDENTITY_DEVOPS_USER
+    echo_info_variable PING_IDENTITY_DEVOPS_KEY
+    echo
+    echo_info_variable PING_IDENTITY_DEVOPS_HOME
+    echo_info_variable PING_IDENTITY_DEVOPS_REGISTRY
+    echo
+    echo_info_variable PING_IDENTITY_DEVOPS_TAG
+    echo
+    echo_info_variable PING_IDENTITY_ACCEPT_EULA
+    echo
+    echo_info_variable VAULT_ADDR
+    echo_info_variable VAULT_CACERT
+    echo_info_variable VAULT_SECRET_PREFIX
+
+
+_listOfCustom_Variables=$(get_custom_variables)
+
+if test ! -z "$_listOfCustom_Variables"; then
+  echo "
+################################################################################
+#     Custom Variables
+################################################################################
+"
+
+  for _custVar in $_listOfCustom_Variables
+  do
+      echo_info_variable "${_custVar}"
+  done
+fi
+
+if test ! -z "${CURRENT_K8S_CONTEXT}" && test ! -z "${CURRENT_K8S_NAMESPACE}"; then
+    echo "
+################################################################################
+#     Current Kubernetes (k8s) Environment
+################################################################################
+"
+    printf "  %-30s : %s\n" "Current k8s Context" "$(get_value CURRENT_K8S_CONTEXT)"
+    printf "  %-30s : %s\n" "Current k8s Namespace" "$(get_value CURRENT_K8S_NAMESPACE)"
+fi
+
+
+echo "
+################################################################################
+ To change config, run:
+    ${PI_CMD} config
+"
+}
+
+print_update_information()
+{
+  echo "
+to update, you can use:
+  macosx : brew upgrade ping-devops
+  linux  : curl -L https://bit.ly/ping-devops-install | bash"
+}
+
+################################################################################
+# ping_devops_version ()
+#
+# Prints tool version info
+################################################################################
+ping_devops_version()
+{
+    # Looks for the URL and pulls out the version.  Example should be:
+    #
+    #      url "https://github.com/pingidentity/ping-devops/archive/v0.5.0.tar.gz"
+    #
+    _latest_tool_version=$(${CURL} https://bit.ly/ping-devops-version \
+      |  grep -e '^  url ".*"$' \
+      |  sed "s/.*archive\/v\(.*\)\.tar.*/\1/")
+
+    _curl_result=$?
+
+    test ${_curl_result} -ne 0 || test -z "${_latest_tool_version}" && _latest_tool_version="UNKNOWN"
+
+    if test "${_latest_tool_version}" = "${VERSION}" ||
+       test "${_latest_tool_version}" = "UNKNOWN"; then
+        _version_msg="${GREEN}${VERSION}${NORMAL} (no update required)"
+    else
+        _version_msg="${RED}${VERSION}${NORMAL} (updated version ${_latest_tool_version} is available)\n$(print_update_information)"
+    fi
+
+    echo "${PI_CMD} version ${_version_msg}"
+}
+
+################################################################################
+# ping_devops_clean ()
+#
+# Cleans the ~/.pingidentity/${PI_CMD}
+################################################################################
+ping_devops_clean()
+{
+
+    echo
+    echo_red "IMPORTANT: This is destructive of all content ~/.pingidentity/${PI_CMD}"
+    echo
+    echo "Are you SURE you want to clean/remove this content (y/n) [n] ? \c"
+    read -r answer
+
+    if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
+        echo_error "Clean Aborted!"
+        exit
+    fi
+
+    rm -rf "${PI_WORK_DIR}"
+}
+
+################################################################################
+# vault_get_token ()
+#
+# Hashicorp Vault get-token
+################################################################################
+vault_get_token()
+{
+    printf "Getting vault token..."
+
+    # _vaultCACRT="${TMP_DIR}/vault.ca.crt"
+    # kubectl get secrets vault-tls-secret -o jsonpath="{.data.vault\.crt}"|base64 --decode > "${_vaultCACRT}"
+
+    if test -n "${VAULT_CACERT}" && test -s "${VAULT_CACERT}" ; then
+      _vaultCACRT="${VAULT_CACERT}"
+    fi
+
+    kubectl get serviceaccount vault-auth 2>/dev/null >/dev/null
+    test $? -ne 0 && echo "Creating 'vauth-auth' serviceaccount" && kubectl create serviceaccount vault-auth
+
+    _k8sToken=$(kubectl get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='vault-auth')].data.token}"|base64 --decode)
+
+
+    _vaultToken=$(${CURL} --request POST "${VAULT_ADDR}/v1/auth/kubernetes/login" \
+      $( test -s "${_vaultCACRT}" && echo "--cacert ${_vaultCACRT}" ) \
+      --header 'Content-Type: application/json' \
+      --data-raw "{\"jwt\":\"${_k8sToken}\",\"role\":\"k8s-default\"}" \
+      --fail 2>/dev/null | jq -r .auth.client_token)
+    _curl_result=$?
+
+    printf "\n\n"
+    vault login --address=${VAULT_ADDR} -format=table "${_vaultToken}"
+}
+
+################################################################################
+# vault_create_annotation ()
+#
+# Hashicorp Vault create_annotation
+################################################################################
+vault_create_annotation()
+{
+    local readonly secret="${1}"
+
+    vault kv get -format=json ${secret}  | jq '.data.data'> ${TMP_DIR}/vault.sec
+
+    _secretName=$(basename "${secret}")
+
+    case "${_secretName}" in
+        *.env)
+            cat >> "${TMP_DIR}/k8s.annotations" <<EOANNOTATION1
+    #
+    #------------ env: ${_secretName}
+    vault.hashicorp.com/agent-inject-secret-${_secretName}: "${secret}"
+    vault.hashicorp.com/agent-inject-template-${_secretName}: |
+      {{ with secret "${secret}" -}}
+EOANNOTATION1
+            for _secretKey in $(jq -r 'keys | .[]' ${TMP_DIR}/vault.sec); do
+                echo "      export ${_secretKey}=\"{{ .Data.data.${_secretKey} }}\"" >> "${TMP_DIR}/k8s.annotations"
+            done
+
+            cat >> "${TMP_DIR}/k8s.annotations" <<EOANNOTATION2
+      {{- end }}
+    #------------------------------------------------
+EOANNOTATION2
+            ;;
+        *)
+            for _secretKey in $(jq -r 'keys | .[]' ${TMP_DIR}/vault.sec); do
+                cat >> "${TMP_DIR}/k8s.annotations" <<EOANNOTATION3
+    #
+    #------------ key: ${_secretKey}
+    vault.hashicorp.com/agent-inject-secret-${_secretKey}: "${secret}"
+    vault.hashicorp.com/agent-inject-template-${_secretKey}: |
+      {{ with secret "${secret}" -}}
+      {{ .Data.data.${_secretKey} }}
+      {{- end }}
+    #------------------------------------------------
+EOANNOTATION3
+            done
+            ;;
+    esac
+}
+
+################################################################################
+# vault_create_annotations ()
+#
+# Hashicorp Vault create_annotations
+################################################################################
+vault_create_annotations()
+{
+  local readonly secretPath="${1}"
+
+  local readonly vresult=$( vault kv list -format=json ${secretPath})
+
+  if test -z "${vresult}" || test $? -ne 1; then
+    echo ""
+    echo_red "Error: Unable to make a call to vault.  Possibly your token has timed out."
+    echo_red "       Get a new token and re-run."
+    echo ""
+    echo "  ${PI_CMD} vault get-token"
+    return
+  fi
+
+  if test "${vresult}" = "{}" ; then
+    vault_create_annotation "${secretPath}"
+    return
+  fi
+
+  local readonly _firstRow=true
+  for secret in $(echo "${vresult}" | jq -r '.[]'); do
+    test "$_firstRow" = true \
+      && _firstRow=false \
+      && printf "    #\n    #-------- secret: %s\n" "${secretPath}" >> "${TMP_DIR}/k8s.annotations"
+
+    vault_create_annotations "${secretPath}${secret}"
+  done
+}
+
+################################################################################
+VAULT_ANNOTAION_PREAMBLE="
+  annotations:
+    #----------------------------------------------------
+    # Annotation secretes prepared for hashicorp vault secrets
+    # for use in Deployment, StatefulSet, Pod resources.
+    #
+    # https://www.vaultproject.io/docs/platform/k8s/injector/annotations
+    #
+    vault.hashicorp.com/agent-pre-populate-only: \"true\"
+    vault.hashicorp.com/agent-inject: \"true\"
+    vault.hashicorp.com/role: \"k8s-default\"
+    vault.hashicorp.com/log-level: \"info\"
+    vault.hashicorp.com/preserve-secret-case: \"true\"
+    vault.hashicorp.com/secret-volume-path: \"/run/secrets\"
+    #----------------------------------------------------"
+
+################################################################################
+# ping_devops_vault ()
+#
+# Hashicorp Vault CLI
+################################################################################
+ping_devops_vault()
+{
+    _cmd="${1}" && shift
+    _remainParams="${*}"
+
+    check_devops_file
+    #check_for_tool $VAULT
+    check_variables VAULT_ADDR
+
+    case "${_cmd}" in
+        get-token)
+            vault_get_token
+            ;;
+        create-annotations)
+            _secretPath="secret/${VAULT_SECRET_PREFIX}/${_remainParams}$(test -n "${_remainParams}" && printf "/")"
+
+            vault_create_annotations "${_secretPath}"
+
+            if test -s "${TMP_DIR}/k8s.annotations" ; then
+                echo "${VAULT_ANNOTAION_PREAMBLE}"
+                cat "${TMP_DIR}/k8s.annotations"
+            fi
+            ;;
+        *)
+            usage_command USAGE_VAULT_SUMMARY
+            ;;
+    esac
+}
+
+################################################################################
+# print_topic
+#
+# topic - topic from pingidentity-devops-getting-started/docs/${PI_CMD}/.
+################################################################################
+print_topic()
+{
+  _topic="${1}"
+
+  # Pull the list of topics from the github api
+  ${CURL} ${PI_TOPICS_JSON_URL} \
+              --output "${PI_TOPICS_JSON}" \
+              --fail 2>/dev/null
+
+  _curl_result=$?
+
+  if test ${_curl_result} -ne 0; then
+      echo "Unable to retrieve list of topics (trying github.com)"
+      exit 1
+  fi
+
+  if test -z "${_topic}"; then
+    echo_green "
+################################################################################
+#          Ping Identity Topics
+################################################################################
+"
+    # Print the TOPICS_JSON (which comes from github) as a table
+    jq -r < "${PI_TOPICS_JSON}" "
+      [ .[]
+        # Map column names to data
+        | {
+            Topic: .name
+          }
+      ]
+      # lowercase keys (for predictable sorting, optional)
+      | [ .[] | with_entries( .key |= ascii_upcase ) ]
+
+      # print table
+      | (.[0] |keys_unsorted | @tsv)   # print header
+      , (.[]|.|map(.) |@tsv)           # print data
+      " | column -ts "$(printf '\t')"
+
+    echo
+  else
+    echo_green "
+################################################################################
+#          Ping Identity Topic: ${_topic}
+################################################################################
+"
+    # Pull the topic from the topics location
+    ${CURL} "${PI_TOPICS_URL}/${_topic}" \
+                --output "${PI_TOPICS_DIR}/${_topic}" \
+                --fail 2>/dev/null
+
+    _curl_result=$?
+
+    if test ${_curl_result} -ne 0; then
+      echo "Unable to retrieve topic '${_topic}'."
+      echo
+      echo "To get a list of topics:"
+      echo_green "  ${PI_CMD} topic"
+      echo
+      exit 1
+    fi
+
+    cat "${PI_TOPICS_DIR}/${_topic}"
+    echo
+    echo
+    echo_green "################################################################################"
+  fi
+}
+
+
+
+################################################################################
+################################################################################
+generate_resource()
+{
+    _secret="${1}"
+
+    test -z "${_secret}" && usage
+
+    case "${_secret}" in
+        devops-secret)
+            check_variables \
+                PING_IDENTITY_DEVOPS_USER \
+                PING_IDENTITY_DEVOPS_KEY \
+                PING_IDENTITY_ACCEPT_EULA
+
+            check_for_tool $BASE64
+
+            echo "
+apiVersion: v1
+kind: Secret
+metadata:
+  name: devops-secret
+  annotations:
+    ${PI_CMD}.user: ${PING_IDENTITY_DEVOPS_USER}
+    ${PI_CMD}.app-version: v${VERSION}
+type: Opaque
+data:
+  PING_IDENTITY_DEVOPS_USER: $(base64_no_newlines "${PING_IDENTITY_DEVOPS_USER}")
+  PING_IDENTITY_DEVOPS_KEY: $(base64_no_newlines "${PING_IDENTITY_DEVOPS_KEY}")
+  PING_IDENTITY_ACCEPT_EULA: $(base64_no_newlines "${PING_IDENTITY_ACCEPT_EULA}")
+"
+            ;;
+
+        tls-secret)
+            _domain="${2}"
+            test -z "${_domain}" && usage "Missing tls-secret domain"
+
+            check_for_tool $OPENSSL
+            check_for_tool $BASE64
+
+            test ! -f /etc/ssl/openssl.cnf && echo_error "Missing /etc/ssl/openssl.cnf" && exit
+
+            _opensslcnf="${TMP_DIR}/openssl.cnf"
+            _tlsKey="${TMP_DIR}/tls.key"
+            _tlsCrt="${TMP_DIR}/tls.crt"
+
+            cat /etc/ssl/openssl.cnf > "${_opensslcnf}"
+            printf "[SAN]\nsubjectAltName=DNS:*.%s" "${_domain} " >> "${_opensslcnf}"
+
+            $OPENSSL req -x509 -nodes -newkey rsa:2048 -days 3650 -sha256 \
+              -out "${_tlsKey}" -keyout "${_tlsCrt}" \
+              -subj "/CN=${_domain}" \
+              -reqexts SAN -extensions SAN \
+              -config "${_opensslcnf}" > /dev/null 2>&1
+
+            echo "
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/tls
+metadata:
+  name: tls-secret
+  annotations:
+    ${PI_CMD}.dns-zone: ${_domain}
+    ${PI_CMD}.app-version: v${VERSION}
+data:
+  tls.crt: $(base64_no_newlines "${_tlsCrt}")
+  tls.key: $(base64_no_newlines "${_tlsKey}")"
+            ;;
+        ssh-id-secret)
+            _idKey="${2}"
+
+            echo "
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ssh-id-key-secret
+data:
+  id_rsa: |
+    $(base64_no_newlines "${_idKey}")"
+            ;;
+        license-secret|license)
+            generate_license_secret "${1}" "${2}" "${3}"
+            ;;
+
+        kustomization|kustomization.yaml)
+            cd "${CWD}" || echo_error "Unable to cd to ${CWD}"
+            echo "Generating a kustomization.yaml for current directory"
+            if test -f ./kustomization.yaml; then
+                echo_red "ERROR: kustomization.yaml already exists"
+            fi
+
+            cat <<EOK >kustomization.yaml
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+resources:
+EOK
+            for f in */; do
+              echo "- ${f%/}" >> kustomization.yaml
+            done
+
+            for f in *.yaml; do
+              test "${f}" != "kustomization.yaml" && echo "- ${f%}" >> kustomization.yaml
+            done
+            ;;
+        *)
+            usage "generate" "Unknown resource to generate '${_secret}'"
+            ;;
+    esac
+}
+
+################################################################################
+# generate_license_secret (command, name of product or license file)
+#
+# Generates a license secret for the passed license file or name of product
+#  - license {produtct-name} {product-version}
+#  - license-secret {file}
+#  - license-secret {product-name} {product-version}
+################################################################################
+generate_license_secret()
+{
+  _licenseType="${1}"
+  _licenseArg="${2}"
+  _licenseVer="${3}"
+
+  case "${_licenseType}" in
+      license-secret)
+          if test -f "${_licenseArg}"; then
+              _licenseFile="${_licenseArg}"
+              _licenseSecretName="ping-license"
+          else
+              _licenseProd="${_licenseArg}"
+              _licenseSecretName="${_licenseProd}-license"
+          fi
+          ;;
+      license)
+          test -z "${_licenseArg}" && usage "Missing product name (i.e. pingfederate)"
+          _licenseProd="${_licenseArg}"
+          ;;
+      *)
+          usage "Unknown generate resource '${_licenseType}"
+  esac
+
+  #
+  # Getting an evaluation license based on product passed
+  if test -n "${_licenseProd}"; then
+    case "${_licenseProd}" in
+      pingaccess|pingcentral|pingdatametrics|pingdatasync|pingdatagovernance|pingdatagovernancepap|pingdirectory|pingdirectoryproxy|pingfederate|pingintelligence|pingauthorize|pingauthorizepolicyeditor)
+
+        check_for_tool $DOCKER
+
+        check_variables \
+            PING_IDENTITY_DEVOPS_USER \
+            PING_IDENTITY_DEVOPS_KEY
+
+        test -n "${_licenseVer}" && _downloadVer="--version ${_licenseVer}"
+
+        $DOCKER run --rm -v /tmp:/tmp "${PING_IDENTITY_DEVOPS_REGISTRY}/pingdownloader" \
+          --product "${_licenseProd}" ${_downloadVer} \
+          --license \
+          --devops-user "${PING_IDENTITY_DEVOPS_USER}" \
+          --devops-key "${PING_IDENTITY_DEVOPS_KEY}" \
+          --devops-app "pingdevops" >/dev/null 2>>/dev/null
+        _dockerRunResult=$?
+
+        test $_dockerRunResult -ne 0 && usage "Unable to pull eval license (result=$_dockerRunResult)\nCheck that you can run 'docker version'\nCheck that your PING_IDENTITY_DEVOPS_USER and PING_IDENTITY_DEVOPS_USER are valid.\nCheck your product version is valid, if you provided one."
+
+        _licenseFile="/tmp/product.lic"
+
+        ;;
+      *)
+        usage "Invalid product name '${_licenseProd}'"
+        ;;
+    esac
+  fi
+
+  case "${_licenseType}" in
+      license-secret)
+              _licenseSecret=$(base64_no_newlines "${_licenseFile}")
+
+              echo "
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${_licenseSecretName}
+  labels:
+    pingidentity.com/generated-by: ${PI_CMD}
+data:
+  license: |
+    ${_licenseSecret}"
+          ;;
+      license)
+          cat /tmp/product.lic
+          ;;
+  esac
+
+}
+
+################################################################################
+# get_ping_devops_json
+#
+################################################################################
+get_ping_devops_json()
+{
+    # Get the ${PI_CMD}.json file
+    _curl_result=0
+
+    ${CURL} -H "User-Agent: ${PI_CMD}" ${PI_URL} \
+              --output "${PI_JSON}" \
+              --fail 2>/dev/null
+
+    _curl_result=$?
+
+    if test ${_curl_result} -ne 0; then
+        usage "Unable to get ${PI_CMD}.json (trying github.com)"
+    fi
+
+    # shellcheck disable=SC2002
+    _json_version=$(cat "${PI_JSON}" | jq -r '.minVersion')
+
+    # shellcheck disable=SC2028
+    if test "${_json_version}" != "${VERSION}" &&
+       test "$( echo "${_json_version}\\n${VERSION}" | sort -V | head -2 | tail -1)" = "${_json_version}"
+    then
+      echo "ping-devops update required"
+      echo "           current version ${RED}${VERSION}${NORMAL}"
+      echo "  minimum required version ${GREEN}${_json_version}${NORMAL}"
+      print_update_information
+      exit
+    fi
+}
+
+################################################################################
+# print_orchestration_usecase
+#
+# orchestration - docker or kubernetes
+# product       - product or usecase name
+# file          - file with comments
+################################################################################
+print_orchestration_usecase()
+{
+  _orchestation="${1}"
+  _product_usecase="${2}"
+  _usecase_file="${3}"
+
+  if test -z "${_product_usecase}"; then
+    echo_green "
+################################################################################
+#          Available ping-devops ${_orchestation} usecase/products
+################################################################################
+"
+    jq -r < "${PI_JSON}" "
+      [.${_orchestation}.usecases
+        | .[]
+        # Map column names to data
+        | {
+            Name: .name,
+            Description: .description
+          }
+      ]
+      # lowercase keys (for predictable sorting, optional)
+      | [ .[] | with_entries( .key |= ascii_upcase ) ]
+
+      # print table
+      | (.[0] |keys_unsorted | @tsv)   # print header
+      , (.[]|.|map(.) |@tsv)           # print data
+      " | column -ts "$(printf '\t')"
+  else
+    grep "^#-" "${_usecase_file}"
+  fi
+
+  echo
+}
+
+
+################################################################################
+# orchestration_command
+#
+# Perform a kubernetes command
+#  - orchestrator (docker, kubernetes)
+#  - command      (info, start, stop, rm, clean)
+#  - product      (i.e. pingdirectory, pingfederate)
+################################################################################
+orchestration_command()
+{
+    _orchestrator="${1}"
+    _cmd="${2}"
+    _product="${3}"
+
+    check_devops_file
+    check_for_tool $JQ
+
+    # Example ~/.pingidentity/ping-devops/compose/pingdirectory
+    _orch_dir="${PI_WORK_DIR}/${_orchestrator}"
+
+    case "${_orchestrator}" in
+        docker)
+            check_for_tool $DOCKER
+            check_for_tool $DOCKER_COMPOSE
+
+            check_variables \
+                PING_IDENTITY_ACCEPT_EULA \
+                PING_IDENTITY_DEVOPS_USER \
+                PING_IDENTITY_DEVOPS_KEY \
+                PING_IDENTITY_DEVOPS_REGISTRY \
+                PING_IDENTITY_DEVOPS_TAG
+
+            _orch_file="docker-compose.yaml"
+            ;;
+        kubernetes)
+            check_for_tool $KUBECTL
+            check_for_tool $KUSTOMIZE
+            check_for_tool $ENVSUBST
+            check_for_tool $KUBECTX
+            check_for_tool $KUBENS
+
+            check_variables \
+                PING_IDENTITY_ACCEPT_EULA \
+                PING_IDENTITY_DEVOPS_USER \
+                PING_IDENTITY_DEVOPS_KEY \
+                PING_IDENTITY_DEVOPS_REGISTRY \
+                PING_IDENTITY_DEVOPS_TAG
+
+            _orch_file="kustomization.yaml"
+            ;;
+        vault)
+            check_for_tool $VAULT
+            check_variables \
+                VAULT_ADDR
+            ;;
+        *)
+            usage "Unknown orchestration '${_orchestrator}'.";;
+    esac
+
+
+    # Get the .ping-devops.json file
+    get_ping_devops_json
+
+    _docker_compose_project_name="ping_devops"
+
+    #
+    # If a product is passed, then we will parse the .ping-devops.json
+    # file to get the:
+    #   - BaseURL for information
+    #   - BaseURL for kustomize URL
+    #   - usecase path
+    if test ! -z "${_product}"; then
+        mkdir -p "${_orch_dir}/${_product}"
+        _info_base_url=$(jq -r < "${PI_JSON}" ".baseURL" )
+        _kust_base_url=$(jq -r < "${PI_JSON}" ".baseKustomizeURL" )
+        _usecase_path=$(jq -r < "${PI_JSON}" ".${_orchestrator}.usecases[] | select ( [.name] == [\"${_product}\"]) | .path")
+
+        #
+        # If we have a usecase path found, then we will create the URLs
+        # to pull the information files as well as creating the options for
+        # docker-compose
+        if test ! -z "${_usecase_path}"; then
+          _info_url="${_info_base_url}/${_usecase_path}/${_orch_file}"
+          _kust_url="${_kust_base_url}/${_usecase_path}"
+
+          _orch_file="${_orch_dir}/${_product}/${_orch_file}"
+          _docker_compose_options="--file ${_orch_file} --project-name ${_docker_compose_project_name}"
+
+
+          # Get the product orchestration file
+          ${CURL} "${_info_url}" \
+                --output "${_orch_file}" \
+                --fail 2>/dev/null >/dev/null
+
+          _curl_result=$?
+        else
+          _curl_result=1
+        fi
+
+        # If we can't find an orchestration file, then we will change the command to info
+        # and provide a message that we can't download info for the product.
+        if test ${_curl_result} -ne 0; then
+            rm -rf "${_orch_dir:?}/${_product}"  # :? will cause command to fail
+            echo_red "Unable to download info for '${_product}'"
+            test ! -z "${_info_url}" && echo_red "  URL: ${_info_url}"
+            _cmd="info"
+            _product=""
+        fi
+    else
+        case "${_cmd}" in
+            start|stop|rm)
+                echo_red "Product required to complete command '${_cmd}'"
+                _cmd="info"
+                ;;
+            *)  ;;
+        esac
+    fi
+
+    case "${_cmd}" in
+        info)
+            print_orchestration_usecase "${_orchestrator}" "${_product}" "${_orch_file}"
+            ;;
+        start)
+            case "${_orchestrator}" in
+                docker)
+                    run_command "${DOCKER_COMPOSE} ${_docker_compose_options} pull"
+                    run_command "${DOCKER_COMPOSE} ${_docker_compose_options} up --detach"
+
+                    echo
+                    grep "^#-" "${_orch_file}"
+                    echo "#  Additional Docker Commands
+#
+#             List Containers - docker container ls
+#        Watch Container Logs - docker container logs -f  {container-id}
+#   Exec Shell Into Container - docker container exec -it {container-id} /bin/sh
+################################################################################
+"
+                    ;;
+                kubernetes)
+                    cd "${TMP_DIR}" || echo_red "Unable to change to temporary dir" || exit
+
+                    run_command "${PI_CMD} devops generate devops-secret" "devops-secret.yaml"
+                    run_command "$KUBECTL apply -f devops-secret.yaml"
+
+                    if test ! -z "${PING_IDENTITY_DEVOPS_DNS_ZONE}"; then
+                        run_command "${PI_CMD} devops generate tls-secret ${PING_IDENTITY_DEVOPS_DNS_ZONE}" "tls-secret.yaml"
+                        run_command "$KUBECTL apply -f tls-secret.yaml"
+                    fi
+
+                    run_command "$KUSTOMIZE build ${_kust_url}" "kustomize_output.yaml"
+                    mv kustomize_output.yaml before_envsubst.yaml
+                    # shellcheck disable=SC2002
+                    cat before_envsubst.yaml | envsubst > kustomize_output.yaml
+                    #$KUSTOMIZE build "${_kust_url}" | envsubst > kustomize_output.yaml
+                    run_command "$KUBECTL create -f kustomize_output.yaml"
+
+                    cd - > /dev/null || echo_red "Unable to change to previous dir" || exit
+
+                    echo
+                    grep "^#-" "${_orch_file}"
+                    echo "#  Starting kubernetes deployment of '${_product}'
+#
+#     Kustomization URL: ${_kust_url}
+#    Kubernetes Context: ${GREEN}${CURRENT_K8S_CONTEXT}${NORMAL}
+#  Kubernetes Namespace: ${GREEN}${CURRENT_K8S_NAMESPACE}${NORMAL}
+#
+#  Additional kubectl Commands
+#
+#             List Containers - kubectl get all
+#    Watch Container/Pod Logs - kubectl logs {pod-name} -f
+#   Exec Shell Into Container - kubectl exec -it {pod-name} -- /bin/sh
+#  Port Forward - HTTP Access - kubectl port-forward service/{service-name} {port}
+################################################################################
+"
+                    ;;
+            esac
+            ;;
+        stop|rm)
+            case "${_orchestrator}" in
+                docker)
+                    test ${_cmd} = "stop" && run_command "${DOCKER_COMPOSE} ${_docker_compose_options} stop"
+                    test ${_cmd} = "rm"   && run_command "${DOCKER_COMPOSE} ${_docker_compose_options} down"
+                    ;;
+                kubernetes)
+                    cd "${TMP_DIR}" || echo_red "Unable to change to temporary dir" || exit
+
+                    run_command "$KUSTOMIZE build ${_kust_url}" "kustomize_output.yaml"
+                    mv kustomize_output.yaml before_envsubst.yaml
+                    # shellcheck disable=SC2002
+                    cat before_envsubst.yaml | envsubst > kustomize_output.yaml
+                    #$KUSTOMIZE build "${_kust_url}" | envsubst > kustomize_output.yaml
+                    run_command "$KUBECTL delete -f kustomize_output.yaml"
+
+                    cd - > /dev/null || echo_red "Unable to change to previous dir" || exit
+                    ;;
+            esac
+            ;;
+        clean)
+            case "${_orchestrator}" in
+                docker)
+                    echo
+                    echo "You are about to clean all the ping_devops images below..."
+                    echo
+                    docker container ls -a --filter name=${_docker_compose_project_name}_*
+                    echo
+                    echo_red "IMPORTANT: This is destructive of all content in these running containers.
+        "
+
+                    echo "Are you SURE you want to clean these ping_devops images (y/n) [n] ? \c"
+                    read -r answer
+
+                    if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
+                        echo_error "Clean Aborted!"
+                        exit
+                    fi
+
+                    # shellcheck disable=SC2045
+                    for _docker_compose_dir in $(ls -d "${_orch_dir}"/* 2>/dev/null); do
+                        test -f "${_docker_compose_dir}/${_orch_file}" || continue
+
+                        _docker_compose_options="--file ${_docker_compose_dir}/${_orch_file} --project-name ${_docker_compose_project_name}"
+
+                        echo "Cleaning up ${_prod_option}"
+                        run_command "${DOCKER_COMPOSE} ${_docker_compose_options} down "
+                    done
+                    run_command "${DOCKER} container prune -f"
+                    ;;
+                kubernetes)
+                    echo
+                    echo "You are about to clean all the kubernetes resources below..."
+                    echo
+                    echo "################################################################################"
+                    echo "#    Kubernetes Context: ${GREEN}${CURRENT_K8S_CONTEXT}${NORMAL}"
+                    echo "#  Kubernetes Namespace: ${GREEN}${CURRENT_K8S_NAMESPACE}${NORMAL}"
+                    echo "################################################################################"
+                    kubectl get all
+                    echo
+                    echo_red "IMPORTANT: This is destructive of all content in these running containers."
+                    echo
+                    echo "Are you SURE you want to clean these kubernetes resources (y/n) [n] ? \c"
+                    read -r answer
+
+                    if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
+                        echo_error "Clean Aborted!"
+                        exit
+                    else
+                        run_command "kubectl delete pods,statefulsets,deployments,services -n ${CURRENT_K8S_NAMESPACE} --grace-period=0 --force --all"
+                    fi
+
+                    echo
+                    echo "################################################################################"
+                    echo "#    All pods, statefulsets, deployments and services have been deleted."
+                    echo "#    To perform a deep clean on all other kubernetes in your workspace use"
+                    echo "#    following alias:"
+                    echo "# "
+                    echo "#    knuke"
+                    echo "################################################################################"
+
+                    ;;
+            esac
+
+            echo "Cleaning/Removing ${_orch_dir}"
+
+            rm -rf "${_orch_dir}"
+            ;;
+        *)
+            usage_command USAGE_DEVOPS_SUMMARY
+            ;;
+    esac
+
+}
+
+################################################################################
+################################################################################
+devops_config()
+{
+
+    ################################################################################
+    # Get all the custom variables from the devops file before we backup
+    ################################################################################
+    _custom_variables=$(get_custom_variables)
+
+    ################################################################################
+    # Check for existance of the devops file and backup to .prev
+    ################################################################################
+    if test -f "${CONFIG_FILE}"; then
+        mv "${CONFIG_FILE}" "${CONFIG_FILE}".prev
+
+        # If the config is broken (i.e. ctrl-c) then restore the previous file
+        trap '
+            echo
+            echo "restoring: ${CONFIG_FILE}"
+            mv "${CONFIG_FILE}".prev "${CONFIG_FILE}"
+            exit
+        ' HUP INT PIPE TERM
+    fi
+
+    echo "
+
+################################################################################
+#
+#                     Welcome to Ping Identity Command Line Tool!
+#
+#  We will run through a few config items to make your experiance as easy as
+#  possible.  These include:
+#
+#    - Setting up your default '${PRINT_CONFIG_FILE}' settings
+#    - Adding bash_profile.${PI_CMD} to your .bash_profile, if neeeded
+#"
+
+    print_variable_setting_instructions
+
+    echo "################################################################################
+# Variables used to assist pingone operations
+################################################################################
+" | tee -a "${CONFIG_FILE}"
+
+
+    add_config "${CONFIG_FILE}" "PINGONE_ENVIRONMENT_ID"                 "" "PingOne Environment ID"
+    add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_ID"           "" "PingOne Worker App Client ID"
+    add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_SECRET"       "" "PingOne Worker App Client Secret"
+
+echo "################################################################################
+# Variables used to assist devops operations
+################################################################################
+" | tee -a "${CONFIG_FILE}"
+
+    add_config "${CONFIG_FILE}" "PING_IDENTITY_ACCEPT_EULA"               "NO" "Do you accept the terms of license (found here: https://www.pingidentity.com/en/legal/subscription-agreement.html) with Ping Identity? (YES/NO)"
+    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_USER"               ""                        "Ping Identity DevOps User (request here: https://bit.ly/ping-devops-request)"
+    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_KEY"                ""                        "Ping Identity DevOps Key"
+    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_HOME"               "${HOME}/projects/devops" "Location of Ping Identity DevOps repos and tools"
+    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_REGISTRY"           "docker.io/pingidentity"  "Ping Identity DevOps Registry (recommend default: docker.io/pingidentity)"
+    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_TAG"                "edge"                    "Ping Identity DevOps Tag (recommend default: edge)"
+
+    echo "
+################################################################################
+# Hashicorp Vault - If your kubernetes cluster is setup to use a vault from
+#                   Hashicorp, you may optionally provide a URL to that vault
+################################################################################
+" | tee -a "${CONFIG_FILE}"
+
+    add_config "${CONFIG_FILE}" "VAULT_ADDR"                              "https://vault.example.com:8200"  "Hashicorp Vault Address"
+    add_config "${CONFIG_FILE}" "VAULT_CACERT"                            ""                                "File Location of Vault CA Cert (i.e. ~/.vault-ca-cert)"
+    add_config "${CONFIG_FILE}" "VAULT_SECRET_PREFIX"                     "${PING_IDENTITY_DEVOPS_USER}/${CURRENT_K8S_NAMESPACE}"  "Vault Secret Prefix"
+
+    echo "
+################################################################################
+#              Ping Identity Customized Variables
+################################################################################
+# Additional variables that you would like to send to containers via
+# docker-compose.yaml and kubernetes .yaml files.
+#
+# Examples include:
+#     PING_CONTAINER_PRIVILEGED=false
+#     PING_CONTAINER_UID=12345
+#     PING_CONTAINER_GID=9876
+#     LDAP_PORT=1389
+#     LDAPS_PORT=1636
+#     HTTPS_PORT=1443
+#     JMX_PORT=1689
+#     PING_IDENTITY_PASSWORD=2FederateM0re
+#
+# These are often set to nothing, unless you are using advanced features
+################################################################################
+" | tee -a "${CONFIG_FILE}"
+
+    add_config_custom "${CONFIG_FILE}" "${_custom_variables}"
+
+    add_bash_aliases
+
+    echo "
+
+################################################################################
+#
+# To get these changes effective in your current shell, you should either:
+#
+#    o Restart your Terminal Session (will source your ~/.bash_profile)
+#    o Source your ~/.bash_profile
+#
+################################################################################
+    "
+}
+
+########################################################################################################################
+# base64-encode the provided string or file contents and remove any new lines (both line feeds and carriage returns).
+#
+# Arguments
+#   ${1} -> The string to base-64 encode, or a file whose contents to base64-encode.
+########################################################################################################################
+base64_no_newlines()
+{
+  if test -f "${1}"; then
+    # shellcheck disable=SC2002
+    cat "${1}" | $BASE64 | tr -d '\r?\n'
+  else
+    printf "${1}" | $BASE64 | tr -d '\r?\n'
+  fi
+}
+
+
+################################################################################
+# getPingOneAccessToken
+################################################################################
+getPingOneAccessToken ()
+{
+    check_variables \
+        PINGONE_ENVIRONMENT_ID \
+        PINGONE_WORKER_APP_CLIENT_ID \
+        PINGONE_WORKER_APP_CLIENT_SECRET
+
+    _auth_response=$( $CURL --request POST "https://auth.pingone.com/${PINGONE_ENVIRONMENT_ID}/as/token" \
+                    --header 'Content-Type: application/x-www-form-urlencoded' \
+                    --user "${PINGONE_WORKER_APP_CLIENT_ID}:${PINGONE_WORKER_APP_CLIENT_SECRET}" \
+                    --data-urlencode 'grant_type=client_credentials' )
+
+    PINGONE_ACCESS_TOKEN=$(jq --raw-output '.access_token'  <<<"${_auth_response}")
+}
+
+
+
+
+###############################################################################
+# cat_indent (file)
+#
+# cat a file to stdout and indent 4 spaces
+###############################################################################
+cat_indent ()
+{
+    test -f "${1}" && sed 's/^/    /' < "${1}"
+}
+
+################################################################################
+# print_json_field
+################################################################################
+print_json_field()
+{
+    _json_data="${1}" && shift
+    test -z "${_json_data}" && return
+
+    jq -r "${_json_data}" <"${PINGONE_CALL_RESPONSE}"
+}
+
+################################################################################
+# print_json_fields
+################################################################################
+print_json_fields()
+{
+  _json_data="${1}" && shift
+  _jq_fields=""
+  _comma=""
+
+  # error_pingone_call 200
+
+  while true
+  do
+    _label="${1}" && shift
+    test -z "${_label}" && break
+    _field="${1}" && shift
+    _jq_fields="${_jq_fields}${_comma}\"${_label}\", ${_field}, \"\\n\""
+    _comma=","
+  done
+
+  jq -jr "._embedded.users[] |
+    ${_jq_fields}" <"${PINGONE_CALL_RESPONSE}"
+}
+
+################################################################################
+# print_json_table
+################################################################################
+print_json_table()
+{
+  _json_data="${1}" && shift
+  _sort_column="${1}" && shift
+  _tableColumns=""
+  _comma=""
+
+  while true
+  do
+    _column="${1}" && shift
+    test -z "${_column}" && break
+    _tableColumns="${_tableColumns}${_comma}${_column}"
+    _comma=","
+  done
+
+  cat "${PINGONE_CALL_RESPONSE}" | jq -r "
+    ${_json_data}
+    | [sort_by(${_sort_column}) | .[]
+    |
+        {
+            ${_tableColumns}
+        }
+    ]
+                        # lowercase keys
+                        # (for predictable sorting, optional)
+    |  [.[]| with_entries( .key |= ascii_downcase ) ]
+    |    (.[0] |keys_unsorted | @tsv)               # print headers
+        , (.[]|.|map(.) |@tsv)                       # print table
+    " | column -t -s "$(printf '\t')"
+}
+
+################################################################################
+# pingone_get_call
+################################################################################
+pingone_get_call()
+{
+  _url_end="${1}" && shift
+  _filter="${1}"
+
+  PINGONE_CALL_RESULT=$($CURL -G --request GET "https://api.pingone.com/v1/environments/${PINGONE_ENVIRONMENT_ID}/${_url_end}" \
+      --data-urlencode "${_filter}" \
+      --header 'Content-Type: application/json' \
+      --header "Authorization: Bearer ${PINGONE_ACCESS_TOKEN}" \
+      --write-out '%{http_code}' \
+      --output "${PINGONE_CALL_RESPONSE}")
+
+  error_pingone_call 200
+}
+
+################################################################################
+# error_pingone_call
+################################################################################
+error_pingone_call()
+{
+  _expected_result="${1}"
+
+  test ${PINGONE_CALL_RESULT} == "${_expected_result}" && return
+
+  _err_message=$(jq -r .details[].message <${PINGONE_CALL_RESPONSE})
+
+  echo "ERROR: ${_err_message}"
+
+
+  _err_message=$(jq -r .message <${PINGONE_CALL_RESPONSE})
+
+  echo "ERROR: ${_err_message}"
+
+  exit
+}
+
+################################################################################
+# pingone_post_call
+################################################################################
+pingone_post_call()
+{
+  _url_end="${1}"
+
+  PINGONE_CALL_RESULT=$($CURL --request POST \
+    -g "https://api.pingone.com/v1/environments/${PINGONE_ENVIRONMENT_ID}/${_url_end}" \
+    --data-binary @"${PINGONE_POST_JSON}" \
+    --header 'Content-Type: application/json' \
+    --header "Authorization: Bearer ${PINGONE_ACCESS_TOKEN}" \
+    --write-out '%{http_code}' \
+    --output "${PINGONE_CALL_RESPONSE}")
+
+  error_pingone_call 201
+}
+
+################################################################################
+# pingone_delete_call
+################################################################################
+pingone_delete_call()
+{
+  _url_end="${1}"
+
+  PINGONE_CALL_RESULT=$($CURL --request DELETE \
+    -g "https://api.pingone.com/v1/environments/${PINGONE_ENVIRONMENT_ID}/${_url_end}" \
+    --header 'Content-Type: application/json' \
+    --header "Authorization: Bearer ${PINGONE_ACCESS_TOKEN}" \
+    --write-out '%{http_code}' \
+    --output "${PINGONE_CALL_RESPONSE}")
+  error_pingone_call 204
+}
+
+################################################################################
+# pingone_list
+################################################################################
+pingone_list()
+{
+  USAGE_CONTEXT="USAGE_PINGONE_LIST_DETAIL"
+
+  _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+  test -z "${_resource}" && usage_command
+  _params="${*}"
+
+  case "${_resource}" in
+      users)
+            pingone_get_call "users" ""
+
+            print_json_table "._embedded.users" \
+              ".username" \
+              "USERNAME:.username" \
+              "FIRST:.name.given" \
+              "LAST:.name.family" \
+              "POPULATION:.population.id" \
+          ;;
+      groups)
+            pingone_get_call "groups" ""
+
+            print_json_table "._embedded.groups" \
+              ".name" \
+              "MEMBERS:.directMemberCounts.users" \
+              "NAME:.name"
+          ;;
+      populations)
+            pingone_get_call "populations" ""
+
+            print_json_table "._embedded.populations" \
+              ".name" \
+              "ID:.id" \
+              "NAME:.name"
+          ;;
+      *)
+          usage_command
+          ;;
+  esac
+
+
+}
+
+################################################################################
+# pingone_get
+################################################################################
+pingone_get ()
+{
+  USAGE_CONTEXT="USAGE_PINGONE_GET_DETAIL"
+  _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+  test -z "${_resource}" && usage_command
+
+  case "${_resource}" in
+      user)
+          _username="${1}"
+          test -z "${_username}" && usage_command
+
+          pingone_get_call "users" "filter=username eq \"${_username}\""
+
+          _user_id=$(jq -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
+          test -z "${_user_id}" && echo "User not found '${_username}'" && exit
+
+          print_json_fields "._embedded.users[]" \
+            "Username: " ".username" \
+            "   First: " ".name.given" \
+            "    Last: " ".name.family"
+
+          _user_id=$(jq -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
+
+          echo "  Groups: "
+
+          pingone_get_call "users/${_user_id}/memberOfGroups" ""
+
+          print_json_field "._embedded.groupMemberships[].name"
+          ;;
+      group)
+          _name="${1}"
+          test -z "${_name}" && usage_command
+
+          pingone_get_call "groups" "filter=name eq \"${_name}\""
+
+          jq -jr '._embedded.groups[] |
+            "Group Name: ", .name, "\n"' <"${PINGONE_CALL_RESPONSE}"
+
+          echo "     Users: "
+
+          _group_id=$(jq -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
+
+          pingone_get_call "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
+
+          print_json_field "._embedded.users[].username"
+          ;;
+      population)
+          _name="${1}"
+          test -z "${_name}" && usage_command
+
+          pingone_get_call "populations" "filter=name eq \"${_name}\""
+
+          jq -jr '._embedded.populations[] |
+            "Population Name: ", .name, "\n"' <"${PINGONE_CALL_RESPONSE}"
+
+          echo "     Users: "
+
+          _population_id=$(jq -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
+
+          pingone_get_call "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
+
+          print_json_field "._embedded.users[].username"
+          ;;
+      *)
+          usage_command
+          ;;
+  esac
+}
+
+
+
+################################################################################
+# pingone_get_population_id
+################################################################################
+pingone_get_population_id()
+{
+  _name="${1}"
+  test -z "${_name}" && usage_command USAGE_PINGONE_GET_DETAIL
+
+  pingone_get_call "populations" "filter=name eq \"${_name}\""
+  jq -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}"
+}
+
+################################################################################
+# pingone_add
+################################################################################
+pingone_add()
+{
+    USAGE_CONTEXT="USAGE_PINGONE_ADD_DETAIL"
+  _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+  test -z "${_resource}" && usage_command
+
+  case "${_resource}" in
+      user)
+          _population="${1}" && shift
+          _username="${1}" && shift
+          _first_name="${1}" && shift
+          _last_name="${1}"
+          test -z "${_population}" && usage_command
+          test -z "${_username}" && usage_command
+          test -z "${_first_name}" && usage_command
+          test -z "${_last_name}" && usage_command
+
+          _population_id="$(pingone_get_population_id "${_population}")"
+          test -z "${_population_id}" && echo "population not found '${_population}'" && exit
+
+          jq -n '{email: $username,
+                  name: {given: $first,
+                         family: $last},
+                  population: {id: $populationId},
+                  username: $username}' \
+              --arg populationId "${_population_id}" \
+              --arg username "${_username}" \
+              --arg first "${_first_name}" \
+              --arg last "${_last_name}" > "${PINGONE_POST_JSON}"
+
+          pingone_post_call "users"
+          # error_pingone_call 201
+          ;;
+      group)
+          _population="${1}" && shift
+          _name="${1}"
+          test -z "${_population}" && usage_command
+          test -z "${_name}" && usage_command
+
+          _population_id="$(pingone_get_population_id "${_population}")"
+          test -z "${_population_id}" && echo "population not found '${_population}'" && exit
+
+          jq -n '{name: $name,
+                  population: {id: $populationId}
+                 }' \
+              --arg name "${_name}"  \
+              --arg populationId "${_population_id}" > "${PINGONE_POST_JSON}"
+
+          pingone_post_call "groups"
+          # error_pingone_call 201
+          ;;
+      population)
+          _name="${1}"
+          test -z "${_name}" && usage_command
+
+          jq -n '{name: $name}' \
+              --arg name "${_name}" > "${PINGONE_POST_JSON}"
+
+          pingone_post_call "populations"
+          # error_pingone_call 201
+          ;;
+      *)
+          usage_command
+          ;;
+  esac
+}
+
+################################################################################
+# pingone_add_user_group
+################################################################################
+pingone_add_user_group()
+{
+  _username="${1}" && shift
+  _groupname="${1}"
+  test -z "${_username}" && usage_command USAGE_PINGONE_ADD_USER_GROUP_DETAIL
+  test -z "${_groupname}" && usage_command USAGE_PINGONE_ADD_USER_GROUP_DETAIL
+
+  pingone_get_call "users" "filter=username eq \"${_username}\""
+  # error_pingone_call 200
+  _user_id=$(jq -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
+
+  pingone_get_call "groups" "filter=name eq \"${_groupname}\""
+  # error_pingone_call 200
+  _group_id=$(jq -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
+
+  jq -n '{id: $groupId}' \
+    --arg groupId "${_group_id}" > "${PINGONE_POST_JSON}"
+
+  pingone_post_call "users/${_user_id}/memberOfGroups"
+
+  # error_pingone_call 201
+}
+
+################################################################################
+# pingone_delete_user_group
+################################################################################
+pingone_delete_user_group()
+{
+  _username="${1}" && shift
+  _groupname="${1}"
+  test -z "${_username}" && usage_command USAGE_PINGONE_DELETE_USER_GROUP_DETAIL
+  test -z "${_groupname}" && usage_command USAGE_PINGONE_DELETE_USER_GROUP_DETAIL
+
+  pingone_get_call "users" "filter=username eq \"${_username}\""
+  # error_pingone_call 200
+  _user_id=$(jq -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
+
+  pingone_get_call "groups" "filter=name eq \"${_groupname}\""
+  # error_pingone_call 200
+  _group_id=$(jq -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
+
+  pingone_delete_call "users/${_user_id}/memberOfGroups/${_group_id}"
+
+  # error_pingone_call 204
+}
+
+
+################################################################################
+# pingone_delete
+################################################################################
+pingone_delete()
+{
+  USAGE_CONTEXT="USAGE_PINGONE_DELETE_DETAIL"
+  _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+  test -z "${_resource}" && usage_command
+  _params="${*}"
+
+  case "${_resource}" in
+      user)
+          _username="${1}" && shift
+          test -z "${_username}" && usage_command
+
+          pingone_get_call "users" "filter=username eq \"${_username}\""
+
+          _user_id=$(jq -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
+
+          test -z "${_user_id}" && echo "User not found '${_username}'" && exit
+
+          pingone_delete_call "users/${_user_id}"
+          # error_pingone_call 204
+          ;;
+      group)
+          _name="${1}" && shift
+          test -z "${_name}" && usage_command
+
+          pingone_get_call "groups" "filter=name eq \"${_name}\""
+
+          _group_id=$(jq -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
+
+          test -z "${_group_id}" && echo "Group not found '${_name}'" && exit
+
+          pingone_delete_call "groups/${_group_id}"
+          # error_pingone_call 204
+          ;;
+      population)
+          _name="${1}" && shift
+          test -z "${_name}" && usage_command
+
+          pingone_get_call "populations" "filter=name eq \"${_name}\""
+
+          _population_id=$(jq -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
+
+          test -z "${_population_id}" && echo "Population not found '${_name}'" && exit
+
+          pingone_delete_call "populations/${_population_id}"
+          # error_pingone_call 204
+          ;;
+      *)
+          usage_command
+          ;;
+  esac
+}
+
+
+################################################################################
+# pingone_command
+################################################################################
+pingone_command()
+{
+  USAGE_CONTEXT="USAGE_PINGONE_DETAIL"
+  _pingone_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+
+  test -z "${_pingone_command}" && usage_command
+
+  getPingOneAccessToken
+
+  case "${_pingone_command}" in
+      list)
+          pingone_list "${@}"
+          ;;
+      get)
+          pingone_get "${@}"
+          ;;
+      add)
+          pingone_add "${@}"
+          ;;
+      delete)
+          pingone_delete "${@}"
+          ;;
+      add-user-group)
+          pingone_add_user_group "${@}"
+          ;;
+      delete-user-group)
+          pingone_delete_user_group "${@}"
+          ;;
+      *)
+          usage "Unknown ${PI_CMD} command 'pingone ${_pingone_command}'"
+          ;;
+  esac
+}
+
+################################################################################
+# devops_command
+################################################################################
+devops_command()
+{
+  _devops_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+
+  test -z "${_devops_command}" && usage_command USAGE_DEVOPS_SUMMARY
+  test "${_devops_command}" = "k8s" && _devops_command="kubernetes"
+
+  case "${_devops_command}" in
+      generate)
+          _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+          _params="${*}"
+
+          test -z "${_resource}" && usage_command USAGE_GENERATE_DETAIL
+
+          generate_resource "${_resource}" ${_params}
+          ;;
+
+      docker|kubernetes)
+          _orch_cmd="${1}"
+          _product="${2}"
+          _params="${*}"
+
+          test -z "${_orch_cmd}" && usage_command USAGE_DOCKER_KUBERNETES_DETAIL
+
+          case "${_orch_cmd}" in
+              info|start|stop|rm|clean)
+                  orchestration_command "${_ping_devops_command}" "${_orch_cmd}" "${_product}" "${_params}"
+                  ;;
+              *)
+                  usage_command USAGE_DOCKER_KUBERNETES_DETAIL
+          esac
+          ;;
+
+      *)
+          usage "Unknown ${PI_CMD} command 'devops ${_devops_command}'"
+          ;;
+  esac
+
+}
+
+################################################################################
+# main
+################################################################################
+_pi_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+
+test -z "${_pi_command}" && usage
+
+case "${_pi_command}" in
+    config)
+        devops_config
+        ;;
+
+    topic|topics)
+        print_topic "${1}"
+        ;;
+
+    p1|pingone)
+        pingone_command "${@}"
+        ;;
+
+    devops)
+        _params="${*}"
+        devops_command ${_params}
+        ;;
+
+    info)
+        _params="${*}"
+
+        ping_devops_info ${_params}
+        ;;
+    version)
+        _params="${*}"
+
+        ping_devops_version "${_params}"
+        ;;
+    clean)
+        _params="${*}"
+
+        ping_devops_clean "${_params}"
+        ;;
+    vault)
+        _params="${*}"
+
+        test -z "${_params}" && usage_command USAGE_VAULT_SUMMARY
+
+        ping_devops_vault ${_params}
+        ;;
+    *)
+        usage "Unknown ${PI_CMD} command '${_pi_command}'"
+        ;;
+esac
+
+

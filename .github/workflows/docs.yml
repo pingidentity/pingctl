@@ -5,7 +5,7 @@ on:
       - main
     paths:
       - 'mkdocs.yml'
-      - 'docs/**/*'
+      - 'docs/*'
 jobs:
   deploy-docs:
     runs-on: ubuntu-latest

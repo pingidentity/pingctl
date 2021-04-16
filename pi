@@ -274,11 +274,19 @@ Flags:
 USAGE_PINGONE_ADD_DETAIL="Add PingOne Objects
 
 Usage:
-  ${PI_CMD} pingone add group {population} {groupname}                  # Add group
-  ${PI_CMD} pingone add population {population}                         # Add population
-  ${PI_CMD} pingone add user  {population} {username} {first} {last}    # Add user
+  ${PI_CMD} pingone add group {group name}                     # Add group
+
+  ${PI_CMD} pingone add population {population name}           # Add population
+
+
+  ${PI_CMD} pingone add user {username} {first} {last} [email] # Add user
+     # REQUIRED: username, first last
+     # OPTIONAL: email (username if not provided)
+
 
 Flags:
+  -p {population name}             # Population to place user/group into
+                                   # If not proivded 'Default' population used
   -r                               # Print REST Calls"
 
 ################################################################################
@@ -1668,30 +1676,38 @@ pingone_add()
 
   case "${_resource}" in
       user)
-          _population="${1}" && shift
           _username="${1}" && shift
           _first_name="${1}" && shift
           _last_name="${1}" && shift
+          _email="${1}"
+
+          if test -z "${_email}" || "${_email}" =~ '-*'; then
+            _email="${_username}"
+          else
+            shift
+          fi
 
           get_pingone_options "${@}"
           # Remove the switches we parsed above.
           shift "$(( OPTIND - 1 ))"
 
-          test -z "${_population}" && usage_command
           test -z "${_username}" && usage_command
           test -z "${_first_name}" && usage_command
           test -z "${_last_name}" && usage_command
 
+          _population="${OPT_PINGONE_p:-Default}"
+
           _population_id="$(pingone_get_population_id "${_population}")"
           test -z "${_population_id}" && echo "population not found '${_population}'" && exit
 
-          jq -n '{email: $username,
+          jq -n '{email: $email,
                   name: {given: $first,
                          family: $last},
                   population: {id: $populationId},
                   username: $username}' \
               --arg populationId "${_population_id}" \
               --arg username "${_username}" \
+              --arg email "${_email}" \
               --arg first "${_first_name}" \
               --arg last "${_last_name}" > "${PINGONE_POST_JSON}"
 
@@ -1699,7 +1715,6 @@ pingone_add()
           # error_pingone_call 201
           ;;
       group)
-          _population="${1}" && shift
           _name="${1}" && shift
 
           get_pingone_options "${@}"
@@ -1967,10 +1982,10 @@ get_global_options()
 ################################################################################
 get_pingone_options()
 {
-  while getopts ro: OPT; do
+  while getopts ro:p: OPT; do
       case "$OPT" in
           r) OPT_PINGONE_r=true ;;
-          o) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
+          o|p) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
           ?)
               # getopts issues an error message
               usage "Unknown Option ${OPT}"

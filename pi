@@ -1681,7 +1681,7 @@ pingone_add()
           _last_name="${1}" && shift
           _email="${1}"
 
-          if test -z "${_email}" || "${_email}" =~ '-*'; then
+          if test -z "${_email}" || test ! "${_email}" = "${_email#-}"; then
             _email="${_username}"
           else
             shift

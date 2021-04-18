@@ -206,8 +206,7 @@ check_variables()
 }
 
 
-################################################################################
-USAGE_HEADER="pi is a CLI from Ping Identity to manage PingOne, PingDevOps and other projects/tools."
+
 
 ################################################################################
 USAGE_KUBERNETES_DETAIL="Kubernetes Tools
@@ -329,7 +328,7 @@ usage()
 {
   echo_error "$*"
 
-  echo "$USAGE_HEADER
+  echo "pi is a CLI from Ping Identity to manage PingOne, PingDevOps and other projects/tools.
 
 Usage:
   ${PI_CMD} [command] [flags]
@@ -358,7 +357,7 @@ Further help:
 ################################################################################
 usage_command()
 {
-  _usageCmd="${1}" && shift
+  local _usageCmd="${1}" && shift
 
   test -z "${_usageCmd}" && _usageCmd="${USAGE_CONTEXT}"
   test -z "${_usageCmd}" && usage
@@ -401,7 +400,7 @@ usage_command()
 ################################################################################
 check_for_tool()
 {
-  _tool="${1}"
+  local _tool="${1}"
   which "${_tool}" >/dev/null
 
   test $? -eq 1 && echo_error "'${_tool}' not found, but required to perform function. Please install" && exit
@@ -428,11 +427,11 @@ get_value ()
 ################################################################################
 find_setup_arg_value()
 {
-  _valToFind="${1}"
-  _findFile="${2}"
-  _defaultVal="${3}"
+  local _valToFind="${1}"
+  local _findFile="${2}"
+  local _defaultVal="${3}"
 
-  _valFound=$(grep "$_valToFind" "${_findFile}" | sed "s/.*$_valToFind \(.*\) .*\\\\$/\1/g")
+  local _valFound=$(grep "$_valToFind" "${_findFile}" | sed "s/.*$_valToFind \(.*\) .*\\\\$/\1/g")
 
   test -z "${_valFound}" && _valFound="${_defaultVal}"
 
@@ -500,10 +499,10 @@ get_custom_variables()
     while read -r _line
     do
         test -z "${_line}" && continue
-        _name="${_line%%=*}"
+        local _name="${_line%%=*}"
 
         echo "${STANDARD_VARIABLES}" | grep "${_name}" >/dev/null
-        _grepRC=$?
+        local _grepRC=$?
 
         if test ${_grepRC} -ne 0; then
             echo "${_name}"
@@ -586,7 +585,7 @@ print_variable_setting_instructions()
 add_config_custom()
 {
   PROPS_FILE="${1}" && shift
-  _custom_variables="${*}"
+  local _custom_variables="${*}"
 
   test ! -z "${_custom_variables}" && print_variable_setting_instructions
 
@@ -616,22 +615,11 @@ add_config_custom()
 }
 
 ################################################################################
-# devops_add_comment (file, comment)
-#
-# Add a comment to the devops file
+# echo_info_variable
 ################################################################################
-devops_add_comment()
-{
-  _TFILE="${1}" && shift
-  _MSG="${*}"
-
-  echo "${_MSG}"
-  echo "${_MSG}" >> "${_TFILE}"
-}
-
 echo_info_variable()
 {
-  _varToEcho="${1}"
+  local _varToEcho="${1}"
 
   printf "  %-30s : %s\n" "${_varToEcho}" "$(get_value "${_varToEcho}")"
 }
@@ -643,10 +631,16 @@ echo_info_variable()
 ################################################################################
 pi_info()
 {
-    _show="${1}"
+    local _show="${1}"
 
-    test "${_show}" != "-v" && PINGONE_WORKER_APP_CLIENT_SECRET="*** REDACTED *** (use -v to display)"
-    test "${_show}" != "-v" && PING_IDENTITY_DEVOPS_KEY="*** REDACTED *** (use -v to display)"
+
+    local _save_PINGONE_WORKER_APP_CLIENT_SECRET="${PINGONE_WORKER_APP_CLIENT_SECRET}"
+    local _save_PING_IDENTITY_DEVOPS_KEY="${PING_IDENTITY_DEVOPS_KEY}"
+
+    if test "${_show}" !=  "-v"; then
+      PINGONE_WORKER_APP_CLIENT_SECRET="*** REDACTED *** (use -v to display)"
+      PING_IDENTITY_DEVOPS_KEY="*** REDACTED *** (use -v to display)"
+    fi
 
     echo "
 ################################################################################
@@ -660,6 +654,10 @@ pi_info()
     echo_info_variable PINGONE_ENVIRONMENT_ID
     echo_info_variable PINGONE_WORKER_APP_CLIENT_ID
     echo_info_variable PINGONE_WORKER_APP_CLIENT_SECRET
+
+    PINGONE_WORKER_APP_CLIENT_SECRET="${_save_PINGONE_WORKER_APP_CLIENT_SECRET}"
+    pingone_print_environment
+
     echo
 
 echo "################################################################################
@@ -669,6 +667,7 @@ echo "##########################################################################
 
     echo_info_variable PING_IDENTITY_DEVOPS_USER
     echo_info_variable PING_IDENTITY_DEVOPS_KEY
+    PING_IDENTITY_DEVOPS_KEY="${_save_PING_IDENTITY_DEVOPS_KEY}"
     echo
     echo_info_variable PING_IDENTITY_DEVOPS_HOME
     echo_info_variable PING_IDENTITY_DEVOPS_REGISTRY
@@ -723,19 +722,19 @@ pi_version()
     #
     #      url "https://github.com/pingidentity/pi/archive/v0.5.0.tar.gz"
     #
-    _latest_tool_version=$(${CURL} https://bit.ly/pi-version \
+    local _latest_tool_version=$(${CURL} https://bit.ly/pi-version \
       |  grep -e '^  url ".*"$' \
       |  sed "s/.*archive\/v\(.*\)\.tar.*/\1/")
 
-    _curl_result=$?
+    local _curl_result=$?
 
     test ${_curl_result} -ne 0 || test -z "${_latest_tool_version}" && _latest_tool_version="UNKNOWN"
 
     if test "${_latest_tool_version}" = "${VERSION}" ||
        test "${_latest_tool_version}" = "UNKNOWN"; then
-        _version_msg="${GREEN}${VERSION}${NORMAL} (no update required)"
+        local _version_msg="${GREEN}${VERSION}${NORMAL} (no update required)"
     else
-        _version_msg="${RED}${VERSION}${NORMAL} (updated version ${_latest_tool_version} is available)\n$(print_update_information)"
+        local _version_msg="${RED}${VERSION}${NORMAL} (updated version ${_latest_tool_version} is available)\n$(print_update_information)"
     fi
 
     echo "${PI_CMD} version ${_version_msg}"
@@ -772,25 +771,27 @@ vault_get_token()
 {
     printf "Getting vault token..."
 
+    check_for_tool $VAULT
+
     # _vaultCACRT="${TMP_DIR}/vault.ca.crt"
     # kubectl get secrets vault-tls-secret -o jsonpath="{.data.vault\.crt}"|base64 --decode > "${_vaultCACRT}"
 
     if test -n "${VAULT_CACERT}" && test -s "${VAULT_CACERT}" ; then
-      _vaultCACRT="${VAULT_CACERT}"
+      local _vaultCACRT="${VAULT_CACERT}"
     fi
 
     kubectl get serviceaccount vault-auth 2>/dev/null >/dev/null
     test $? -ne 0 && echo "Creating 'vauth-auth' serviceaccount" && kubectl create serviceaccount vault-auth
 
-    _k8sToken=$($KUBECTL get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='vault-auth')].data.token}"|base64 --decode)
+    local _k8sToken=$($KUBECTL get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='vault-auth')].data.token}"|base64 --decode)
 
 
-    _vaultToken=$(${CURL} --request POST "${VAULT_ADDR}/v1/auth/kubernetes/login" \
+    local _vaultToken=$(${CURL} --request POST "${VAULT_ADDR}/v1/auth/kubernetes/login" \
       $( test -s "${_vaultCACRT}" && echo "--cacert ${_vaultCACRT}" ) \
       --header 'Content-Type: application/json' \
       --data-raw "{\"jwt\":\"${_k8sToken}\",\"role\":\"k8s-default\"}" \
       --fail 2>/dev/null | $JQ -r .auth.client_token)
-    _curl_result=$?
+    local _curl_result=$?
 
     printf "\n\n"
     $VAULT login --address=${VAULT_ADDR} -format=table "${_vaultToken}"
@@ -807,7 +808,7 @@ vault_create_annotation()
 
     $VAULT kv get -format=json ${secret}  | $JQ '.data.data'> ${TMP_DIR}/vault.sec
 
-    _secretName=$(basename "${secret}")
+    local _secretName=$(basename "${secret}")
 
     case "${_secretName}" in
         *.env)
@@ -853,6 +854,8 @@ vault_create_annotations()
 {
   local readonly secretPath="${1}"
 
+  check_for_tool $VAULT
+
   local readonly vresult=$( $VAULT kv list -format=json ${secretPath})
 
   if test -z "${vresult}" || test $? -ne 1; then
@@ -897,15 +900,15 @@ VAULT_ANNOTAION_PREAMBLE="
     #----------------------------------------------------"
 
 ################################################################################
-# pi_vault ()
+# vault_command
 #
 # Hashicorp Vault CLI
 ################################################################################
-pi_vault()
+vault_command()
 {
-    _vault_cmd="${1}" && shift
+    local _vault_cmd="${1}" && shift
 
-    _remainParams="${*}"
+    local _remainParams="${@}"
 
     check_config_file
     #check_for_tool $VAULT
@@ -916,7 +919,7 @@ pi_vault()
             vault_get_token
             ;;
         create-annotations)
-            _secretPath="secret/${VAULT_SECRET_PREFIX}/${_remainParams}$(test -n "${_remainParams}" && printf "/")"
+            local _secretPath="secret/${VAULT_SECRET_PREFIX}/${_remainParams}$(test -n "${_remainParams}" && printf "/")"
 
             vault_create_annotations "${_secretPath}"
 
@@ -933,26 +936,28 @@ pi_vault()
 
 
 ################################################################################
-# kubernetes_command
+# k8s_command
 ################################################################################
-kubernetes_command()
+k8s_command()
 {
-  _k8s_cmd="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+  local _k8s_cmd="${1}" && shift $(( $# > 0 ? 1 : 0 ))
 
   case "${_k8s_cmd}" in
-      oidc)     oidc_tools "${@}" ;;
-      generate) generate_resource "${@}" ;;
+      oidc)     k8s_oidc_tools "${@}" ;;
+      generate) k8s_generate_resource "${@}" ;;
       *)        usage_command USAGE_KUBERNETES_DETAIL  "unknown/missing kubernetes command: ${_k8s_cmd}";;
   esac
 
 }
 
 ################################################################################
-# oidc_tools
+# k8s_oidc_tools
 ################################################################################
-oidc_tools()
+k8s_oidc_tools()
 {
-    _oidc_opt="${1}"
+    local _oidc_opt="${1}"
+
+    test -z "${_oidc_opt}" && usage_command USAGE_OIDC_DETAIL "missing kubernetes oidc command"
 
     if test ! -d "${KUBE_OIDC_CACHE}"; then
         echo "--no-token--"
@@ -976,11 +981,11 @@ oidc_tools()
 }
 
 ################################################################################
-# generate_resource
+# k8s_generate_resource
 ################################################################################
-generate_resource()
+k8s_generate_resource()
 {
-    _secret="${1}"
+    local _secret="${1}"
 
     case "${_secret}" in
         devops-secret)
@@ -1008,7 +1013,7 @@ data:
             ;;
 
         tls-secret)
-            _domain="${2}"
+            local _domain="${2}"
             test -z "${_domain}" && usage "Missing tls-secret domain"
 
             check_for_tool $OPENSSL
@@ -1016,9 +1021,9 @@ data:
 
             test ! -f /etc/ssl/openssl.cnf && echo_error "Missing /etc/ssl/openssl.cnf" && exit
 
-            _opensslcnf="${TMP_DIR}/openssl.cnf"
-            _tlsKey="${TMP_DIR}/tls.key"
-            _tlsCrt="${TMP_DIR}/tls.crt"
+            local _opensslcnf="${TMP_DIR}/openssl.cnf"
+            local _tlsKey="${TMP_DIR}/tls.key"
+            local _tlsCrt="${TMP_DIR}/tls.crt"
 
             cat /etc/ssl/openssl.cnf > "${_opensslcnf}"
             printf "[SAN]\nsubjectAltName=DNS:*.%s" "${_domain} " >> "${_opensslcnf}"
@@ -1043,7 +1048,7 @@ data:
   tls.key: $(base64_no_newlines "${_tlsKey}")"
             ;;
         ssh-id-secret)
-            _idKey="${2}"
+            local _idKey="${2}"
 
             echo "
 apiVersion: v1
@@ -1073,23 +1078,23 @@ data:
 ################################################################################
 generate_license_secret()
 {
-  _licenseType="${1}"
-  _licenseArg="${2}"
-  _licenseVer="${3}"
+  local _licenseType="${1}"
+  local _licenseArg="${2}"
+  local _licenseVer="${3}"
 
   case "${_licenseType}" in
       license-secret)
           if test -f "${_licenseArg}"; then
-              _licenseFile="${_licenseArg}"
-              _licenseSecretName="ping-license"
+              local _licenseFile="${_licenseArg}"
+              local _licenseSecretName="ping-license"
           else
-              _licenseProd="${_licenseArg}"
-              _licenseSecretName="${_licenseProd}-license"
+              local _licenseProd="${_licenseArg}"
+              local _licenseSecretName="${_licenseProd}-license"
           fi
           ;;
       license)
           test -z "${_licenseArg}" && usage "Missing product name (i.e. pingfederate)"
-          _licenseProd="${_licenseArg}"
+          local _licenseProd="${_licenseArg}"
           ;;
       *)
           usage "Unknown generate resource '${_licenseType}"
@@ -1115,11 +1120,11 @@ generate_license_secret()
           --devops-user "${PING_IDENTITY_DEVOPS_USER}" \
           --devops-key "${PING_IDENTITY_DEVOPS_KEY}" \
           --devops-app "pingdevops" >/dev/null 2>>/dev/null
-        _dockerRunResult=$?
+        local _dockerRunResult=$?
 
         test $_dockerRunResult -ne 0 && usage "Unable to pull eval license (result=$_dockerRunResult)\nCheck that you can run 'docker version'\nCheck that your PING_IDENTITY_DEVOPS_USER and PING_IDENTITY_DEVOPS_USER are valid.\nCheck your product version is valid, if you provided one."
 
-        _licenseFile="/tmp/product.lic"
+        local _licenseFile="/tmp/product.lic"
 
         ;;
       *)
@@ -1130,7 +1135,7 @@ generate_license_secret()
 
   case "${_licenseType}" in
       license-secret)
-              _licenseSecret=$(base64_no_newlines "${_licenseFile}")
+              local _licenseSecret=$(base64_no_newlines "${_licenseFile}")
 
               echo "
 apiVersion: v1
@@ -1158,7 +1163,7 @@ pi_config()
     ################################################################################
     # Get all the custom variables from the devops file before we backup
     ################################################################################
-    _custom_variables=$(get_custom_variables)
+    local _custom_variables=$(get_custom_variables)
 
     ################################################################################
     # Check for existance of the devops file and backup to .prev
@@ -1202,6 +1207,9 @@ pi_config()
     add_config "${CONFIG_FILE}" "PINGONE_ENVIRONMENT_ID"                 ""                           "PingOne Environment ID"
     add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_ID"           ""                           "PingOne Worker App Client ID"
     add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_SECRET"       ""                           "PingOne Worker App Client Secret"
+
+    test ! -z "${PINGONE_WORKER_APP_CLIENT_ID}" && getPingOneAccessToken true
+    test -z "${PINGONE_ACCESS_TOKEN}" && echo_error "Unable to validate (authenticate) PingOne settings.  Re-run config to resolve."
 
 echo "################################################################################
 # Variables used to assist Ping DevOps operations.
@@ -1286,12 +1294,18 @@ base64_no_newlines()
 ################################################################################
 getPingOneAccessToken ()
 {
+    local _clearToken="${1}"
+    
     check_variables \
         PINGONE_API_URL \
         PINGONE_AUTH_URL \
         PINGONE_ENVIRONMENT_ID \
         PINGONE_WORKER_APP_CLIENT_ID \
         PINGONE_WORKER_APP_CLIENT_SECRET
+
+    if test "${_clearToken}" == "true"; then
+        rm -f "${PINGONE_ACCESS_TOKEN_FILE}"
+    fi
 
     #
     # Check the current token file.  If it has the same client-id and expires more than 60 seconds
@@ -1301,9 +1315,9 @@ getPingOneAccessToken ()
         ${JWT} --version 2>/dev/null >/dev/null
 
         if test ${?} -eq 0; then
-          _expire=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.exp")
-          _client_id=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.client_id")
-          _now=$(date +%s)
+          local _expire=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.exp")
+          local _client_id=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.client_id")
+          local _now=$(date +%s)
 
           if test "${PINGONE_WORKER_APP_CLIENT_ID}" == "${_client_id}" && test $((${_expire} - 60)) -gt ${_now}; then
               PINGONE_ACCESS_TOKEN=$(cat "${PINGONE_ACCESS_TOKEN_FILE}")
@@ -1312,12 +1326,19 @@ getPingOneAccessToken ()
     fi
 
     if test -z "${PINGONE_ACCESS_TOKEN}"; then
-      _auth_response=$( $CURL --request POST "${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/token" \
+      PINGONE_CALL_RESULT=$( $CURL --request POST "${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/token" \
                       --header 'Content-Type: application/x-www-form-urlencoded' \
                       --user "${PINGONE_WORKER_APP_CLIENT_ID}:${PINGONE_WORKER_APP_CLIENT_SECRET}" \
-                      --data-urlencode 'grant_type=client_credentials' )
+                      --data-urlencode 'grant_type=client_credentials' \
+                      --write-out '%{http_code}' \
+                      --output "${PINGONE_CALL_RESPONSE}")
 
-      PINGONE_ACCESS_TOKEN=$($JQ --raw-output '.access_token'  <<<"${_auth_response}" | tee "${PINGONE_ACCESS_TOKEN_FILE}")
+      if test ${PINGONE_CALL_RESULT} -ne 200; then
+        echo_error "Unable to authenticate to environment '${PINGONE_ENVIRONMENT_ID}'"
+        PINGONE_ACCESS_TOKEN=""
+      else
+        PINGONE_ACCESS_TOKEN=$($JQ --raw-output '.access_token'  <"${PINGONE_CALL_RESPONSE}" | tee "${PINGONE_ACCESS_TOKEN_FILE}")
+      fi
     fi
 }
 
@@ -1339,17 +1360,17 @@ cat_indent ()
 ################################################################################
 print_json_field()
 {
-  _json_data="${1}" && shift
-  _jq_fields=""
-  _comma=""
+  local _json_data="${1}" && shift
+  local _jq_fields=""
+  local _comma=""
 
   while true
   do
-    _label="${1}" && shift
+    local _label="${1}" && shift
     test -z "${_label}" && break
-    _field="${1}" && shift
-    _jq_fields="${_jq_fields}${_comma}\"${_label}\", ${_field}, \"\\n\""
-    _comma=","
+    local _field="${1}" && shift
+    local _jq_fields="${_jq_fields}${_comma}\"${_label}\", ${_field}, \"\\n\""
+    local _comma=","
   done
 
   $JQ -jr "${_json_data} |
@@ -1361,7 +1382,7 @@ print_json_field()
 ################################################################################
 print_json_fields()
 {
-  _print_format="${OPT_PINGONE_o:-field}"
+  local _print_format="${OPT_PINGONE_o:-field}"
   case "${_print_format}" in
     csv|field|table) print_json_field "${@}" ;;
     json) print_api_results_json "${@}" ;;
@@ -1377,7 +1398,7 @@ print_json_fields()
 ################################################################################
 print_api_results()
 {
-  _print_format="${OPT_PINGONE_o:-table}"
+  local _print_format="${OPT_PINGONE_o:-table}"
   case "${_print_format}" in
     table) print_api_results_sv "tsv" "${@}" ;;
     csv) print_api_results_sv "csv" "${@}" ;;
@@ -1391,43 +1412,43 @@ print_api_results()
 ################################################################################
 print_api_results_sv()
 {
-  _sv="${1}" && shift
-  _res_obj="${1}"
+  local _sv="${1}" && shift
+  local _res_obj="${1}"
 
-  _sort_default="id"
+  local _sort_default="id"
 
   ################################################################################
   # Table/CSV Columns and Sorts
   ################################################################################
-  _default_columns="ID:.id"
-  _default_sort="id"
+  local _default_columns="ID:.id"
+  local _default_sort="id"
   ################################################################################
-  _users_columns="
+  local _users_columns="
       USERNAME  :.username,
       FIRST     :.name.given,
       LAST      :.name.family,
       EMAIL     :.email,
       POPULATION:.population.id"
-  _users_sort="username"
+  local _users_sort="username"
   ################################################################################
-  _groups_columns="
+  local _groups_columns="
       NAME   :.name,
       MEMBERS:.directMemberCounts.users"
-  _groups_sort="name"
+  local _groups_sort="name"
   ################################################################################
-  _groupMemberships_columns="
+  local _groupMemberships_columns="
       GROUPS   :.name"
-  _groupMemberships_sort="name"
+  local _groupMemberships_sort="name"
   ################################################################################
-  _populations_columns="
+  local _populations_columns="
       NAME   :.name,
       ID     :.id,
       MEMBERS:.userCount"
-  _populations_sort="name"
+  local _populations_sort="name"
   ################################################################################
 
-  _columns=$(get_value "_${_resource}_columns")
-  _sort_column=$(get_value "_${_resource}_sort")
+  local _columns=$(get_value "_${_resource}_columns")
+  local _sort_column=$(get_value "_${_resource}_sort")
 
   test -z "${_columns}" && _columns="${_default_columns}"
   test -z "${_sort_column}" && _sort_column="${_default_sort}"
@@ -1473,20 +1494,35 @@ pingone_api_get_and_print()
 ################################################################################
 pingone_api_get()
 {
-  _url_start="${1}" && shift
-  _filter="${1}" && shift
-  _print_results="${1}"
+  local _pingone_resource="${1}" && shift
+  local _filter="${1}" && shift
+  local _print_results="${1}"
 
   rm -f "${PINGONE_API_RESULTS}"
-  _url="${PINGONE_API_URL}/environments/${PINGONE_ENVIRONMENT_ID}/${_url_start}"
 
-  case "${_url_start}" in
+  case "${_pingone_resource}" in
+    organization)
+      local _api_url="organizations/${_filter}"
+      local _res_obj="organizations"
+      local _json_res=""
+      ;;
+    environment)
+      local _api_url="environments/${PINGONE_ENVIRONMENT_ID}"
+      local _res_obj="environments"
+      local _json_res=""
+      ;;
     users/*/memberOfGroups)
-      _res_obj="groupMemberships"
+      local _api_url="environments/${PINGONE_ENVIRONMENT_ID}/${_pingone_resource}"
+      local _res_obj="groupMemberships"
+      local _json_res="_embedded.${_res_obj}[]"
       ;;
     *)
-      _res_obj="${_url_start}"
+      local _api_url="environments/${PINGONE_ENVIRONMENT_ID}/${_pingone_resource}"
+      local _res_obj="${_pingone_resource}"
+      local _json_res="_embedded.${_res_obj}[]"
   esac
+
+  local _url="${PINGONE_API_URL}/${_api_url}"
 
   while test ! -z "${_url}"
   do
@@ -1515,17 +1551,17 @@ pingone_api_get()
 
       error_pingone_call 200
 
-      _url=""
+      local _url=""
 
       if test -s "${PINGONE_CALL_RESPONSE}"; then 
-        $JQ ._embedded.${_res_obj}[] <"${PINGONE_CALL_RESPONSE}" >> "${PINGONE_API_RESULTS}"
+        $JQ .${_json_res} <"${PINGONE_CALL_RESPONSE}" >> "${PINGONE_API_RESULTS}"
         
-        _next=$($JQ ._links.next <"${PINGONE_CALL_RESPONSE}")
+        local _next=$($JQ ._links.next <"${PINGONE_CALL_RESPONSE}")
 
         if test "${_next}" != "null"; then
-          _url=$($JQ -r .href <<<"${_next}")
-          _filter=""
-          _order=""
+          local _url=$($JQ -r .href <<<"${_next}")
+          local _filter=""
+          local _order=""
         fi
       fi
 
@@ -1562,19 +1598,19 @@ pingone_api_get()
 ################################################################################
 error_pingone_call()
 {
-  _expected_result="${1}"
+  local _expected_result="${1}"
 
   test ${PINGONE_CALL_RESULT} == "${_expected_result}" && return
 
   print_rest_debug
 
 
-  _err_message=$($JQ -r .details[].message <${PINGONE_CALL_RESPONSE})
+  local _err_message=$($JQ -r .details[].message <${PINGONE_CALL_RESPONSE})
 
   echo "ERROR: ${_err_message}"
 
 
-  _err_message=$($JQ -r .message <${PINGONE_CALL_RESPONSE})
+  local _err_message=$($JQ -r .message <${PINGONE_CALL_RESPONSE})
 
   echo "ERROR: ${_err_message}"
 
@@ -1586,9 +1622,9 @@ error_pingone_call()
 ################################################################################
 pingone_api_post()
 {
-  _res_object="${1}"
+  local _res_object="${1}"
 
-  _url="${PINGONE_API_URL}/environments/${PINGONE_ENVIRONMENT_ID}/${_res_object}"
+  local _url="${PINGONE_API_URL}/environments/${PINGONE_ENVIRONMENT_ID}/${_res_object}"
   
   PINGONE_CALL_RESULT=$($CURL --request POST \
     -g "${_url}" \
@@ -1637,10 +1673,10 @@ pingone_api_delete_by_filter()
 ################################################################################
 pingone_api_delete()
 {
-  _res_obj="${1}" && shift
-  _obj_id="${1}" && shift
+  local _res_obj="${1}" && shift
+  local _obj_id="${1}" && shift
 
-  _url="${PINGONE_API_URL}/environments/${PINGONE_ENVIRONMENT_ID}/${_res_obj}/${_obj_id}"
+  local _url="${PINGONE_API_URL}/environments/${PINGONE_ENVIRONMENT_ID}/${_res_obj}/${_obj_id}"
 
   PINGONE_CALL_RESULT=$($CURL --request DELETE \
     -g "${_url}" \
@@ -1669,13 +1705,44 @@ pingone_api_delete()
 }
 
 ################################################################################
+# pingone_print_environment
+################################################################################
+pingone_print_environment ()
+{
+  test -z "${PINGONE_ENVIRONMENT_ID}" && return
+
+  getPingOneAccessToken true
+
+  echo "
+################################################################################
+#     PingOne Environment/Organization Current Info
+################################################################################"
+  echo
+
+  if test -z "${PINGONE_ACCESS_TOKEN}"; then
+    echo_error "Unable to validate (authenticate) PingOne settings.  Re-run config to resolve."
+  else
+    pingone_api_get "environment" ""
+
+    local _env_name=$($JQ -r .name <"${PINGONE_API_RESULTS}")
+    local _org_id=$($JQ -r .organization.id <"${PINGONE_API_RESULTS}")
+
+    pingone_api_get "organization" "${_org_id}"
+    local _org_name=$($JQ -r .name <"${PINGONE_API_RESULTS}")
+
+    echo "               ORGANIZATION NAME : ${_org_name}"
+    echo "                ENVIRONMENT NAME : ${_env_name}"
+  fi
+}
+
+################################################################################
 # pingone_list
 ################################################################################
 pingone_list()
 {
   USAGE_CONTEXT="USAGE_PINGONE_LIST_DETAIL"
 
-  _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+  local _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
   test -z "${_resource}" && usage_command
 
   get_pingone_options "${@}"
@@ -1704,8 +1771,8 @@ pingone_list()
 pingone_get ()
 {
   USAGE_CONTEXT="USAGE_PINGONE_GET_DETAIL"
-  _resource="${1}" && shift
-  _get_id="${1}" && shift
+  local _resource="${1}" && shift
+  local _get_id="${1}" && shift
   test -z "${_resource}" && usage_command
   test -z "${_get_id}" && usage_command
 
@@ -1717,7 +1784,7 @@ pingone_get ()
       user)
           pingone_api_get_and_print "users" "filter=username eq \"${_get_id}\""
 
-          _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
+          local _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
           test -z "${_user_id}" && echo "User not found '${_get_id}'" && exit
 
           echo
@@ -1726,7 +1793,7 @@ pingone_get ()
       group)
           pingone_api_get_and_print "groups" "filter=name eq \"${_get_id}\""
 
-          _group_id=$($JQ -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
+          local _group_id=$($JQ -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
 
           echo
           pingone_api_get_and_print "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
@@ -1734,7 +1801,7 @@ pingone_get ()
       population)
           pingone_api_get_and_print "populations" "filter=name eq \"${_get_id}\""
 
-          _population_id=$($JQ -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
+          local _population_id=$($JQ -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
 
           echo
           pingone_api_get_and_print "users" "filter=population.id eq \"${_population_id}\""
@@ -1751,20 +1818,20 @@ pingone_get ()
 pingone_add()
 {
   USAGE_CONTEXT="USAGE_PINGONE_ADD_DETAIL"
-  _resource="${1}" && shift
+  local _resource="${1}" && shift
 
   #
   # Get attributes for each resource type
   #
   case "${_resource}" in
       user)
-          _username="${1}" && shift
-          _first_name="${1}" && shift
-          _last_name="${1}" && shift
-          _email="${1}"
+          local _username="${1}" && shift
+          local _first_name="${1}" && shift
+          local _last_name="${1}" && shift
+          local _email="${1}"
 
           if test -z "${_email}" || test ! "${_email}" = "${_email#-}"; then
-            _email="${_username}"
+            local _email="${_username}"
           else
             shift
           fi
@@ -1774,7 +1841,7 @@ pingone_add()
           test -z "${_last_name}" && usage_command
           ;;
       group)
-          _name="${1}" && shift
+          local _name="${1}" && shift
 
           get_pingone_options "${@}"
           # Remove the switches we parsed above.
@@ -1783,7 +1850,7 @@ pingone_add()
           test -z "${_name}" && usage_command
           ;;
       population)
-          _name="${1}" && shift
+          local _name="${1}" && shift
 
           test -z "${_name}" && usage_command
           ;;
@@ -1799,7 +1866,7 @@ pingone_add()
   # Remove the switches we parsed above.
   shift "$(( OPTIND - 1 ))"
 
-  _population="${OPT_PINGONE_p:-Default}"
+  local _population="${OPT_PINGONE_p:-Default}"
 
   #
   # Create the Body Post
@@ -1845,8 +1912,8 @@ pingone_add()
 ################################################################################
 pingone_add_user_group()
 {
-  _username="${1}" && shift
-  _groupname="${1}" && shift
+  local _username="${1}" && shift
+  local _groupname="${1}" && shift
 
   get_pingone_options "${@}"
   # Remove the switches we parsed above.
@@ -1860,10 +1927,10 @@ pingone_add_user_group()
   shift "$(( OPTIND - 1 ))"
 
   pingone_api_get "users" "filter=username eq \"${_username}\""
-  _user_id="${PINGONE_RESULT_ID}"
+  local _user_id="${PINGONE_RESULT_ID}"
 
   pingone_api_get "groups" "filter=name eq \"${_groupname}\""
-  _group_id="${PINGONE_RESULT_ID}"
+  local _group_id="${PINGONE_RESULT_ID}"
 
   $JQ -n '{id: $groupId}' \
     --arg groupId "${_group_id}" > "${PINGONE_POST_JSON}"
@@ -1876,8 +1943,8 @@ pingone_add_user_group()
 ################################################################################
 pingone_delete_user_group()
 {
-  _username="${1}" && shift
-  _groupname="${1}" && shift
+  local _username="${1}" && shift
+  local _groupname="${1}" && shift
 
   get_pingone_options "${@}"
   # Remove the switches we parsed above.
@@ -1887,10 +1954,10 @@ pingone_delete_user_group()
   test -z "${_groupname}" && usage_command USAGE_PINGONE_DELETE_USER_GROUP_DETAIL
 
   pingone_api_get "users" "filter=username eq \"${_username}\""
-  _user_id="${PINGONE_RESULT_ID}"
+  local _user_id="${PINGONE_RESULT_ID}"
 
   pingone_api_get "groups" "filter=name eq \"${_groupname}\""
-  _group_id="${PINGONE_RESULT_ID}"
+  local _group_id="${PINGONE_RESULT_ID}"
 
   pingone_api_delete "users/${_user_id}/memberOfGroups" "${_group_id}"
 }
@@ -1900,7 +1967,7 @@ pingone_delete_user_group()
 ################################################################################
 print_jwt_token()
 {
-  _token="${1}"
+  local _token="${1}"
 
   get_pingone_options "${@}"
   # Remove the switches we parsed above.
@@ -1936,8 +2003,8 @@ pingone_token()
 pingone_delete()
 {
   USAGE_CONTEXT="USAGE_PINGONE_DELETE_DETAIL"
-  _resource="${1}" && shift
-  _obj_id="${1}" && shift
+  local _resource="${1}" && shift
+  local _obj_id="${1}" && shift
 
   get_pingone_options "${@}"
   # Remove the switches we parsed above.
@@ -1979,7 +2046,7 @@ print_rest_debug()
 ################################################################################
 pingone_command()
 {
-  _pingone_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+  local _pingone_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
 
   getPingOneAccessToken
 
@@ -2063,33 +2130,25 @@ test -z "${_pi_command}" && usage
 
 case "${_pi_command}" in
     info)
-        _params="${*}"
-
-        pi_info ${_params}
+        pi_info "${@}"
         ;;
     config)
         pi_config
         ;;
     version)
-        _params="${*}"
-
-        pi_version "${_params}"
+        pi_version "${@}"
         ;;
     clean)
-        _params="${*}"
-
-        pi_clean "${_params}"
+        pi_clean "${@}"
         ;;
     k8s|kubernetes)
-        kubernetes_command "${@}"
+        k8s_command "${@}"
         ;;
     p1|pingone)
         pingone_command "${@}"
         ;;
     vault)
-        _params="${*}"
-
-        pi_vault ${_params}
+        vault_command ${@}
         ;;
     *)
         usage "unknown/missing ${PI_CMD} command '${_pi_command}'"

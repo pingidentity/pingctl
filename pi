@@ -69,6 +69,8 @@ STANDARD_VARIABLES="
   VAULT_ADDR
   VAULT_CACERT
   VAULT_SECRET_PREFIX
+  PINGONE_API_URL
+  PINGONE_AUTH_URL
   PINGONE_ENVIRONMENT_ID
   PINGONE_WORKER_APP_CLIENT_ID
   PINGONE_WORKER_APP_CLIENT_SECRET"
@@ -94,6 +96,7 @@ test -f "${CONFIG_FILE}" && . "${CONFIG_FILE}"
 TMP_DIR="$(mktemp -d)"
 PINGONE_POST_JSON="${TMP_DIR}/pingone-post.json"
 PINGONE_CALL_RESPONSE="${TMP_DIR}/pingone-call-response.json"
+PINGONE_API_RESULTS="$TMP_DIR/pingone.api.results.json"
 PINGONE_DEBUG="${TMP_DIR}/pingone.debug"
 
 ################################################################################
@@ -652,6 +655,8 @@ pi_info()
 #     PingOne variables sourced from ${PRINT_CONFIG_FILE}
 ################################################################################
 "
+    echo_info_variable PINGONE_API_URL
+    echo_info_variable PINGONE_AUTH_URL
     echo_info_variable PINGONE_ENVIRONMENT_ID
     echo_info_variable PINGONE_WORKER_APP_CLIENT_ID
     echo_info_variable PINGONE_WORKER_APP_CLIENT_SECRET
@@ -1192,9 +1197,11 @@ pi_config()
 " | tee -a "${CONFIG_FILE}"
 
 
-    add_config "${CONFIG_FILE}" "PINGONE_ENVIRONMENT_ID"                 "" "PingOne Environment ID"
-    add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_ID"           "" "PingOne Worker App Client ID"
-    add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_SECRET"       "" "PingOne Worker App Client Secret"
+    add_config "${CONFIG_FILE}" "PINGONE_API_URL"                        "https://api.pingone.com/v1" "PingOne API URL"
+    add_config "${CONFIG_FILE}" "PINGONE_AUTH_URL"                        "https://auth.pingone.com"  "PingOne Authentication URL"
+    add_config "${CONFIG_FILE}" "PINGONE_ENVIRONMENT_ID"                 ""                           "PingOne Environment ID"
+    add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_ID"           ""                           "PingOne Worker App Client ID"
+    add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_SECRET"       ""                           "PingOne Worker App Client Secret"
 
 echo "################################################################################
 # Variables used to assist Ping DevOps operations.
@@ -1280,6 +1287,8 @@ base64_no_newlines()
 getPingOneAccessToken ()
 {
     check_variables \
+        PINGONE_API_URL \
+        PINGONE_AUTH_URL \
         PINGONE_ENVIRONMENT_ID \
         PINGONE_WORKER_APP_CLIENT_ID \
         PINGONE_WORKER_APP_CLIENT_SECRET
@@ -1303,7 +1312,7 @@ getPingOneAccessToken ()
     fi
 
     if test -z "${PINGONE_ACCESS_TOKEN}"; then
-      _auth_response=$( $CURL --request POST "https://auth.pingone.com/${PINGONE_ENVIRONMENT_ID}/as/token" \
+      _auth_response=$( $CURL --request POST "${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/token" \
                       --header 'Content-Type: application/x-www-form-urlencoded' \
                       --user "${PINGONE_WORKER_APP_CLIENT_ID}:${PINGONE_WORKER_APP_CLIENT_SECRET}" \
                       --data-urlencode 'grant_type=client_credentials' )
@@ -1334,8 +1343,6 @@ print_json_field()
   _jq_fields=""
   _comma=""
 
-  # error_pingone_call 200
-
   while true
   do
     _label="${1}" && shift
@@ -1357,7 +1364,7 @@ print_json_fields()
   _print_format="${OPT_PINGONE_o:-field}"
   case "${_print_format}" in
     csv|field|table) print_json_field "${@}" ;;
-    json) print_json_json "${@}" ;;
+    json) print_api_results_json "${@}" ;;
     *) usage_command ;;
   esac
 
@@ -1366,44 +1373,71 @@ print_json_fields()
 
 
 ################################################################################
-# print_json
+# print_json_api_results
 ################################################################################
-print_json()
+print_api_results()
 {
   _print_format="${OPT_PINGONE_o:-table}"
   case "${_print_format}" in
-    table) print_json_sv "tsv" "${@}" ;;
-    csv) print_json_sv "csv" "${@}" ;;
-    json) print_json_json "${@}" ;;
+    table) print_api_results_sv "tsv" "${@}" ;;
+    csv) print_api_results_sv "csv" "${@}" ;;
+    json) print_api_results_json "${@}" ;;
     *) usage_command ;;
   esac
 }
 
 ################################################################################
-# print_json_sv
+# print_api_results_sv
 ################################################################################
-print_json_sv()
+print_api_results_sv()
 {
   _sv="${1}" && shift
-  _json_data="${1}" && shift
-  _sort_column="${1}" && shift
-  _tableColumns=""
-  _comma=""
+  _res_obj="${1}"
 
-  while true
-  do
-    _column="${1}" && shift
-    test -z "${_column}" && break
-    _tableColumns="${_tableColumns}${_comma}${_column}"
-    _comma=","
-  done
+  _sort_default="id"
 
-  cat "${PINGONE_CALL_RESPONSE}" | $JQ -r "
-    ${_json_data}
-    | [sort_by(${_sort_column}) | .[]
+  ################################################################################
+  # Table/CSV Columns and Sorts
+  ################################################################################
+  _default_columns="ID:.id"
+  _default_sort="id"
+  ################################################################################
+  _users_columns="
+      USERNAME  :.username,
+      FIRST     :.name.given,
+      LAST      :.name.family,
+      EMAIL     :.email,
+      POPULATION:.population.id"
+  _users_sort="username"
+  ################################################################################
+  _groups_columns="
+      NAME   :.name,
+      MEMBERS:.directMemberCounts.users"
+  _groups_sort="name"
+  ################################################################################
+  _groupMemberships_columns="
+      GROUPS   :.name"
+  _groupMemberships_sort="name"
+  ################################################################################
+  _populations_columns="
+      NAME   :.name,
+      ID     :.id,
+      MEMBERS:.userCount"
+  _populations_sort="name"
+  ################################################################################
+
+  _columns=$(get_value "_${_resource}_columns")
+  _sort_column=$(get_value "_${_resource}_sort")
+
+  test -z "${_columns}" && _columns="${_default_columns}"
+  test -z "${_sort_column}" && _sort_column="${_default_sort}"
+  
+  $JQ -s -r "
+    .
+    | [sort_by(.${_sort_column}) | .[]
     |
         {
-            ${_tableColumns}
+            ${_columns}
         }
     ]
     # lowercase keys |  [.[] | with_entries( .key |= ascii_downcase ] )
@@ -1411,72 +1445,116 @@ print_json_sv()
     # (for predictable sorting, optional)
     |    (.[0] |keys_unsorted | @${_sv})               # print headers
         , (.[]|.|map(.) |@${_sv})                       # print table
-    " | column -t -s "$(printf '\t')"
+    " <"${PINGONE_API_RESULTS}" | column -t -s "$(printf '\t')"
+
+    echo
+    echo "${PINGONE_RESULT_COUNT} '${_res_obj}' returned"
+}
+
+
+################################################################################
+# print_api_results_json
+################################################################################
+print_api_results_json()
+{
+  $JQ -s . < "${PINGONE_API_RESULTS}"
 }
 
 ################################################################################
-# print_json_csv
+# pingone_api_get
 ################################################################################
-print_json_csv()
+pingone_api_get_and_print()
 {
-  _json_data="${1}" && shift
-  _sort_column="${1}" && shift
-  _tableColumns=""
-  _comma=""
+  pingone_api_get "${@}" true
+}
 
-  while true
+################################################################################
+# pingone_api_get
+################################################################################
+pingone_api_get()
+{
+  _url_start="${1}" && shift
+  _filter="${1}" && shift
+  _print_results="${1}"
+
+  rm -f "${PINGONE_API_RESULTS}"
+  _url="${PINGONE_API_URL}/environments/${PINGONE_ENVIRONMENT_ID}/${_url_start}"
+
+  case "${_url_start}" in
+    users/*/memberOfGroups)
+      _res_obj="groupMemberships"
+      ;;
+    *)
+      _res_obj="${_url_start}"
+  esac
+
+  while test ! -z "${_url}"
   do
-    _column="${1}" && shift
-    test -z "${_column}" && break
-    _tableColumns="${_tableColumns}${_comma}${_column}"
-    _comma=","
+      PINGONE_CALL_RESULT=$($CURL -G --request GET "${_url}" \
+          --data-urlencode "${_filter}" \
+          --data-urlencode "limit=100" \
+          --header 'Content-Type: application/json' \
+          --header "Authorization: Bearer ${PINGONE_ACCESS_TOKEN}" \
+          --write-out '%{http_code}' \
+          --output "${PINGONE_CALL_RESPONSE}")
+
+      # 
+      # Print out DEBUG info
+      #
+      if test "${OPT_PINGONE_r}" == "true"; then
+        (
+          echo "        GET: ${_url}"
+          test ! -z "${_filter}" && echo "      query: ${_filter}"
+          echo ""
+          echo "Result Code: ${PINGONE_CALL_RESULT}" 
+          echo "  Page Size: $(cat "${PINGONE_CALL_RESPONSE}" | $JQ .size)"
+          echo " Total Szie: $(cat "${PINGONE_CALL_RESPONSE}" | $JQ .count)"
+          echo "--------------------------------------" 
+        ) >> "${PINGONE_DEBUG}"
+      fi
+
+      error_pingone_call 200
+
+      _url=""
+
+      if test -s "${PINGONE_CALL_RESPONSE}"; then 
+        $JQ ._embedded.${_res_obj}[] <"${PINGONE_CALL_RESPONSE}" >> "${PINGONE_API_RESULTS}"
+        
+        _next=$($JQ ._links.next <"${PINGONE_CALL_RESPONSE}")
+
+        if test "${_next}" != "null"; then
+          _url=$($JQ -r .href <<<"${_next}")
+          _filter=""
+          _order=""
+        fi
+      fi
+
   done
 
-  cat "${PINGONE_CALL_RESPONSE}" | $JQ -r "
-    ${_json_data}
-    | [sort_by(${_sort_column}) | .[]
-    |
-        {
-            ${_tableColumns}
-        }
-    ]
-                        # lowercase keys
-                        # (for predictable sorting, optional)
-    |  [.[]| with_entries( .key |= ascii_downcase ) ]
-    |    (.[0] |keys_unsorted | @csv)               # print headers
-        , (.[]|.|map(.) |@csv)                       # print table
-    "
-}
+  PINGONE_RESULT_ID=""
+  PINGONE_RESULT_COUNT=0
+  #
+  # If there is one item found, then place the ID into the PINGONE_RESULT_ID
+  # Also get the PINGONE_RESULT_COUNT
+  #
+  if test -s "${PINGONE_API_RESULTS}"; then
+    PINGONE_RESULT_COUNT=$($JQ -s '. | length' <"${PINGONE_API_RESULTS}")
 
-################################################################################
-# print_json_json
-################################################################################
-print_json_json()
-{
-  $JQ . < "${PINGONE_CALL_RESPONSE}"
-}
-
-################################################################################
-# pingone_get_call
-################################################################################
-pingone_get_call()
-{
-  _url_end="${1}" && shift
-  _filter="${1}"
-
-  if test "${OPT_PINGONE_r}" == "true"; then
-    echo "REST Call: curl -L https://api.pingone.com/v1/environments/${PINGONE_ENVIRONMENT_ID}/${_url_end}?${_filter}
---------------------------------------" >> "${PINGONE_DEBUG}"
+    if test ${PINGONE_RESULT_COUNT} -eq 1; then
+      PINGONE_RESULT_ID="$($JQ -s -r '.[0].id' <"${PINGONE_API_RESULTS}")"
+    fi
   fi
-
-  PINGONE_CALL_RESULT=$($CURL -G --request GET "https://api.pingone.com/v1/environments/${PINGONE_ENVIRONMENT_ID}/${_url_end}" \
-      --data-urlencode "${_filter}" \
-      --header 'Content-Type: application/json' \
-      --header "Authorization: Bearer ${PINGONE_ACCESS_TOKEN}" \
-      --write-out '%{http_code}' \
-      --output "${PINGONE_CALL_RESPONSE}")
-
-  error_pingone_call 200
+  
+  #
+  # Print the Results
+  #
+  if test "${_print_results}" == true; then
+    if test -s "${PINGONE_API_RESULTS}"; then 
+      print_api_results "${_res_obj}"
+    else
+      echo "No '${_res_obj}' found"
+    fi
+  fi
 }
 
 ################################################################################
@@ -1487,6 +1565,9 @@ error_pingone_call()
   _expected_result="${1}"
 
   test ${PINGONE_CALL_RESULT} == "${_expected_result}" && return
+
+  print_rest_debug
+
 
   _err_message=$($JQ -r .details[].message <${PINGONE_CALL_RESPONSE})
 
@@ -1501,48 +1582,90 @@ error_pingone_call()
 }
 
 ################################################################################
-# pingone_post_call
+# pingone_api_post
 ################################################################################
-pingone_post_call()
+pingone_api_post()
 {
-  _url_end="${1}"
+  _res_object="${1}"
 
-  if test "${OPT_PINGONE_r}" == "true"; then
-    echo "REST Call: curl -L --request POST https://api.pingone.com/v1/environments/${PINGONE_ENVIRONMENT_ID}/${_url_end}" >> "${PINGONE_DEBUG}"
-    cat_indent "${PINGONE_POST_JSON}" >>  "${PINGONE_DEBUG}"
-    echo "--------------------------------------" >> "${PINGONE_DEBUG}"
-  fi
-
+  _url="${PINGONE_API_URL}/environments/${PINGONE_ENVIRONMENT_ID}/${_res_object}"
+  
   PINGONE_CALL_RESULT=$($CURL --request POST \
-    -g "https://api.pingone.com/v1/environments/${PINGONE_ENVIRONMENT_ID}/${_url_end}" \
+    -g "${_url}" \
     --data-binary @"${PINGONE_POST_JSON}" \
     --header 'Content-Type: application/json' \
     --header "Authorization: Bearer ${PINGONE_ACCESS_TOKEN}" \
     --write-out '%{http_code}' \
     --output "${PINGONE_CALL_RESPONSE}")
 
+  # 
+  # Print out DEBUG info
+  #
+  if test "${OPT_PINGONE_r}" == "true"; then
+      (
+        echo "       POST: ${_url}"
+        echo "       BODY: $($JQ -c . <${PINGONE_POST_JSON})"
+        echo ""
+        echo "Result Code: ${PINGONE_CALL_RESULT}" 
+        echo "--------------------------------------" 
+      ) >> "${PINGONE_DEBUG}"
+  fi
+
   error_pingone_call 201
 }
 
-################################################################################
-# pingone_delete_call
-################################################################################
-pingone_delete_call()
-{
-  _url_end="${1}"
 
-  if test "${OPT_PINGONE_r}" == "true"; then
-    echo "REST Call: curl -L --request DELETE https://api.pingone.com/v1/environments/${PINGONE_ENVIRONMENT_ID}/${_url_end}
---------------------------------------" >> "${PINGONE_DEBUG}"
+################################################################################
+# pingone_delete_by_filter
+################################################################################
+pingone_api_delete_by_filter()
+{
+  local _res_obj="${1}" && shift
+  local _filter="${1}" && shift
+
+  pingone_api_get "${_res_obj}" "filter=${_filter}"
+
+  if test ! -z "${PINGONE_RESULT_ID}"; then
+    pingone_api_delete "${_res_obj}" "${PINGONE_RESULT_ID}"
+  else
+    echo "'${_obj_id}' not found in ${_res_obj}"
   fi
+}
+
+################################################################################
+# pingone_api_delete
+################################################################################
+pingone_api_delete()
+{
+  _res_obj="${1}" && shift
+  _obj_id="${1}" && shift
+
+  _url="${PINGONE_API_URL}/environments/${PINGONE_ENVIRONMENT_ID}/${_res_obj}/${_obj_id}"
 
   PINGONE_CALL_RESULT=$($CURL --request DELETE \
-    -g "https://api.pingone.com/v1/environments/${PINGONE_ENVIRONMENT_ID}/${_url_end}" \
+    -g "${_url}" \
     --header 'Content-Type: application/json' \
     --header "Authorization: Bearer ${PINGONE_ACCESS_TOKEN}" \
     --write-out '%{http_code}' \
     --output "${PINGONE_CALL_RESPONSE}")
-  error_pingone_call 204
+
+  # 
+  # Print out DEBUG info
+  #
+  if test "${OPT_PINGONE_r}" == "true"; then
+      (
+        echo "     DELETE: ${_url}"
+        echo ""
+        echo "Result Code: ${PINGONE_CALL_RESULT}" 
+        echo "--------------------------------------" 
+      ) >> "${PINGONE_DEBUG}"
+  fi
+
+  case "${PINGONE_CALL_RESULT}" in
+    200|204|404)  ;;
+    *)            error_pingone_call 204 ;;
+  esac
+
 }
 
 ################################################################################
@@ -1561,31 +1684,13 @@ pingone_list()
 
   case "${_resource}" in
       users)
-            pingone_get_call "users" ""
-
-            print_json "._embedded.users" \
-              ".username" \
-              "USERNAME:.username" \
-              "FIRST:.name.given" \
-              "LAST:.name.family" \
-              "EMAIL:.email" \
-              "POPULATION:.population.id" \
+            pingone_api_get_and_print "users" ""
           ;;
       groups)
-            pingone_get_call "groups" ""
-
-            print_json "._embedded.groups" \
-              ".name" \
-              "NAME:.name" \
-              "MEMBERS:.directMemberCounts.users"
+            pingone_api_get_and_print "groups" ""
           ;;
       populations)
-            pingone_get_call "populations" ""
-
-            print_json "._embedded.populations" \
-              ".name" \
-              "NAME:.name" \
-              "MEMBERS:.userCount"
+            pingone_api_get_and_print "populations" ""
           ;;
       *)
           usage_command
@@ -1610,64 +1715,29 @@ pingone_get ()
 
   case "${_resource}" in
       user)
-          pingone_get_call "users" "filter=username eq \"${_get_id}\""
+          pingone_api_get_and_print "users" "filter=username eq \"${_get_id}\""
 
           _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
           test -z "${_user_id}" && echo "User not found '${_get_id}'" && exit
 
-          print_json_fields "._embedded.users[]" \
-            "USERNAME: " ".username" \
-            "   FIRST: " ".name.given" \
-            "    LAST: " ".name.family"\
-            "   EMAIL: " ".email"
-
-          _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
-
-          pingone_get_call "users/${_user_id}/memberOfGroups" ""
-
-          echo ""
-          print_json "._embedded.groupMemberships" \
-            ".name" \
-            "GROUPS:.name"
+          echo
+          pingone_api_get_and_print "users/${_user_id}/memberOfGroups" ""
           ;;
       group)
-          pingone_get_call "groups" "filter=name eq \"${_get_id}\""
-
-          print_json_fields "._embedded.groups[]" \
-            "  GROUP NAME: " ".name" \
-            "MEMBER COUNT: " ".directMemberCounts.users"
+          pingone_api_get_and_print "groups" "filter=name eq \"${_get_id}\""
 
           _group_id=$($JQ -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
 
-          pingone_get_call "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
-
-          echo ""
-          print_json "._embedded.users" \
-            ".username" \
-            "USERS:.username" \
-            "FIRST:.name.given" \
-            "LAST:.name.family" \
-            "EMAIL:.email"
-
+          echo
+          pingone_api_get_and_print "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
           ;;
       population)
-          pingone_get_call "populations" "filter=name eq \"${_get_id}\""
-
-          print_json_fields "._embedded.populations[]" \
-            "  POPULATION: " ".name" \
-            "MEMBER COUNT: " ".userCount"
+          pingone_api_get_and_print "populations" "filter=name eq \"${_get_id}\""
 
           _population_id=$($JQ -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
 
-          pingone_get_call "users" "filter=population.id eq \"${_population_id}\""
-
-          echo ""
-          print_json "._embedded.users" \
-            ".username" \
-            "USERS:.username" \
-            "FIRST:.name.given" \
-            "LAST:.name.family" \
-            "EMAIL:.email"
+          echo
+          pingone_api_get_and_print "users" "filter=population.id eq \"${_population_id}\""
           ;;
       *)
           usage_command
@@ -1676,26 +1746,16 @@ pingone_get ()
 }
 
 ################################################################################
-# pingone_get_population_id
-################################################################################
-pingone_get_population_id()
-{
-  _name="${1}"
-  test -z "${_name}" && usage_command USAGE_PINGONE_GET_DETAIL
-
-  pingone_get_call "populations" "filter=name eq \"${_name}\""
-  $JQ -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}"
-}
-
-################################################################################
 # pingone_add
 ################################################################################
 pingone_add()
 {
   USAGE_CONTEXT="USAGE_PINGONE_ADD_DETAIL"
-  _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
-  test -z "${_resource}" && usage_command
+  _resource="${1}" && shift
 
+  #
+  # Get attributes for each resource type
+  #
   case "${_resource}" in
       user)
           _username="${1}" && shift
@@ -1709,32 +1769,9 @@ pingone_add()
             shift
           fi
 
-          get_pingone_options "${@}"
-          # Remove the switches we parsed above.
-          shift "$(( OPTIND - 1 ))"
-
           test -z "${_username}" && usage_command
           test -z "${_first_name}" && usage_command
           test -z "${_last_name}" && usage_command
-
-          _population="${OPT_PINGONE_p:-Default}"
-
-          _population_id="$(pingone_get_population_id "${_population}")"
-          test -z "${_population_id}" && echo "population not found '${_population}'" && exit
-
-          $JQ -n '{email: $email,
-                  name: {given: $first,
-                         family: $last},
-                  population: {id: $populationId},
-                  username: $username}' \
-              --arg populationId "${_population_id}" \
-              --arg username "${_username}" \
-              --arg email "${_email}" \
-              --arg first "${_first_name}" \
-              --arg last "${_last_name}" > "${PINGONE_POST_JSON}"
-
-          pingone_post_call "users"
-          # error_pingone_call 201
           ;;
       group)
           _name="${1}" && shift
@@ -1744,40 +1781,63 @@ pingone_add()
           shift "$(( OPTIND - 1 ))"
 
           test -z "${_name}" && usage_command
-
-          _population="${OPT_PINGONE_p:-Default}"
-
-          _population_id="$(pingone_get_population_id "${_population}")"
-          test -z "${_population_id}" && echo "population not found '${_population}'" && exit
-
-          $JQ -n '{name: $name,
-                  population: {id: $populationId}
-                 }' \
-              --arg name "${_name}"  \
-              --arg populationId "${_population_id}" > "${PINGONE_POST_JSON}"
-
-          pingone_post_call "groups"
-          # error_pingone_call 201
           ;;
       population)
           _name="${1}" && shift
 
-          get_pingone_options "${@}"
-          # Remove the switches we parsed above.
-          shift "$(( OPTIND - 1 ))"
-
           test -z "${_name}" && usage_command
-
-          $JQ -n '{name: $name}' \
-              --arg name "${_name}" > "${PINGONE_POST_JSON}"
-
-          pingone_post_call "populations"
-          # error_pingone_call 201
           ;;
       *)
           usage_command
           ;;
   esac
+
+  #
+  # Get any flags (including population name)
+  #
+  get_pingone_options "${@}"
+  # Remove the switches we parsed above.
+  shift "$(( OPTIND - 1 ))"
+
+  _population="${OPT_PINGONE_p:-Default}"
+
+  #
+  # Create the Body Post
+  #
+  case "${_resource}" in
+      user)
+          pingone_api_get "populations" "filter=name eq \"${_population}\""
+
+          $JQ -n '{email: $email,
+                  name: {given: $first,
+                         family: $last},
+                  population: {id: $populationId},
+                  username: $username}' \
+              --arg populationId "${PINGONE_RESULT_ID}" \
+              --arg username "${_username}" \
+              --arg email "${_email}" \
+              --arg first "${_first_name}" \
+              --arg last "${_last_name}" > "${PINGONE_POST_JSON}"
+          ;;
+      group)
+          pingone_api_get "populations" "filter=name eq \"${_population}\""
+          
+          $JQ -n '{name: $name,
+                  population: {id: $populationId}
+                 }' \
+              --arg name "${_name}"  \
+              --arg populationId "${PINGONE_RESULT_ID}" > "${PINGONE_POST_JSON}"
+          ;;
+      population)
+          $JQ -n '{name: $name}' \
+              --arg name "${_name}" > "${PINGONE_POST_JSON}"
+          ;;
+  esac
+
+  #
+  # Finally make the POST API Call
+  #
+  pingone_api_post "${_resource}s"
 }
 
 ################################################################################
@@ -1799,20 +1859,16 @@ pingone_add_user_group()
   # Remove the switches we parsed above.
   shift "$(( OPTIND - 1 ))"
 
-  pingone_get_call "users" "filter=username eq \"${_username}\""
-  # error_pingone_call 200
-  _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
+  pingone_api_get "users" "filter=username eq \"${_username}\""
+  _user_id="${PINGONE_RESULT_ID}"
 
-  pingone_get_call "groups" "filter=name eq \"${_groupname}\""
-  # error_pingone_call 200
-  _group_id=$($JQ -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
+  pingone_api_get "groups" "filter=name eq \"${_groupname}\""
+  _group_id="${PINGONE_RESULT_ID}"
 
   $JQ -n '{id: $groupId}' \
     --arg groupId "${_group_id}" > "${PINGONE_POST_JSON}"
 
-  pingone_post_call "users/${_user_id}/memberOfGroups"
-
-  # error_pingone_call 201
+  pingone_api_post "users/${_user_id}/memberOfGroups"
 }
 
 ################################################################################
@@ -1830,21 +1886,13 @@ pingone_delete_user_group()
   test -z "${_username}" && usage_command USAGE_PINGONE_DELETE_USER_GROUP_DETAIL
   test -z "${_groupname}" && usage_command USAGE_PINGONE_DELETE_USER_GROUP_DETAIL
 
-  get_pingone_options "${@}"
-  # Remove the switches we parsed above.
-  shift "$(( OPTIND - 1 ))"
+  pingone_api_get "users" "filter=username eq \"${_username}\""
+  _user_id="${PINGONE_RESULT_ID}"
 
-  pingone_get_call "users" "filter=username eq \"${_username}\""
-  # error_pingone_call 200
-  _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
+  pingone_api_get "groups" "filter=name eq \"${_groupname}\""
+  _group_id="${PINGONE_RESULT_ID}"
 
-  pingone_get_call "groups" "filter=name eq \"${_groupname}\""
-  # error_pingone_call 200
-  _group_id=$($JQ -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
-
-  pingone_delete_call "users/${_user_id}/memberOfGroups/${_group_id}"
-
-  # error_pingone_call 204
+  pingone_api_delete "users/${_user_id}/memberOfGroups" "${_group_id}"
 }
 
 ################################################################################
@@ -1900,34 +1948,10 @@ pingone_delete()
 
   case "${_resource}" in
       user)
-          pingone_get_call "users" "filter=username eq \"${_obj_id}\""
-
-          _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
-
-          test -z "${_user_id}" && echo "User not found '${_obj_id}'" && exit
-
-          pingone_delete_call "users/${_user_id}"
-          # error_pingone_call 204
+          pingone_api_delete_by_filter "${_resource}s" "username eq \"${_obj_id}\""
           ;;
-      group)
-          pingone_get_call "groups" "filter=name eq \"${_obj_id}\""
-
-          _group_id=$($JQ -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
-
-          test -z "${_group_id}" && echo "Group not found '${_name}'" && exit
-
-          pingone_delete_call "groups/${_group_id}"
-          # error_pingone_call 204
-          ;;
-      population)
-          pingone_get_call "populations" "filter=name eq \"${_obj_id}\""
-
-          _population_id=$($JQ -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
-
-          test -z "${_population_id}" && echo "Population not found '${_name}'" && exit
-
-          pingone_delete_call "populations/${_population_id}"
-          # error_pingone_call 204
+      group|population)
+          pingone_api_delete_by_filter "${_resource}s" "name eq \"${_obj_id}\""
           ;;
       *)
           usage_command
@@ -1935,6 +1959,20 @@ pingone_delete()
   esac
 }
 
+
+###############################################################################
+# print_rest_debug
+################################################################################
+print_rest_debug()
+{
+  if test -f "${PINGONE_DEBUG}" ; then
+    echo
+    echo "--------------------------------------"
+    echo "REST API Debug (-r option)"
+    echo "--------------------------------------"
+    cat "${PINGONE_DEBUG}"
+  fi
+}
 
 ###############################################################################
 # pingone_command
@@ -1972,13 +2010,7 @@ pingone_command()
           ;;
   esac
 
-  if test -f "${PINGONE_DEBUG}" ; then
-    echo
-    echo "--------------------------------------"
-    echo "REST Calls Made (-r option)"
-    echo "--------------------------------------"
-    cat "${PINGONE_DEBUG}"
-  fi
+  print_rest_debug
 }
 
 

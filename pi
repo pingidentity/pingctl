@@ -1341,59 +1341,8 @@ getPingOneAccessToken ()
     fi
 }
 
-
-
-
-###############################################################################
-# cat_indent (file)
-#
-# cat a file to stdout and indent 4 spaces
-###############################################################################
-cat_indent ()
-{
-    test -f "${1}" && sed 's/^/    /' < "${1}"
-}
-
 ################################################################################
-# print_json_field
-################################################################################
-print_json_field()
-{
-  _json_data="${1}" && shift
-  _jq_fields=""
-  _comma=""
-
-  while true
-  do
-    _label="${1}" && shift
-    test -z "${_label}" && break
-    _field="${1}" && shift
-    _jq_fields="${_jq_fields}${_comma}\"${_label}\", ${_field}, \"\\n\""
-    _comma=","
-  done
-
-  $JQ -jr "${_json_data} |
-    ${_jq_fields}" <"${PINGONE_CALL_RESPONSE}"
-}
-
-################################################################################
-# print_json_fields
-################################################################################
-print_json_fields()
-{
-  _print_format="${OPT_PINGONE_o:-field}"
-  case "${_print_format}" in
-    csv|field|table) print_json_field "${@}" ;;
-    json) print_api_results_json "${@}" ;;
-    *) usage_command ;;
-  esac
-
-
-}
-
-
-################################################################################
-# print_json_api_results
+# print_api_results
 ################################################################################
 print_api_results()
 {
@@ -1446,8 +1395,8 @@ print_api_results_sv()
   _populations_sort="name"
   ################################################################################
 
-  _columns=$(get_value "_${_resource}_columns")
-  _sort_column=$(get_value "_${_resource}_sort")
+  _columns=$(get_value "_${_res_obj}_columns")
+  _sort_column=$(get_value "_${_res_obj}_sort")
 
   test -z "${_columns}" && _columns="${_default_columns}"
   test -z "${_sort_column}" && _sort_column="${_default_sort}"
@@ -1481,7 +1430,7 @@ print_api_results_json()
 }
 
 ################################################################################
-# pingone_api_get
+# pingone_api_get_and_print
 ################################################################################
 pingone_api_get_and_print()
 {
@@ -1523,6 +1472,9 @@ pingone_api_get()
 
   _url="${PINGONE_API_URL}/${_api_url}"
 
+  #
+  # Loop through this while loop for each page of results, until all are exhausted
+  #
   while test ! -z "${_url}"
   do
       PINGONE_CALL_RESULT=$($CURL -G --request GET "${_url}" \

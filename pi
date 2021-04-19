@@ -243,7 +243,6 @@ Usage:
 USAGE_PINGONE_DETAIL="Manage PingOne Evironments
 
 Usage:
-  ${PI_CMD} pingone list                 # List objects
   ${PI_CMD} pingone get                  # Get object
 
   ${PI_CMD} pingone add                  # Add object
@@ -254,70 +253,91 @@ Usage:
 
   ${PI_CMD} pingone token                # Obtain access token"
 
+
 ################################################################################
-USAGE_PINGONE_LIST_DETAIL="List PingOne Objects
-
-Usage:
-  ${PI_CMD} pingone list groups           # List groups
-  ${PI_CMD} pingone list populations      # List all populations
-  ${PI_CMD} pingone list users            # List users
-
-Flags:
-  -o [ table | csv | json ]        # Output format (default: table)
-  -r                               # Print REST Calls"
+FLAGS_R="  -r
+     Provide REST Calls"
 
 ################################################################################
 USAGE_PINGONE_GET_DETAIL="Get PingOne Objects
 
 Usage:
-  ${PI_CMD} pingone get group        {name}     # Get group by name
-  ${PI_CMD} pingone get population   {name}     # Get population by name
-  ${PI_CMD} pingone get user         {name}     # Get user by name
+  ${PI_CMD} pingone get groups       # Get group(s)
+  ${PI_CMD} pingone get populations  # Get population(s)
+  ${PI_CMD} pingone get users        # Get user(s)
 
 Flags:
-  -o [ table | csv | json ]        # Output format (default: table)
-  -r                               # Print REST Calls"
+  -o [ table | csv | json ]
+     Output format (default: table)
+
+  -i {id}
+     Search based on object guid
+
+  -n {name}
+     Search based on exact filter
+
+  -f {filter}
+     PingOne filter (SCIM based)
+        ex: '.name.given eq \"john\"'
+            '.email sw \"john\"'
+
+${FLAGS_R}
+
+Examples:
+  pi pingone get users -i 5c07e067-3eeb-40bb-924b-a419d01ee28f
+  pi pingone get users -n johnsmith@example.com
+  pi pingone get users -f 'name.given eq \"john\"'
+  pi pingone get users -f 'email sw \"john\"'"
 
 ################################################################################
 USAGE_PINGONE_ADD_DETAIL="Add PingOne Objects
 
 Usage:
-  ${PI_CMD} pingone add group {group name}                     # Add group
+  ${PI_CMD} pingone add group {group name}
 
-  ${PI_CMD} pingone add population {population name}           # Add population
+  ${PI_CMD} pingone add population {population name}
 
-
-  ${PI_CMD} pingone add user {username} {first} {last} [email] # Add user
-     # REQUIRED: username, first last
-     # OPTIONAL: email (username if not provided)
-
+  ${PI_CMD} pingone add user {username} {first} {last} [email]
+     * REQUIRED: username, first last
+       OPTIONAL: email (same as username if not provided)
 
 Flags:
-  -p {population name}             # Population to place user/group into
-                                   # If not proivded 'Default' population used
-  -r                               # Print REST Calls"
+  -p {population name}
+     Population to add user/group into.  If not proivded 'Default' population used
+
+${FLAGS_R}
+
+Examples:
+  pi pingone add group test-group-name
+  pi pingone add user john@example.com John Smith -p test-population"
 
 ################################################################################
 USAGE_PINGONE_DELETE_DETAIL="Delete PingOne Objects
 
 Usage:
-  ${PI_CMD} pingone delete group       {name}    # Delete group
-  ${PI_CMD} pingone delete population  {name}    # Delete population
-  ${PI_CMD} pingone delete user        {name}    # Delete user
+  ${PI_CMD} pingone delete group       {name}
+  ${PI_CMD} pingone delete population  {name}
+  ${PI_CMD} pingone delete user        {name}
 
 Flags:
-  -r                               # Print REST Calls"
+${FLAGS_R}"
 
 ################################################################################
 USAGE_PINGONE_ADD_USER_GROUP_DETAIL="Add PingOne Group to User
 
 Usage:
-  ${PI_CMD} pingone add-user-group {username} {groupname}  # Add group to user"
+  ${PI_CMD} pingone add-user-group {username} {groupname}  # Add group to user
+
+Flags:
+${FLAGS_R}"
 
 ################################################################################
 
 USAGE_PINGONE_DELETE_USER_GROUP_DETAIL="Delete PingOne Group from User
-  ${PI_CMD} pingone delete-user-group {username} {groupname}  # Delete group from user"
+  ${PI_CMD} pingone delete-user-group {username} {groupname}  # Delete group from user
+
+Flags:
+${FLAGS_R}"
 
 ################################################################################
 USAGE_VAULT="Hashicorp Vault Tools
@@ -376,9 +396,6 @@ usage_command()
   case "${_usageCmd}" in
     pingone)
       echo "${USAGE_PINGONE_DETAIL}"
-      ;;
-    pingone-list)
-      echo "${USAGE_PINGONE_LIST_DETAIL}"
       ;;
     pingone-get)
       echo "$(get_value _usageCmd)"
@@ -1390,7 +1407,6 @@ print_api_results_sv()
   ################################################################################
   _populations_columns="
       NAME   :.name,
-      ID     :.id,
       MEMBERS:.userCount"
   _populations_sort="name"
   ################################################################################
@@ -1615,7 +1631,7 @@ pingone_api_delete_by_filter()
   if test ! -z "${PINGONE_RESULT_ID}"; then
     pingone_api_delete "${_res_obj}" "${PINGONE_RESULT_ID}"
   else
-    echo "'${_obj_id}' not found in ${_res_obj}"
+    echo "'${_res_name}' not found in ${_res_obj}" && exit
   fi
 }
 
@@ -1687,75 +1703,70 @@ pingone_print_environment ()
 }
 
 ################################################################################
-# pingone_list
-################################################################################
-pingone_list()
-{
-  USAGE_CONTEXT="USAGE_PINGONE_LIST_DETAIL"
-
-  _resource="${1}" && shift $(( $# > 0 ? 1 : 0 ))
-  test -z "${_resource}" && usage_command
-
-  get_pingone_options "${@}"
-  # Remove the switches we parsed above.
-  shift "$(( OPTIND - 1 ))"
-
-  case "${_resource}" in
-      users)
-            pingone_api_get_and_print "users" ""
-          ;;
-      groups)
-            pingone_api_get_and_print "groups" ""
-          ;;
-      populations)
-            pingone_api_get_and_print "populations" ""
-          ;;
-      *)
-          usage_command
-          ;;
-  esac
-}
-
-################################################################################
 # pingone_get
 ################################################################################
 pingone_get ()
 {
   USAGE_CONTEXT="USAGE_PINGONE_GET_DETAIL"
   _resource="${1}" && shift
-  _get_id="${1}" && shift
+  # _get_id="${1}" && shift
   test -z "${_resource}" && usage_command
-  test -z "${_get_id}" && usage_command
+  # test -z "${_get_id}" && usage_command
 
   get_pingone_options "${@}"
   # Remove the switches we parsed above.
   shift "$(( OPTIND - 1 ))"
 
+# echo "OPT_PINGONE_o=${OPT_PINGONE_o}"
+# echo "OPT_PINGONE_i=${OPT_PINGONE_i}"
+# echo "OPT_PINGONE_n=${OPT_PINGONE_n}"
+# echo "OPT_PINGONE_f=${OPT_PINGONE_f}"
+
+  _exact_id=""
+  _filter=""
+
+  if test ! -z "${OPT_PINGONE_i}"; then
+    _exact_id="/${OPT_PINGONE_i}"
+  elif test ! -z "${OPT_PINGONE_n}"; then
+    if test "${_resource}" == "users"; then
+      _filter="filter=username eq \"${OPT_PINGONE_n}\""
+    else
+      _filter="filter=name eq \"${OPT_PINGONE_n}\""
+    fi
+  elif test ! -z "${OPT_PINGONE_f}"; then
+    _filter="filter=${OPT_PINGONE_f}"
+  fi
+
   case "${_resource}" in
-      user)
-          pingone_api_get_and_print "users" "filter=username eq \"${_get_id}\""
+      users)
+          pingone_api_get_and_print "users${_exact_id}" "${_filter}"
 
-          _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
-          test -z "${_user_id}" && echo "User not found '${_get_id}'" && exit
+          if test ${PINGONE_RESULT_COUNT} -eq 1; then
+            _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
+            test -z "${_user_id}" && echo "User not found '${_get_id}'" && exit
 
-          echo
-          pingone_api_get_and_print "users/${_user_id}/memberOfGroups" ""
+            echo
+            pingone_api_get_and_print "users/${_user_id}/memberOfGroups" ""
+          fi
           ;;
-      group)
-          pingone_api_get_and_print "groups" "filter=name eq \"${_get_id}\""
+      groups)
+          pingone_api_get_and_print "groups${_exact_id}" "${_filter}"
 
-          _group_id=$($JQ -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
-
-          echo
-          pingone_api_get_and_print "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
+          if test ${PINGONE_RESULT_COUNT} -eq 1; then
+            _group_id=$($JQ -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
+            echo
+            pingone_api_get_and_print "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
+          fi
           ;;
-      population)
-          pingone_api_get_and_print "populations" "filter=name eq \"${_get_id}\""
+      populations)
+          pingone_api_get_and_print "populations${_exact_id}" "${_filter}"
 
-          _population_id=$($JQ -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
+          if test ${PINGONE_RESULT_COUNT} -eq 1; then
+            _population_id=$($JQ -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
 
-          echo
-          pingone_api_get_and_print "users" "filter=population.id eq \"${_population_id}\""
+            echo
+            pingone_api_get_and_print "users" "filter=population.id eq \"${_population_id}\""
+          fi
           ;;
       *)
           usage_command
@@ -1780,6 +1791,8 @@ pingone_add()
           _first_name="${1}" && shift
           _last_name="${1}" && shift
           _email="${1}"
+
+          _name="${_username}"
 
           if test -z "${_email}" || test ! "${_email}" = "${_email#-}"; then
             _email="${_username}"
@@ -1826,6 +1839,8 @@ pingone_add()
       user)
           pingone_api_get "populations" "filter=name eq \"${_population}\""
 
+          test -z "${PINGONE_RESULT_ID}" && echo_error "Unknown population '${_population}'" && exit
+
           $JQ -n '{email: $email,
                   name: {given: $first,
                          family: $last},
@@ -1839,6 +1854,8 @@ pingone_add()
           ;;
       group)
           pingone_api_get "populations" "filter=name eq \"${_population}\""
+
+          test -z "${PINGONE_RESULT_ID}" && echo_error "Unknown population '${_population}'" && exit
 
           $JQ -n '{name: $name,
                   population: {id: $populationId}
@@ -1856,6 +1873,15 @@ pingone_add()
   # Finally make the POST API Call
   #
   pingone_api_post "${_resource}s"
+
+  case "${_resource}" in
+      population)
+        echo "Added ${_resource} '${_name}'"
+        ;;
+      *)
+        echo "Added ${_resource} '${_name}' to population '${_population}'"
+        ;;
+  esac
 }
 
 ################################################################################
@@ -1955,26 +1981,28 @@ pingone_delete()
 {
   USAGE_CONTEXT="USAGE_PINGONE_DELETE_DETAIL"
   _resource="${1}" && shift
-  _obj_id="${1}" && shift
+  _res_name="${1}" && shift
 
   get_pingone_options "${@}"
   # Remove the switches we parsed above.
   shift "$(( OPTIND - 1 ))"
 
   test -z "${_resource}" && usage_command
-  test -z "${_obj_id}" && usage_command
+  test -z "${_res_name}" && usage_command
 
   case "${_resource}" in
       user)
-          pingone_api_delete_by_filter "${_resource}s" "username eq \"${_obj_id}\""
+          pingone_api_delete_by_filter "${_resource}s" "username eq \"${_res_name}\""
           ;;
       group|population)
-          pingone_api_delete_by_filter "${_resource}s" "name eq \"${_obj_id}\""
+          pingone_api_delete_by_filter "${_resource}s" "name eq \"${_res_name}\""
           ;;
       *)
           usage_command
           ;;
   esac
+
+  echo "Deleted ${_resource} '${_res_name}'"
 }
 
 
@@ -2002,9 +2030,6 @@ pingone_command()
   getPingOneAccessToken
 
   case "${_pingone_command}" in
-      list)
-          pingone_list "${@}"
-          ;;
       get)
           pingone_get "${@}"
           ;;
@@ -2054,10 +2079,11 @@ get_global_options()
 ################################################################################
 get_pingone_options()
 {
-  while getopts ro:p: OPT; do
+  while getopts hro:p:i:n:f: OPT; do
       case "$OPT" in
+          h) usage_command ;;
           r) OPT_PINGONE_r=true ;;
-          o|p) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
+          o|p|i|n|f) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
           ?)
               # getopts issues an error message
               usage "Unknown Option ${OPT}"

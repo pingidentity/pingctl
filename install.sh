@@ -1,11 +1,10 @@
 #!/bin/bash
 ########################################################################################################################
 #
-# This script is used to Install a Ping Identity DevOps tool and bash aliases
+# This script is used to Install a Ping Identity pi CLI
 #
 # ------------
 # Installs pi               into     .
-# Installs bash_profile.pi  into     .
 # ------------
 
 INSTALL_DIR=$(pwd)
@@ -40,7 +39,6 @@ tar xzf ./*.tar.gz
 cd pi-* || echo "Unable to chanage to pi-*" || exit 1
 
 cp pi                  "$INSTALL_DIR/."
-cp etc/bash_profile.pi "$INSTALL_DIR/."
 
 echo "
 ################################################################################
@@ -49,34 +47,24 @@ echo "
   You have just downloaded:
 
     ${INSTALL_DIR}/pi
-    ${INSTALL_DIR}/bash_profile.pi
 
   It is recommended to:
     1. copy your 'pi' to a location in your PATH (i.e. ~/bin or /usr/local/bin)
-    2. source the 'bash_profile.pi' in your shell to get all the goodness
-       from Ping Identity DevOps!
-    3. Ensure you have additional utilities used by pi:
-          jq
+    2. Recommended additional utilities:
+          base64 (used by pi)
           docker
           docker-compose
-          openssl
-          base64
-          kustomize
+          envsubst
+          helm
+          jq (used by pi)
+          jwt (used by pi)
+          k9s
           kubectl
           kubectx (includes kubens)
-          envsubst
+          openssl (used by pi)
 
   Example:
     sudo mv ${INSTALL_DIR}/pi /usr/local/bin/.
-    sudo mv ${INSTALL_DIR}/bash_profile.pi /usr/local/etc/.
-    echo 'source /usr/local/etc/bash_profile.pi' >> ~/.bash_profile
-    echo 'sourcePingIdentityFiles' >> ~/.bash_profile
-    . ~/.bash_profile
-    pi
-
-  For more information please visit us at:
-
-     http://devops.pingidentity.com
-
+    pi config
 ################################################################################
 "

@@ -221,7 +221,7 @@ Usage:
   ${CMD} license {product} {ver}          # Obtain an evaluation license file for product/ver
 
 Examples:
-  pi license pingfederate 10.2"
+  ${CMD} license pingfederate 10.2"
 
 
 ################################################################################
@@ -277,10 +277,10 @@ Flags:
 ${FLAGS_R}
 
 Examples:
-  pi pingone get users -i 5c07e067-3eeb-40bb-924b-a419d01ee28f
-  pi pingone get users -n johnsmith@example.com
-  pi pingone get users -f 'name.given eq \"john\"'
-  pi pingone get users -f 'email sw \"john\"'"
+  ${CMD} pingone get users -i 5c07e067-3eeb-40bb-924b-a419d01ee28f
+  ${CMD} pingone get users -n johnsmith@example.com
+  ${CMD} pingone get users -f 'name.given eq \"john\"'
+  ${CMD} pingone get users -f 'email sw \"john\"'"
 
 ################################################################################
 USAGE_PINGONE_ADD_DETAIL="Add PingOne Objects
@@ -301,8 +301,8 @@ Flags:
 ${FLAGS_R}
 
 Examples:
-  pi pingone add group test-group-name
-  pi pingone add user john@example.com John Smith -p test-population"
+  ${CMD} pingone add group test-group-name
+  ${CMD} pingone add user john@example.com John Smith -p test-population"
 
 ################################################################################
 USAGE_PINGONE_DELETE_DETAIL="Delete PingOne Objects
@@ -339,14 +339,14 @@ usage()
 {
   echo_error "$*"
 
-  echo "pi is a CLI from Ping Identity to manage PingOne, PingDevOps and other projects/tools.
+  echo "${CMD} is a CLI from Ping Identity to manage PingOne and other Ping Identity projects/tools.
 
 Usage:
   ${CMD} [command] [flags]
 
 Available Commands:
-  info            Print pi config
-  config          Manage pi config
+  info            Print ${CMD} config
+  config          Manage ${CMD} config
   version         Version Details and Check
   clean           Remove ~/.pingidentity/${CMD}
 
@@ -355,7 +355,7 @@ Available Commands:
   pingone         PineOne Tools
 
 Flags:
-  -h              Help for pi
+  -h              Help for ${CMD}
 
 Further help:
   https://pingctl.pingidentity.com"

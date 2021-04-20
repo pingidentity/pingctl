@@ -7,4 +7,4 @@
 mkdocs.yml        export-ignore
 docs              export-ignore
 install.sh        export-ignore
-pi-test.sh        export-ignore
+pingctl-test.sh   export-ignore

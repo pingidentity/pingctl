@@ -634,11 +634,11 @@ echo_info_variable()
 }
 
 ################################################################################
-# pi_info ()
+# info_command ()
 #
 # Prints all the variables of the ~/.pingidentity/devops file
 ################################################################################
-pi_info()
+info_command()
 {
     _show="${1}"
 
@@ -716,11 +716,11 @@ to update, you can use:
 }
 
 ################################################################################
-# pi_version ()
+# version_command
 #
 # Prints tool version info
 ################################################################################
-pi_version()
+version_command()
 {
     # Looks for the URL and pulls out the version.  Example should be:
     #
@@ -745,11 +745,11 @@ pi_version()
 }
 
 ################################################################################
-# pi_clean ()
+# clean_command
 #
 # Cleans the ~/.pingidentity/${CMD}
 ################################################################################
-pi_clean()
+clean_command()
 {
 
     echo
@@ -991,8 +991,9 @@ data:
 }
 
 ################################################################################
+# config_command
 ################################################################################
-pi_config()
+config_command()
 {
 
     ################################################################################
@@ -1252,6 +1253,13 @@ print_api_results_sv()
   fi
 }
 
+################################################################################
+# get_api_attr
+################################################################################
+get_api_attr ()
+{
+  $JQ -r ".${1}" <"${PINGONE_API_RESULTS}"
+}
 
 ################################################################################
 # print_api_results_json
@@ -1511,11 +1519,11 @@ pingone_print_environment ()
   else
     pingone_api_get "environment" ""
 
-    _env_name=$($JQ -r .name <"${PINGONE_API_RESULTS}")
-    _org_id=$($JQ -r .organization.id <"${PINGONE_API_RESULTS}")
+    _env_name=$(get_api_attr name)
+    _org_id=$(get_api_attr organization.id)
 
     pingone_api_get "organization" "${_org_id}"
-    _org_name=$($JQ -r .name <"${PINGONE_API_RESULTS}")
+    _org_name=$(get_api_attr name)
 
     echo "               ORGANIZATION NAME : ${_org_name}"
     echo "                ENVIRONMENT NAME : ${_env_name}"
@@ -1826,7 +1834,7 @@ print_rest_debug()
   if test -f "${PINGONE_DEBUG}" ; then
     echo
     echo "--------------------------------------"
-    echo "REST API Debug (-r option)"
+    echo "PingOne REST API Info (-r option)"
     echo "--------------------------------------"
     cat "${PINGONE_DEBUG}"
   fi
@@ -1912,23 +1920,23 @@ get_global_options "${@}"
 # Remove the switches we parsed above.
 shift "$(( OPTIND - 1 ))"
 
-_pi_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
+_pingctl_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
 
-test -z "${_pi_command}" && usage
+test -z "${_pingctl_command}" && usage
 
 
-case "${_pi_command}" in
+case "${_pingctl_command}" in
     info)
-        pi_info "${@}"
+        info_command "${@}"
         ;;
     config)
-        pi_config
+        config_command
         ;;
     version)
-        pi_version "${@}"
+        version_command "${@}"
         ;;
     clean)
-        pi_clean "${@}"
+        clean_command "${@}"
         ;;
     k8s|kubernetes)
         k8s_command "${@}"
@@ -1940,6 +1948,6 @@ case "${_pi_command}" in
         pingone_command "${@}"
         ;;
     *)
-        usage "unknown/missing ${CMD} command '${_pi_command}'"
+        usage "unknown/missing ${CMD} command '${_pingctl_command}'"
         ;;
 esac

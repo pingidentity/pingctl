@@ -19,14 +19,9 @@
 JQ="jq"
 BASE64="base64"
 OPENSSL="openssl"
-KUBECTL="kubectl"
 CURL="curl -sL "
-# Optional tools
 JWT="jwt"
 #
-# In addition, the assumption is that kubectl is configured to authenticate and apply manifests to the Kubernetes
-# cluster. For EKS clusters, this requires an AWS key and secret with the appropriate IAM policies to be configured and
-# requires that the aws CLI tool and probably the aws-iam-authenticator CLI tool are installed.
 ########################################################################################################################
 
 CWD=$(pwd)
@@ -66,20 +61,11 @@ STANDARD_VARIABLES="
   PING_IDENTITY_DEVOPS_REGISTRY
   PING_IDENTITY_DEVOPS_TAG
   PING_IDENTITY_ACCEPT_EULA
-  VAULT_ADDR
-  VAULT_CACERT
-  VAULT_SECRET_PREFIX
   PINGONE_API_URL
   PINGONE_AUTH_URL
   PINGONE_ENVIRONMENT_ID
   PINGONE_WORKER_APP_CLIENT_ID
   PINGONE_WORKER_APP_CLIENT_SECRET"
-
-################################################################################
-# Get Current Kubenetes Info
-################################################################################
-CURRENT_K8S_CONTEXT="$($KUBECTL config current-context 2> /dev/null)"
-CURRENT_K8S_NAMESPACE="$($KUBECTL config view --minify --output 'jsonpath={..namespace}' 2> /dev/null)"
 
 ################################################################################
 # Check for a .pingidentity directory with propertyfile
@@ -403,9 +389,6 @@ usage_command()
     generate)
       echo "${USAGE_GENERATE_DETAIL}"
       ;;
-    vault)
-      echo "${USAGE_VAULT}"
-      ;;
     *)
       usage
       ;;
@@ -461,52 +444,55 @@ find_setup_arg_value()
 }
 
 ################################################################################
-# add_bash_aliases ()
+# source_config ()
 #
-# Ensure that the bash_alias file is a part of .bash_profile
+# Ensure that we source the CONFIG_FILE
 ################################################################################
-add_bash_aliases()
+source_config()
 {
-
-
-    PI_BASH_PROFILE="/usr/local/etc/bash_profile.${PI_CMD}"
     BASH_PROFILE="${HOME}/.bash_profile"
+    ZSHRC="${HOME}/.zshrc"
 
-    # Touch the .bash_profile incase it's not setup yet
-    touch "${BASH_PROFILE}"
+    if test -f "${BASH_PROFILE}"; then
+      grep "${CONFIG_FILE}" "${BASH_PROFILE}" > /dev/null
 
-    grep "${PI_BASH_PROFILE}" "${BASH_PROFILE}" > /dev/null
-
-    if test "${?}" = "1"; then
-        echo "
+      if test "${?}" = "1"; then
+          echo "
 ################################################################################
-#                         Ping Identity Alias Files
+# Checking your bash profile
 ################################################################################
+  OK if we add a 'source ${CONFIG_FILE}' to your '${BASH_PROFILE}' (y/n) [y] ? \c"
+          read -r answer
 
-Let's add helper alias' and functions to your shell.
-We are assuming you use bash and will add these to your ${BASH_PROFILE}
-"
-
-        echo "  OK if we add a 'source ${PI_BASH_PROFILE}' command to your ${BASH_PROFILE} (y/n) [y] ? \c"
-        read -r answer
-
-        if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
-            echo "
-# Ping Identity Aliases - Added with '${PI_CMD} config' on $(date)
-test -f '${PI_BASH_PROFILE}' && source '${PI_BASH_PROFILE}'" >> "${BASH_PROFILE}"
-        fi
+          if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+              echo "
+# Ping Identity - Added with '${PI_CMD} config' on $(date)
+test -f '${CONFIG_FILE}' && source '${CONFIG_FILE}'" >> "${BASH_PROFILE}"
+          else
+            echo "Skipping ${BASH_PROFILE}"
+          fi
+      fi
     fi
 
-    grep "sourcePingIdentityFiles" "${BASH_PROFILE}" >/dev/null
+    if test -f "${ZSHRC}"; then
+      grep "${CONFIG_FILE}" "${ZSHRC}" > /dev/null
 
-    if test "$?" = "1"; then
-        echo "  OK if we add a 'sourcePingIdentityFiles' command to your ${BASH_PROFILE} (y/n) [y] ? \c"
-        read -r answer
-        if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
-            echo "
-# Source PingIdentity Files Alias - Added with '${PI_CMD} config' on $(date)
-sourcePingIdentityFiles" >> "${BASH_PROFILE}"
-        fi
+      if test "${?}" = "1"; then
+          echo "
+################################################################################
+# Checking your zsh profile
+################################################################################
+  OK if we add a 'source ${CONFIG_FILE}' to your '${ZSHRC}' (y/n) [y] ? \c"
+          read -r answer
+
+          if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+              echo "
+# Ping Identity - Added with '${PI_CMD} config' on $(date)
+test -f '${CONFIG_FILE}' && source '${CONFIG_FILE}'" >> "${ZSHRC}"
+          else
+            echo "Skipping ${ZSHRC}"
+          fi
+      fi
     fi
 }
 
@@ -698,11 +684,6 @@ echo "##########################################################################
     echo_info_variable PING_IDENTITY_DEVOPS_TAG
     echo
     echo_info_variable PING_IDENTITY_ACCEPT_EULA
-    echo
-    echo_info_variable VAULT_ADDR
-    echo_info_variable VAULT_CACERT
-    echo_info_variable VAULT_SECRET_PREFIX
-
 
 _listOfCustom_Variables=$(get_custom_variables)
 
@@ -1044,7 +1025,7 @@ pi_config()
 #  possible.  These include:
 #
 #    - Setting up your default '${PRINT_CONFIG_FILE}' settings
-#    - Adding bash_profile.${PI_CMD} to your .bash_profile, if neeeded
+#    - Source your '${PRINT_CONFIG_FILE}' in your shell startup files
 #"
 
     print_variable_setting_instructions
@@ -1103,7 +1084,7 @@ echo "##########################################################################
 
     add_config_custom "${CONFIG_FILE}" "${_custom_variables}"
 
-    add_bash_aliases
+    source_config
 
     echo "
 
@@ -1111,8 +1092,10 @@ echo "##########################################################################
 #
 # To get these changes effective in your current shell, you should either:
 #
-#    o Restart your Terminal Session (will source your ~/.bash_profile)
-#    o Source your ~/.bash_profile
+#    o Restart your Terminal Session (will source your shell profiles)
+#    o Source your:
+#        - bash - 'source ~/.bash_profile'
+#        - zsh  - 'source ~/.zshrc
 #
 ################################################################################
     "

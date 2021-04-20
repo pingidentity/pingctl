@@ -1433,8 +1433,10 @@ print_api_results_sv()
         , (.[]|.|map(.) |@${_sv})                       # print table
     " <"${PINGONE_API_RESULTS}" | column -t -s "$(printf '\t')"
 
+  if test "${_sv}" == "tsv"; then
     echo "--"
     echo "${PINGONE_RESULT_COUNT} '${_res_obj}' returned"
+  fi
 }
 
 

@@ -1380,8 +1380,6 @@ print_api_results_sv()
   _sv="${1}" && shift
   _res_obj="${1}"
 
-  _sort_default="id"
-
   ################################################################################
   # Table/CSV Columns and Sorts
   ################################################################################
@@ -1398,7 +1396,8 @@ print_api_results_sv()
   ################################################################################
   _groups_columns="
       NAME   :.name,
-      MEMBERS:.directMemberCounts.users"
+      MEMBERS:.directMemberCounts.users,
+      POPULATION:.population.id"
   _groups_sort="name"
   ################################################################################
   _groupMemberships_columns="
@@ -1417,6 +1416,8 @@ print_api_results_sv()
   test -z "${_columns}" && _columns="${_default_columns}"
   test -z "${_sort_column}" && _sort_column="${_default_sort}"
 
+  test "${_sv}" == "tsv" && _dash_row='| (.,map(length*"-"))'
+
   $JQ -s -r "
     .
     | [sort_by(.${_sort_column}) | .[]
@@ -1428,11 +1429,11 @@ print_api_results_sv()
     # lowercase keys |  [.[] | with_entries( .key |= ascii_downcase ] )
     |  [.[] ]
     # (for predictable sorting, optional)
-    |    (.[0] |keys_unsorted | @${_sv})               # print headers
+    |    (.[0] | keys_unsorted ${_dash_row} |@${_sv}  )               # print headers
         , (.[]|.|map(.) |@${_sv})                       # print table
     " <"${PINGONE_API_RESULTS}" | column -t -s "$(printf '\t')"
 
-    echo
+    echo "--"
     echo "${PINGONE_RESULT_COUNT} '${_res_obj}' returned"
 }
 
@@ -1480,6 +1481,11 @@ pingone_api_get()
       _res_obj="groupMemberships"
       _json_res="_embedded.${_res_obj}[]"
       ;;
+    users/*)
+      _api_url="environments/${PINGONE_ENVIRONMENT_ID}/${_pingone_resource}"
+      _res_obj="users"
+      _json_res=""
+      ;;
     *)
       _api_url="environments/${PINGONE_ENVIRONMENT_ID}/${_pingone_resource}"
       _res_obj="${_pingone_resource}"
@@ -1521,14 +1527,13 @@ pingone_api_get()
       _url=""
 
       if test -s "${PINGONE_CALL_RESPONSE}"; then
-        $JQ .${_json_res} <"${PINGONE_CALL_RESPONSE}" >> "${PINGONE_API_RESULTS}"
+        $JQ ".${_json_res}" <"${PINGONE_CALL_RESPONSE}" >> "${PINGONE_API_RESULTS}"
 
         _next=$($JQ ._links.next <"${PINGONE_CALL_RESPONSE}")
 
         if test "${_next}" != "null"; then
           _url=$($JQ -r .href <<<"${_next}")
           _filter=""
-          _order=""
         fi
       fi
 
@@ -1543,7 +1548,7 @@ pingone_api_get()
   if test -s "${PINGONE_API_RESULTS}"; then
     PINGONE_RESULT_COUNT=$($JQ -s '. | length' <"${PINGONE_API_RESULTS}")
 
-    if test ${PINGONE_RESULT_COUNT} -eq 1; then
+    if test "${PINGONE_RESULT_COUNT}" -eq 1; then
       PINGONE_RESULT_ID="$($JQ -s -r '.[0].id' <"${PINGONE_API_RESULTS}")"
     fi
   fi
@@ -1709,22 +1714,20 @@ pingone_get ()
 {
   USAGE_CONTEXT="USAGE_PINGONE_GET_DETAIL"
   _resource="${1}" && shift
-  # _get_id="${1}" && shift
   test -z "${_resource}" && usage_command
-  # test -z "${_get_id}" && usage_command
 
   get_pingone_options "${@}"
   # Remove the switches we parsed above.
   shift "$(( OPTIND - 1 ))"
 
-# echo "OPT_PINGONE_o=${OPT_PINGONE_o}"
-# echo "OPT_PINGONE_i=${OPT_PINGONE_i}"
-# echo "OPT_PINGONE_n=${OPT_PINGONE_n}"
-# echo "OPT_PINGONE_f=${OPT_PINGONE_f}"
-
   _exact_id=""
   _filter=""
 
+  #
+  # In ORDER
+  # 1 - Process by ID (i)
+  # 2 - Process by NAME (n)
+  # 3 - Process by FILTER (f)
   if test ! -z "${OPT_PINGONE_i}"; then
     _exact_id="/${OPT_PINGONE_i}"
   elif test ! -z "${OPT_PINGONE_n}"; then
@@ -1741,31 +1744,25 @@ pingone_get ()
       users)
           pingone_api_get_and_print "users${_exact_id}" "${_filter}"
 
-          if test ${PINGONE_RESULT_COUNT} -eq 1; then
-            _user_id=$($JQ -r ._embedded.users[].id <"${PINGONE_CALL_RESPONSE}")
-            test -z "${_user_id}" && echo "User not found '${_get_id}'" && exit
-
+          if test -n "${PINGONE_RESULT_ID}"; then
             echo
-            pingone_api_get_and_print "users/${_user_id}/memberOfGroups" ""
+            pingone_api_get_and_print "users/${PINGONE_RESULT_ID}/memberOfGroups" ""
           fi
           ;;
       groups)
           pingone_api_get_and_print "groups${_exact_id}" "${_filter}"
 
-          if test ${PINGONE_RESULT_COUNT} -eq 1; then
-            _group_id=$($JQ -r ._embedded.groups[].id <"${PINGONE_CALL_RESPONSE}")
+          if test -n "${PINGONE_RESULT_ID}"; then
             echo
-            pingone_api_get_and_print "users" "filter=memberOfGroups[id eq \"${_group_id}\"]"
+            pingone_api_get_and_print "users" "filter=memberOfGroups[id eq \"${PINGONE_RESULT_ID}\"]"
           fi
           ;;
       populations)
           pingone_api_get_and_print "populations${_exact_id}" "${_filter}"
 
-          if test ${PINGONE_RESULT_COUNT} -eq 1; then
-            _population_id=$($JQ -r ._embedded.populations[].id <"${PINGONE_CALL_RESPONSE}")
-
+          if test -n "${PINGONE_RESULT_ID}"; then
             echo
-            pingone_api_get_and_print "users" "filter=population.id eq \"${_population_id}\""
+            pingone_api_get_and_print "users" "filter=population.id eq \"${PINGONE_RESULT_ID}\""
           fi
           ;;
       *)

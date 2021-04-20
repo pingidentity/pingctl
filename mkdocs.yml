@@ -1,7 +1,7 @@
-site_name: Ping Identity CLI
-repo_name: pingidentity/pingidentity-devops-getting-started
-repo_url: https://github.com/pingidentity/pi-cli
-site_url: https://devops.pingidentity.com/
+site_name: pingctl, A Ping Identity CLI
+repo_name: pingidentity/pingctl
+repo_url: https://github.com/pingidentity/pingctl
+site_url: https://pingidentity.github.io/pingctl/
 copyright: © Copyright 2021 Ping Identity
 google_analytics: ['UA-156953351-1', 'devops.pingidentity.com']
 extra_css:
@@ -38,7 +38,7 @@ markdown_extensions:
       permalink: " ¶"
 
 nav:
-  - PingIdentity CLI:
+  - pingctl:
       - Home: "README.md"
       - License: LICENSE.md
       - Disclaimer: DISCLAIMER.md

@@ -5,7 +5,6 @@
 #
 #   - Managing Ping Identity PingOne environment.
 #   - Managing Ping Identity DevOps environment for Docker and Kubernetes.
-#   - Managing Hashicorp Vault Secrets
 #
 # ------------
 # Installation
@@ -22,7 +21,6 @@ BASE64="base64"
 OPENSSL="openssl"
 KUBECTL="kubectl"
 CURL="curl -sL "
-VAULT="vault"
 # Optional tools
 JWT="jwt"
 #
@@ -227,9 +225,18 @@ Usage:
   ${PI_CMD} k8s generate devops-secret                    # Ping DevOps secret
   ${PI_CMD} k8s generate tls-secret {domain}              # TLS Cert/Key (i.e. example.com)
   ${PI_CMD} k8s generate ssh-id-secret {ssh id_rsa file}  # SSH ID Key (i.e. ~/.ssh/id_rsa)
-  ${PI_CMD} k8s generate license {product} {ver}          # Eval license file for product/ver
   ${PI_CMD} k8s generate license-secret {license file}    # License secret from license file
   ${PI_CMD} k8s generate license-secret {product} {ver}   # License secret for product/ver"
+
+################################################################################
+USAGE_LICENSE_DETAIL="Ping Identity Licensing Tools
+
+Usage:
+  ${PI_CMD} license {product} {ver}          # Obtain an evaluation license file for product/ver
+
+Examples:
+  pi license pingfederate 10.2"
+
 
 ################################################################################
 USAGE_OIDC_DETAIL="kubectl/kubelogin OIDC Tools
@@ -340,13 +347,6 @@ Flags:
 ${FLAGS_R}"
 
 ################################################################################
-USAGE_VAULT="Hashicorp Vault Tools
-
-Usage:
-  ${PI_CMD} vault get-token                   # Get vault token for cli commands
-  ${PI_CMD} vault create-annotations {secret} # Create kubernetes annotaions for secret"
-
-################################################################################
 # usage - Print any message sent as an error and then the usage information
 ################################################################################
 usage()
@@ -365,8 +365,8 @@ Available Commands:
   clean           Remove ~/.pingidentity/${PI_CMD}
 
   kubernetes      Kubernetes Tools
+  license         Ping Identity Licensing Tools
   pingone         PineOne Tools
-  vault           Hashicorp Vault Tools
 
 Flags:
   -h              Help for pi
@@ -786,179 +786,6 @@ pi_clean()
 }
 
 ################################################################################
-# vault_get_token ()
-#
-# Hashicorp Vault get-token
-################################################################################
-vault_get_token()
-{
-    printf "Getting vault token..."
-
-    check_for_tool $VAULT
-
-    # _vaultCACRT="${TMP_DIR}/vault.ca.crt"
-    # kubectl get secrets vault-tls-secret -o jsonpath="{.data.vault\.crt}"|base64 --decode > "${_vaultCACRT}"
-
-    if test -n "${VAULT_CACERT}" && test -s "${VAULT_CACERT}" ; then
-      _vaultCACRT="${VAULT_CACERT}"
-    fi
-
-    kubectl get serviceaccount vault-auth 2>/dev/null >/dev/null
-    test $? -ne 0 && echo "Creating 'vauth-auth' serviceaccount" && kubectl create serviceaccount vault-auth
-
-    _k8sToken=$($KUBECTL get secrets -o jsonpath="{.items[?(@.metadata.annotations['kubernetes\.io/service-account\.name']=='vault-auth')].data.token}"|base64 --decode)
-
-
-    _vaultToken=$(${CURL} --request POST "${VAULT_ADDR}/v1/auth/kubernetes/login" \
-      $( test -s "${_vaultCACRT}" && echo "--cacert ${_vaultCACRT}" ) \
-      --header 'Content-Type: application/json' \
-      --data-raw "{\"jwt\":\"${_k8sToken}\",\"role\":\"k8s-default\"}" \
-      --fail 2>/dev/null | $JQ -r .auth.client_token)
-    _curl_result=$?
-
-    printf "\n\n"
-    $VAULT login --address=${VAULT_ADDR} -format=table "${_vaultToken}"
-}
-
-################################################################################
-# vault_create_annotation ()
-#
-# Hashicorp Vault create_annotation
-################################################################################
-vault_create_annotation()
-{
-    readonly secret="${1}"
-
-    $VAULT kv get -format=json ${secret}  | $JQ '.data.data'> ${TMP_DIR}/vault.sec
-
-    _secretName=$(basename "${secret}")
-
-    case "${_secretName}" in
-        *.env)
-            cat >> "${TMP_DIR}/k8s.annotations" <<EOANNOTATION1
-    #
-    #------------ env: ${_secretName}
-    vault.hashicorp.com/agent-inject-secret-${_secretName}: "${secret}"
-    vault.hashicorp.com/agent-inject-template-${_secretName}: |
-      {{ with secret "${secret}" -}}
-EOANNOTATION1
-            for _secretKey in $($JQ -r 'keys | .[]' ${TMP_DIR}/vault.sec); do
-                echo "      export ${_secretKey}=\"{{ .Data.data.${_secretKey} }}\"" >> "${TMP_DIR}/k8s.annotations"
-            done
-
-            cat >> "${TMP_DIR}/k8s.annotations" <<EOANNOTATION2
-      {{- end }}
-    #------------------------------------------------
-EOANNOTATION2
-            ;;
-        *)
-            for _secretKey in $($JQ -r 'keys | .[]' ${TMP_DIR}/vault.sec); do
-                cat >> "${TMP_DIR}/k8s.annotations" <<EOANNOTATION3
-    #
-    #------------ key: ${_secretKey}
-    vault.hashicorp.com/agent-inject-secret-${_secretKey}: "${secret}"
-    vault.hashicorp.com/agent-inject-template-${_secretKey}: |
-      {{ with secret "${secret}" -}}
-      {{ .Data.data.${_secretKey} }}
-      {{- end }}
-    #------------------------------------------------
-EOANNOTATION3
-            done
-            ;;
-    esac
-}
-
-################################################################################
-# vault_create_annotations ()
-#
-# Hashicorp Vault create_annotations
-################################################################################
-vault_create_annotations()
-{
-  readonly secretPath="${1}"
-
-  check_for_tool $VAULT
-
-  readonly vresult=$( $VAULT kv list -format=json ${secretPath})
-
-  if test -z "${vresult}" || test $? -ne 1; then
-    echo ""
-    echo_red "Error: Unable to make a call to vault.  Possibly your token has timed out."
-    echo_red "       Get a new token and re-run."
-    echo ""
-    echo "  ${PI_CMD} vault get-token"
-    return
-  fi
-
-  if test "${vresult}" = "{}" ; then
-    vault_create_annotation "${secretPath}"
-    return
-  fi
-
-  readonly _firstRow=true
-  for secret in $(echo "${vresult}" | $JQ -r '.[]'); do
-    test "$_firstRow" = true \
-      && _firstRow=false \
-      && printf "    #\n    #-------- secret: %s\n" "${secretPath}" >> "${TMP_DIR}/k8s.annotations"
-
-    vault_create_annotations "${secretPath}${secret}"
-  done
-}
-
-################################################################################
-VAULT_ANNOTAION_PREAMBLE="
-  annotations:
-    #----------------------------------------------------
-    # Annotation secretes prepared for hashicorp vault secrets
-    # for use in Deployment, StatefulSet, Pod resources.
-    #
-    # https://www.vaultproject.io/docs/platform/k8s/injector/annotations
-    #
-    vault.hashicorp.com/agent-pre-populate-only: \"true\"
-    vault.hashicorp.com/agent-inject: \"true\"
-    vault.hashicorp.com/role: \"k8s-default\"
-    vault.hashicorp.com/log-level: \"info\"
-    vault.hashicorp.com/preserve-secret-case: \"true\"
-    vault.hashicorp.com/secret-volume-path: \"/run/secrets\"
-    #----------------------------------------------------"
-
-################################################################################
-# vault_command
-#
-# Hashicorp Vault CLI
-################################################################################
-vault_command()
-{
-    _vault_cmd="${1}" && shift
-
-    _remainParams="${@}"
-
-    check_config_file
-    #check_for_tool $VAULT
-    check_variables VAULT_ADDR
-
-    case "${_vault_cmd}" in
-        get-token)
-            vault_get_token
-            ;;
-        create-annotations)
-            _secretPath="secret/${VAULT_SECRET_PREFIX}/${_remainParams}$(test -n "${_remainParams}" && printf "/")"
-
-            vault_create_annotations "${_secretPath}"
-
-            if test -s "${TMP_DIR}/k8s.annotations" ; then
-                echo "${VAULT_ANNOTAION_PREAMBLE}"
-                cat "${TMP_DIR}/k8s.annotations"
-            fi
-            ;;
-        *)
-            usage_command USAGE_VAULT "unknown/missing vault command: ${_vault_cmd}"
-            ;;
-    esac
-}
-
-
-################################################################################
 # k8s_command
 ################################################################################
 k8s_command()
@@ -971,6 +798,20 @@ k8s_command()
       *)        usage_command USAGE_KUBERNETES_DETAIL  "unknown/missing kubernetes command: ${_k8s_cmd}";;
   esac
 
+}
+
+################################################################################
+# license_command
+################################################################################
+license_command()
+{
+  _license_prod="${1}" && shift
+  _license_ver="${1}" && shift
+
+  test -z "${_license_prod}" && usage_command USAGE_LICENSE_DETAIL "unknown/missing license product"
+  test -z "${_license_ver}" && usage_command USAGE_LICENSE_DETAIL "unknown/missing license version"
+
+  generate_license_secret "license" "${_license_prod}" "${_license_ver}"
 }
 
 ################################################################################
@@ -1082,7 +923,7 @@ data:
   id_rsa: |
     $(base64_no_newlines "${_idKey}")"
             ;;
-        license-secret|license)
+        license-secret)
             generate_license_secret "${@}"
             ;;
         *)
@@ -1238,17 +1079,6 @@ echo "##########################################################################
     add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_HOME"               "${HOME}/projects/devops" "Location of Ping Identity DevOps repos and tools"
     add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_REGISTRY"           "docker.io/pingidentity"  "Ping Identity DevOps Registry (recommend default: docker.io/pingidentity)"
     add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_TAG"                "edge"                    "Ping Identity DevOps Tag (recommend default: edge)"
-
-    echo "
-################################################################################
-# Hashicorp Vault - If your kubernetes cluster is setup to use a vault from
-#                   Hashicorp, you may optionally provide a URL to that vault
-################################################################################
-" | tee -a "${CONFIG_FILE}"
-
-    add_config "${CONFIG_FILE}" "VAULT_ADDR"                              "https://vault.example.com:8200"  "Hashicorp Vault Address"
-    add_config "${CONFIG_FILE}" "VAULT_CACERT"                            ""                                "File Location of Vault CA Cert (i.e. ~/.vault-ca-cert)"
-    add_config "${CONFIG_FILE}" "VAULT_SECRET_PREFIX"                     "${PING_IDENTITY_DEVOPS_USER}/${CURRENT_K8S_NAMESPACE}"  "Vault Secret Prefix"
 
     echo "
 ################################################################################
@@ -2120,11 +1950,11 @@ case "${_pi_command}" in
     k8s|kubernetes)
         k8s_command "${@}"
         ;;
+    lic|license)
+        license_command "${@}"
+        ;;
     p1|pingone)
         pingone_command "${@}"
-        ;;
-    vault)
-        vault_command ${@}
         ;;
     *)
         usage "unknown/missing ${PI_CMD} command '${_pi_command}'"

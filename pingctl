@@ -33,7 +33,7 @@ CWD=$(pwd)
 ################################################################################
 # Command and Version Info
 ################################################################################
-PI_CMD="pi"
+CMD="pingctl"
 VERSION="0.9.0"
 
 ################################################################################
@@ -42,9 +42,9 @@ VERSION="0.9.0"
 DOT_PINGIDENTITY="${HOME}/.pingidentity"
 CONFIG_FILE="${DOT_PINGIDENTITY}/config"
 PRINT_CONFIG_FILE="${HOME}/.pingidentity/config"
-PI_WORK_DIR="${DOT_PINGIDENTITY}/${PI_CMD}"
-PINGONE_ACCESS_TOKEN_FILE="${PI_WORK_DIR}/pingone.token"
-test -d "${PI_WORK_DIR}" || mkdir -p "${PI_WORK_DIR}"
+WORK_DIR="${DOT_PINGIDENTITY}/${CMD}"
+PINGONE_ACCESS_TOKEN_FILE="${WORK_DIR}/pingone.token"
+test -d "${WORK_DIR}" || mkdir -p "${WORK_DIR}"
 
 ################################################################################
 # Kube OIDC Cache Infomation
@@ -167,8 +167,8 @@ run_command()
 check_config_file()
 {
   test ! -f "${CONFIG_FILE}" \
-    && echo_red "No ${PI_CMD} config found.  Please run:\n" \
-    && echo "  ${PI_CMD} config" \
+    && echo_red "No ${CMD} config found.  Please run:\n" \
+    && echo "  ${CMD} config" \
     && exit
 }
 
@@ -186,10 +186,10 @@ check_variables()
   test ${_var_check_fails} \
     && echo \
     && echo "To get more information on these variables:" \
-    && echo_green "  https://pi-cli.pingidentity.com/" \
+    && echo_green "  https://pingctl.pingidentity.com/" \
     && echo \
     && echo "Set this/these in your config with:" \
-    && echo_green "  ${PI_CMD} config" \
+    && echo_green "  ${CMD} config" \
     && echo \
     && exit
 }
@@ -201,24 +201,24 @@ check_variables()
 USAGE_KUBERNETES_DETAIL="Kubernetes Tools
 
 Usage:
-  ${PI_CMD} k8s generate             # Kubernetes Resource Generation Tools
-  ${PI_CMD} k8s oidc                 # kubectl/kubelogin OIDC Tools"
+  ${CMD} k8s generate             # Kubernetes Resource Generation Tools
+  ${CMD} k8s oidc                 # kubectl/kubelogin OIDC Tools"
 
 ################################################################################
 USAGE_GENERATE_DETAIL="Kubernetes Resource Generation Tools
 
 Usage:
-  ${PI_CMD} k8s generate devops-secret                    # Ping DevOps secret
-  ${PI_CMD} k8s generate tls-secret {domain}              # TLS Cert/Key (i.e. example.com)
-  ${PI_CMD} k8s generate ssh-id-secret {ssh id_rsa file}  # SSH ID Key (i.e. ~/.ssh/id_rsa)
-  ${PI_CMD} k8s generate license-secret {license file}    # License secret from license file
-  ${PI_CMD} k8s generate license-secret {product} {ver}   # License secret for product/ver"
+  ${CMD} k8s generate devops-secret                    # Ping DevOps secret
+  ${CMD} k8s generate tls-secret {domain}              # TLS Cert/Key (i.e. example.com)
+  ${CMD} k8s generate ssh-id-secret {ssh id_rsa file}  # SSH ID Key (i.e. ~/.ssh/id_rsa)
+  ${CMD} k8s generate license-secret {license file}    # License secret from license file
+  ${CMD} k8s generate license-secret {product} {ver}   # License secret for product/ver"
 
 ################################################################################
 USAGE_LICENSE_DETAIL="Ping Identity Licensing Tools
 
 Usage:
-  ${PI_CMD} license {product} {ver}          # Obtain an evaluation license file for product/ver
+  ${CMD} license {product} {ver}          # Obtain an evaluation license file for product/ver
 
 Examples:
   pi license pingfederate 10.2"
@@ -228,23 +228,23 @@ Examples:
 USAGE_OIDC_DETAIL="kubectl/kubelogin OIDC Tools
 
 Usage:
-  ${PI_CMD} k8s oidc clear                                # Remove ~/.kube/cache/oidc-login
-  ${PI_CMD} k8s oidc {claim}                              # Get oidc claim (i.e. email, groups)
-  ${PI_CMD} k8s oidc info                                 # Display jwt"
+  ${CMD} k8s oidc clear                                # Remove ~/.kube/cache/oidc-login
+  ${CMD} k8s oidc {claim}                              # Get oidc claim (i.e. email, groups)
+  ${CMD} k8s oidc info                                 # Display jwt"
 
 ################################################################################
 USAGE_PINGONE_DETAIL="Manage PingOne Evironments
 
 Usage:
-  ${PI_CMD} pingone get                  # Get object
+  ${CMD} pingone get                  # Get object
 
-  ${PI_CMD} pingone add                  # Add object
-  ${PI_CMD} pingone delete               # Delete object
+  ${CMD} pingone add                  # Add object
+  ${CMD} pingone delete               # Delete object
 
-  ${PI_CMD} pingone add-user-group       # Add group to user
-  ${PI_CMD} pingone delete-user-group    # Delete group from user
+  ${CMD} pingone add-user-group       # Add group to user
+  ${CMD} pingone delete-user-group    # Delete group from user
 
-  ${PI_CMD} pingone token                # Obtain access token"
+  ${CMD} pingone token                # Obtain access token"
 
 
 ################################################################################
@@ -255,9 +255,9 @@ FLAGS_R="  -r
 USAGE_PINGONE_GET_DETAIL="Get PingOne Objects
 
 Usage:
-  ${PI_CMD} pingone get groups       # Get group(s)
-  ${PI_CMD} pingone get populations  # Get population(s)
-  ${PI_CMD} pingone get users        # Get user(s)
+  ${CMD} pingone get groups       # Get group(s)
+  ${CMD} pingone get populations  # Get population(s)
+  ${CMD} pingone get users        # Get user(s)
 
 Flags:
   -o [ table | csv | json ]
@@ -286,11 +286,11 @@ Examples:
 USAGE_PINGONE_ADD_DETAIL="Add PingOne Objects
 
 Usage:
-  ${PI_CMD} pingone add group {group name}
+  ${CMD} pingone add group {group name}
 
-  ${PI_CMD} pingone add population {population name}
+  ${CMD} pingone add population {population name}
 
-  ${PI_CMD} pingone add user {username} {first} {last} [email]
+  ${CMD} pingone add user {username} {first} {last} [email]
      * REQUIRED: username, first last
        OPTIONAL: email (same as username if not provided)
 
@@ -308,9 +308,9 @@ Examples:
 USAGE_PINGONE_DELETE_DETAIL="Delete PingOne Objects
 
 Usage:
-  ${PI_CMD} pingone delete group       {name}
-  ${PI_CMD} pingone delete population  {name}
-  ${PI_CMD} pingone delete user        {name}
+  ${CMD} pingone delete group       {name}
+  ${CMD} pingone delete population  {name}
+  ${CMD} pingone delete user        {name}
 
 Flags:
 ${FLAGS_R}"
@@ -319,7 +319,7 @@ ${FLAGS_R}"
 USAGE_PINGONE_ADD_USER_GROUP_DETAIL="Add PingOne Group to User
 
 Usage:
-  ${PI_CMD} pingone add-user-group {username} {groupname}  # Add group to user
+  ${CMD} pingone add-user-group {username} {groupname}  # Add group to user
 
 Flags:
 ${FLAGS_R}"
@@ -327,7 +327,7 @@ ${FLAGS_R}"
 ################################################################################
 
 USAGE_PINGONE_DELETE_USER_GROUP_DETAIL="Delete PingOne Group from User
-  ${PI_CMD} pingone delete-user-group {username} {groupname}  # Delete group from user
+  ${CMD} pingone delete-user-group {username} {groupname}  # Delete group from user
 
 Flags:
 ${FLAGS_R}"
@@ -342,13 +342,13 @@ usage()
   echo "pi is a CLI from Ping Identity to manage PingOne, PingDevOps and other projects/tools.
 
 Usage:
-  ${PI_CMD} [command] [flags]
+  ${CMD} [command] [flags]
 
 Available Commands:
   info            Print pi config
   config          Manage pi config
   version         Version Details and Check
-  clean           Remove ~/.pingidentity/${PI_CMD}
+  clean           Remove ~/.pingidentity/${CMD}
 
   kubernetes      Kubernetes Tools
   license         Ping Identity Licensing Tools
@@ -358,7 +358,7 @@ Flags:
   -h              Help for pi
 
 Further help:
-  https://pi-cli.pingidentity.com"
+  https://pingctl.pingidentity.com"
 
   exit
 }
@@ -466,7 +466,7 @@ source_config()
 
           if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
               echo "
-# Ping Identity - Added with '${PI_CMD} config' on $(date)
+# Ping Identity - Added with '${CMD} config' on $(date)
 test -f '${CONFIG_FILE}' && source '${CONFIG_FILE}'" >> "${BASH_PROFILE}"
           else
             echo "Skipping ${BASH_PROFILE}"
@@ -487,7 +487,7 @@ test -f '${CONFIG_FILE}' && source '${CONFIG_FILE}'" >> "${BASH_PROFILE}"
 
           if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
               echo "
-# Ping Identity - Added with '${PI_CMD} config' on $(date)
+# Ping Identity - Added with '${CMD} config' on $(date)
 test -f '${CONFIG_FILE}' && source '${CONFIG_FILE}'" >> "${ZSHRC}"
           else
             echo "Skipping ${ZSHRC}"
@@ -703,7 +703,7 @@ fi
 echo "
 ################################################################################
  To change config, run:
-    ${PI_CMD} config
+    ${CMD} config
 "
 }
 
@@ -741,19 +741,19 @@ pi_version()
         _version_msg="${RED}${VERSION}${NORMAL} (updated version ${_latest_tool_version} is available)\n$(print_update_information)"
     fi
 
-    echo "${PI_CMD} version ${_version_msg}"
+    echo "${CMD} version ${_version_msg}"
 }
 
 ################################################################################
 # pi_clean ()
 #
-# Cleans the ~/.pingidentity/${PI_CMD}
+# Cleans the ~/.pingidentity/${CMD}
 ################################################################################
 pi_clean()
 {
 
     echo
-    echo_red "IMPORTANT: This is destructive of all content ${PI_WORK_DIR}"
+    echo_red "IMPORTANT: This is destructive of all content ${WORK_DIR}"
     echo
     echo "Are you SURE you want to clean/remove this content (y/n) [n] ? \c"
     read -r answer
@@ -763,7 +763,7 @@ pi_clean()
         exit
     fi
 
-    rm -rf "${PI_WORK_DIR}"
+    rm -rf "${WORK_DIR}"
 }
 
 ################################################################################
@@ -847,8 +847,8 @@ kind: Secret
 metadata:
   name: devops-secret
   annotations:
-    ${PI_CMD}.user: ${PING_IDENTITY_DEVOPS_USER}
-    ${PI_CMD}.app-version: v${VERSION}
+    ${CMD}.user: ${PING_IDENTITY_DEVOPS_USER}
+    ${CMD}.app-version: v${VERSION}
 type: Opaque
 data:
   PING_IDENTITY_DEVOPS_USER: $(base64_no_newlines "${PING_IDENTITY_DEVOPS_USER}")
@@ -886,8 +886,8 @@ type: kubernetes.io/tls
 metadata:
   name: tls-secret
   annotations:
-    ${PI_CMD}.dns-zone: ${_domain}
-    ${PI_CMD}.app-version: v${VERSION}
+    ${CMD}.dns-zone: ${_domain}
+    ${CMD}.app-version: v${VERSION}
 data:
   tls.crt: $(base64_no_newlines "${_tlsCrt}")
   tls.key: $(base64_no_newlines "${_tlsKey}")"
@@ -958,7 +958,7 @@ generate_license_secret()
       LICENSE_CALL_RESULT=$( $CURL -g --request GET https://license.pingidentity.com/devops/license \
         --header "devops-user: ${PING_IDENTITY_DEVOPS_USER}" \
         --header "devops-key: ${PING_IDENTITY_DEVOPS_KEY}" \
-        --header 'devops-app: pi-cli' \
+        --header 'devops-app: pingctl' \
         --header 'devops-purpose: download-license' \
         --header "product: ${_licenseProd}" \
         --header "version: ${_licenseVer}" \
@@ -978,7 +978,7 @@ kind: Secret
 metadata:
   name: ${_licenseSecretName}
   labels:
-    pingidentity.com/generated-by: ${PI_CMD}-cli
+    pingidentity.com/generated-by: ${CMD}
 data:
   license: |
     ${_licenseSecret}"
@@ -1876,7 +1876,7 @@ get_global_options()
 {
   while getopts dc OPT; do
       case "$OPT" in
-          c) PI_COLORIZE="on" ;;
+          c) PINGCTL_COLORIZE="on" ;;
           d) set -x ;;
           ?)
               # getopts issues an error message
@@ -1940,6 +1940,6 @@ case "${_pi_command}" in
         pingone_command "${@}"
         ;;
     *)
-        usage "unknown/missing ${PI_CMD} command '${_pi_command}'"
+        usage "unknown/missing ${CMD} command '${_pi_command}'"
         ;;
 esac

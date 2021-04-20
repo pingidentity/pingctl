@@ -358,7 +358,7 @@ Flags:
   -h              Help for ${CMD}
 
 Further help:
-  https://pingctl.pingidentity.com"
+  https://pingidentity.github.io/pingctl"
 
   exit
 }

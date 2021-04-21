@@ -294,7 +294,8 @@ Usage:
 
 Flags:
   -p {population name}
-     Population to add user/group into.  If not proivded 'Default' population used
+     Population to add user/group into.
+     If not provided 'Default' population used
 
 ${FLAGS_R}
 

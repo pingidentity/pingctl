@@ -34,7 +34,7 @@ CWD=$(pwd)
 # Command and Version Info
 ################################################################################
 CMD="pingctl"
-VERSION="0.9.3"
+VERSION="0.9.4"
 
 ################################################################################
 # Ping Identity tools & config information
@@ -714,7 +714,7 @@ print_update_information()
   echo "
 to update, you can use:
   macosx : brew upgrade pi
-  linux  : curl -L https://bit.ly/pi-install | bash"
+  linux  : curl -L https://raw.githubusercontent.com/pingidentity/pingctl/master/install.sh | bash"
 }
 
 ################################################################################
@@ -728,7 +728,7 @@ version_command()
     #
     #      url "https://github.com/pingidentity/pi/archive/v0.5.0.tar.gz"
     #
-    _latest_tool_version=$(${CURL} https://bit.ly/pi-version \
+    _latest_tool_version=$(${CURL} https://raw.githubusercontent.com/pingidentity/homebrew-devops/master/Formula/pingctl.rb \
       |  grep -e '^  url ".*"$' \
       |  sed "s/.*archive\/v\(.*\)\.tar.*/\1/")
 

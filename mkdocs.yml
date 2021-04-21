@@ -39,7 +39,7 @@ markdown_extensions:
 
 nav:
   - pingctl:
-      - Home: "README.md"
+      - Home: pingctl.md
       - License: LICENSE.md
       - Disclaimer: DISCLAIMER.md
       - Contributing: CONTRIBUTING.md

@@ -245,7 +245,7 @@ Usage:
 
 
 ################################################################################
-FLAGS_R="  -r
+OPTIONS_R="  -r
      Provide REST Calls"
 
 ################################################################################
@@ -256,7 +256,7 @@ Usage:
   ${CMD} pingone get populations
   ${CMD} pingone get users
 
-Flags:
+Options:
   -o [ table | csv | json ]
      Output format (default: table)
      also set with env variable: PING_DEFAULT_OUTPUT
@@ -272,7 +272,7 @@ Flags:
         ex: '.name.given eq \"john\"'
             '.email sw \"john\"'
 
-${FLAGS_R}
+${OPTIONS_R}
 
 Examples:
   ${CMD} pingone get users -i 5c07e067-3eeb-40bb-924b-a419d01ee28f
@@ -292,12 +292,12 @@ Usage:
      * REQUIRED: username, first last
        OPTIONAL: email (same as username if not provided)
 
-Flags:
+Options:
   -p {population name}
      Population to add user/group into.
      If not provided 'Default' population used
 
-${FLAGS_R}
+${OPTIONS_R}
 
 Examples:
   ${CMD} pingone add group test-group-name
@@ -311,8 +311,8 @@ Usage:
   ${CMD} pingone delete population  {name}
   ${CMD} pingone delete user        {name}
 
-Flags:
-${FLAGS_R}"
+Options:
+${OPTIONS_R}"
 
 ################################################################################
 USAGE_PINGONE_ADD_USER_GROUP_DETAIL="Add PingOne Group to User
@@ -320,16 +320,16 @@ USAGE_PINGONE_ADD_USER_GROUP_DETAIL="Add PingOne Group to User
 Usage:
   ${CMD} pingone add-user-group {username} {groupname}  # Add group to user
 
-Flags:
-${FLAGS_R}"
+Options:
+${OPTIONS_R}"
 
 ################################################################################
 
 USAGE_PINGONE_DELETE_USER_GROUP_DETAIL="Delete PingOne Group from User
   ${CMD} pingone delete-user-group {username} {groupname}  # Delete group from user
 
-Flags:
-${FLAGS_R}"
+Options:
+${OPTIONS_R}"
 
 ################################################################################
 # usage - Print any message sent as an error and then the usage information
@@ -341,7 +341,7 @@ usage()
   echo "${CMD} is a CLI from Ping Identity to manage PingOne and other Ping Identity projects/tools.
 
 Usage:
-  ${CMD} [command] [flags]
+  ${CMD} [command] [options]
 
 Available Commands:
   info            Print ${CMD} config
@@ -353,7 +353,7 @@ Available Commands:
   license         Ping Identity Licensing Tools
   pingone         PineOne Tools
 
-Flags:
+Options:
   -h              Help for ${CMD}
 
 Further help:
@@ -1646,7 +1646,7 @@ pingone_add()
   esac
 
   #
-  # Get any flags (including population name)
+  # Get any options (including population name)
   #
   get_pingone_options "${@}"
   # Remove the switches we parsed above.

@@ -40,11 +40,15 @@ VERSION="0.9.2"
 # Ping Identity tools & config information
 ################################################################################
 DOT_PINGIDENTITY="${HOME}/.pingidentity"
-CONFIG_FILE="${DOT_PINGIDENTITY}/config"
-PRINT_CONFIG_FILE="${HOME}/.pingidentity/config"
 WORK_DIR="${DOT_PINGIDENTITY}/${CMD}"
 PINGONE_ACCESS_TOKEN_FILE="${WORK_DIR}/pingone.token"
 test -d "${WORK_DIR}" || mkdir -p "${WORK_DIR}"
+
+################################################################################
+# pingctl config environmental variables
+################################################################################
+PING_CONFIG_FILE="${PING_CONFIG_FILE:-${DOT_PINGIDENTITY}/config}"
+PING_DEFAULT_OUTPUT="${PING_DEFAULT_OUTPUT:-table}"
 
 ################################################################################
 # Kube OIDC Cache Infomation
@@ -68,15 +72,9 @@ STANDARD_VARIABLES="
   PINGONE_WORKER_APP_CLIENT_SECRET"
 
 ################################################################################
-# Check for a .pingidentity directory with propertyfile
+# Check for a .pingidentity directory
 ################################################################################
 test -d "${DOT_PINGIDENTITY}" || mkdir -p "${DOT_PINGIDENTITY}"
-
-################################################################################
-# Source devops file
-################################################################################
-# shellcheck disable=SC1090
-test -f "${CONFIG_FILE}" && . "${CONFIG_FILE}"
 
 ################################################################################
 # Temporary directory used throughout script and cleaned up at exit
@@ -166,8 +164,8 @@ run_command()
 ################################################################################
 check_config_file()
 {
-  test ! -f "${CONFIG_FILE}" \
-    && echo_red "No ${CMD} config found.  Please run:\n" \
+  test ! -f "${PING_CONFIG_FILE}" \
+    && echo_red "No ${CMD} config found (PING_CONFIG_FILE=${PING_CONFIG_FILE}).  Please run:\n" \
     && echo "  ${CMD} config" \
     && exit
 }
@@ -236,10 +234,9 @@ Usage:
 USAGE_PINGONE_DETAIL="Manage PingOne Evironments
 
 Usage:
-  ${CMD} pingone get                  # Get object
-
-  ${CMD} pingone add                  # Add object
-  ${CMD} pingone delete               # Delete object
+  ${CMD} pingone get                  # Get PingOne resource(s)
+  ${CMD} pingone add                  # Add PingOne resource
+  ${CMD} pingone delete               # Delete PingOne resource
 
   ${CMD} pingone add-user-group       # Add group to user
   ${CMD} pingone delete-user-group    # Delete group from user
@@ -255,13 +252,14 @@ FLAGS_R="  -r
 USAGE_PINGONE_GET_DETAIL="Get PingOne Objects
 
 Usage:
-  ${CMD} pingone get groups       # Get group(s)
-  ${CMD} pingone get populations  # Get population(s)
-  ${CMD} pingone get users        # Get user(s)
+  ${CMD} pingone get groups
+  ${CMD} pingone get populations
+  ${CMD} pingone get users
 
 Flags:
   -o [ table | csv | json ]
      Output format (default: table)
+     also set with env variable: PING_DEFAULT_OUTPUT
 
   -i {id}
      Search based on object guid
@@ -454,20 +452,20 @@ source_config()
     ZSHRC="${HOME}/.zshrc"
 
     if test -f "${BASH_PROFILE}"; then
-      grep "${CONFIG_FILE}" "${BASH_PROFILE}" > /dev/null
+      grep "${PING_CONFIG_FILE}" "${BASH_PROFILE}" > /dev/null
 
       if test "${?}" = "1"; then
           echo "
 ################################################################################
 # Checking your bash profile
 ################################################################################
-  OK if we add a 'source ${CONFIG_FILE}' to your '${BASH_PROFILE}' (y/n) [y] ? \c"
+  OK if we add a 'source ${PING_CONFIG_FILE}' to your '${BASH_PROFILE}' (y/n) [y] ? \c"
           read -r answer
 
           if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
               echo "
 # Ping Identity - Added with '${CMD} config' on $(date)
-test -f '${CONFIG_FILE}' && source '${CONFIG_FILE}'" >> "${BASH_PROFILE}"
+test -f '${PING_CONFIG_FILE}' && source '${PING_CONFIG_FILE}'" >> "${BASH_PROFILE}"
           else
             echo "Skipping ${BASH_PROFILE}"
           fi
@@ -475,20 +473,20 @@ test -f '${CONFIG_FILE}' && source '${CONFIG_FILE}'" >> "${BASH_PROFILE}"
     fi
 
     if test -f "${ZSHRC}"; then
-      grep "${CONFIG_FILE}" "${ZSHRC}" > /dev/null
+      grep "${PING_CONFIG_FILE}" "${ZSHRC}" > /dev/null
 
       if test "${?}" = "1"; then
           echo "
 ################################################################################
 # Checking your zsh profile
 ################################################################################
-  OK if we add a 'source ${CONFIG_FILE}' to your '${ZSHRC}' (y/n) [y] ? \c"
+  OK if we add a 'source ${PING_CONFIG_FILE}' to your '${ZSHRC}' (y/n) [y] ? \c"
           read -r answer
 
           if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
               echo "
 # Ping Identity - Added with '${CMD} config' on $(date)
-test -f '${CONFIG_FILE}' && source '${CONFIG_FILE}'" >> "${ZSHRC}"
+test -f '${PING_CONFIG_FILE}' && source '${PING_CONFIG_FILE}'" >> "${ZSHRC}"
           else
             echo "Skipping ${ZSHRC}"
           fi
@@ -503,7 +501,7 @@ test -f '${CONFIG_FILE}' && source '${CONFIG_FILE}'" >> "${ZSHRC}"
 ################################################################################
 get_custom_variables()
 {
-    grep -v "^#" "${CONFIG_FILE}" | \
+    grep -v "^#" "${PING_CONFIG_FILE}" | \
     while read -r _line
     do
         test -z "${_line}" && continue
@@ -636,7 +634,7 @@ echo_info_variable()
 ################################################################################
 # info_command ()
 #
-# Prints all the variables of the ~/.pingidentity/devops file
+# Prints all the variables of the CONFIG_FILE file
 ################################################################################
 info_command()
 {
@@ -651,11 +649,15 @@ info_command()
       PING_IDENTITY_DEVOPS_KEY="*** REDACTED *** (use -v to display)"
     fi
 
+    test ! -f "${PING_CONFIG_FILE}" && _not_found="(NOT FOUND)"
+
     echo "
 ################################################################################
-#     Ping Identity Information (version $VERSION)
+#     pingctl CLI (version $VERSION)
+#
+#               PING_CONFIG_FILE : ${PING_CONFIG_FILE} ${_not_found}
 ################################################################################
-#     PingOne variables sourced from ${PRINT_CONFIG_FILE}
+#     PingOne variables
 ################################################################################
 "
     echo_info_variable PINGONE_API_URL
@@ -670,7 +672,7 @@ info_command()
     echo
 
 echo "################################################################################
-#     DevOps variables sourced from ${PRINT_CONFIG_FILE}
+#     Ping DevOps variables
 ################################################################################
 "
 
@@ -1004,14 +1006,14 @@ config_command()
     ################################################################################
     # Check for existance of the devops file and backup to .prev
     ################################################################################
-    if test -f "${CONFIG_FILE}"; then
-        mv "${CONFIG_FILE}" "${CONFIG_FILE}".prev
+    if test -f "${PING_CONFIG_FILE}"; then
+        mv "${PING_CONFIG_FILE}" "${PING_CONFIG_FILE}".prev
 
         # If the config is broken (i.e. ctrl-c) then restore the previous file
         trap '
             echo
-            echo "restoring: ${CONFIG_FILE}"
-            mv "${CONFIG_FILE}".prev "${CONFIG_FILE}"
+            echo "restoring: ${PING_CONFIG_FILE}"
+            mv "${PING_CONFIG_FILE}".prev "${PING_CONFIG_FILE}"
             exit
         ' HUP INT PIPE TERM
     fi
@@ -1025,8 +1027,8 @@ config_command()
 #  We will run through a few config items to make your experiance as easy as
 #  possible.  These include:
 #
-#    - Setting up your default '${PRINT_CONFIG_FILE}' settings
-#    - Source your '${PRINT_CONFIG_FILE}' in your shell startup files
+#    - Setting up your default '${PING_CONFIG_FILE}' settings
+#    - Source your '${PING_CONFIG_FILE}' in your shell startup files
 #"
 
     print_variable_setting_instructions
@@ -1035,14 +1037,14 @@ config_command()
 # Variables used to assist PingOne operations.  If you aren't using a PingOne
 # environment, you can ignore these settings.
 ################################################################################
-" | tee -a "${CONFIG_FILE}"
+" | tee -a "${PING_CONFIG_FILE}"
 
 
-    add_config "${CONFIG_FILE}" "PINGONE_API_URL"                        "https://api.pingone.com/v1" "PingOne API URL"
-    add_config "${CONFIG_FILE}" "PINGONE_AUTH_URL"                        "https://auth.pingone.com"  "PingOne Authentication URL"
-    add_config "${CONFIG_FILE}" "PINGONE_ENVIRONMENT_ID"                 ""                           "PingOne Environment ID"
-    add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_ID"           ""                           "PingOne Worker App Client ID"
-    add_config "${CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_SECRET"       ""                           "PingOne Worker App Client Secret"
+    add_config "${PING_CONFIG_FILE}" "PINGONE_API_URL"                        "https://api.pingone.com/v1" "PingOne API URL"
+    add_config "${PING_CONFIG_FILE}" "PINGONE_AUTH_URL"                        "https://auth.pingone.com"  "PingOne Authentication URL"
+    add_config "${PING_CONFIG_FILE}" "PINGONE_ENVIRONMENT_ID"                 ""                           "PingOne Environment ID"
+    add_config "${PING_CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_ID"           ""                           "PingOne Worker App Client ID"
+    add_config "${PING_CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_SECRET"       ""                           "PingOne Worker App Client Secret"
 
     #
     # Perform a quick test to see if the PINGONE variables can connect
@@ -1053,14 +1055,14 @@ config_command()
 echo "################################################################################
 # Variables used to assist Ping DevOps operations.
 ################################################################################
-" | tee -a "${CONFIG_FILE}"
+" | tee -a "${PING_CONFIG_FILE}"
 
-    add_config "${CONFIG_FILE}" "PING_IDENTITY_ACCEPT_EULA"               "NO" "Do you accept the terms of license (found here: https://www.pingidentity.com/en/legal/subscription-agreement.html) with Ping Identity? (YES/NO)"
-    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_USER"               ""                        "Ping Identity DevOps User (Register under Support & Community: https://www.pingidentity.com/en/account/sign-on.html)"
-    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_KEY"                ""                        "Ping Identity DevOps Key"
-    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_HOME"               "${HOME}/projects/devops" "Location of Ping Identity DevOps repos and tools"
-    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_REGISTRY"           "docker.io/pingidentity"  "Ping Identity DevOps Registry (recommend default: docker.io/pingidentity)"
-    add_config "${CONFIG_FILE}" "PING_IDENTITY_DEVOPS_TAG"                "edge"                    "Ping Identity DevOps Tag (recommend default: edge)"
+    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_ACCEPT_EULA"               "NO" "Do you accept the terms of license (found here: https://www.pingidentity.com/en/legal/subscription-agreement.html) with Ping Identity? (YES/NO)"
+    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_USER"               ""                        "Ping Identity DevOps User (Register under Support & Community: https://www.pingidentity.com/en/account/sign-on.html)"
+    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_KEY"                ""                        "Ping Identity DevOps Key"
+    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_HOME"               "${HOME}/projects/devops" "Location of Ping Identity DevOps repos and tools"
+    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_REGISTRY"           "docker.io/pingidentity"  "Ping Identity DevOps Registry (recommend default: docker.io/pingidentity)"
+    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_TAG"                "edge"                    "Ping Identity DevOps Tag (recommend default: edge)"
 
     echo "
 ################################################################################
@@ -1081,9 +1083,9 @@ echo "##########################################################################
 #
 # These are often set to nothing, unless you are using advanced features
 ################################################################################
-" | tee -a "${CONFIG_FILE}"
+" | tee -a "${PING_CONFIG_FILE}"
 
-    add_config_custom "${CONFIG_FILE}" "${_custom_variables}"
+    add_config_custom "${PING_CONFIG_FILE}" "${_custom_variables}"
 
     source_config
 
@@ -1177,12 +1179,11 @@ getPingOneAccessToken ()
 ################################################################################
 print_api_results()
 {
-  _print_format="${OPT_PINGONE_o:-table}"
-  case "${_print_format}" in
+  case "${PING_DEFAULT_OUTPUT}" in
     table) print_api_results_sv "tsv" "${@}" ;;
     csv) print_api_results_sv "csv" "${@}" ;;
     json) print_api_results_json "${@}" ;;
-    *) usage_command ;;
+    *) usage_command $USAGE_CONTEXT "Unknown output format (-o | PING_DEFAULT_OUTPUT)=${PING_DEFAULT_OUTPUT}";;
   esac
 }
 
@@ -1395,7 +1396,7 @@ error_pingone_call()
 {
   _expected_result="${1}"
 
-  test ${PINGONE_CALL_RESULT} == "${_expected_result}" && return
+  test "${PINGONE_CALL_RESULT}" == "${_expected_result}" && return
 
   print_rest_debug
 
@@ -1903,7 +1904,8 @@ get_pingone_options()
       case "$OPT" in
           h) usage_command ;;
           r) OPT_PINGONE_r=true ;;
-          o|p|i|n|f) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
+          o) PING_DEFAULT_OUTPUT=${OPTARG} ;;
+          p|i|n|f) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
           ?)
               # getopts issues an error message
               usage "Unknown Option ${OPT}"
@@ -1916,6 +1918,8 @@ get_pingone_options()
 # main
 ################################################################################
 
+
+
 get_global_options "${@}"
 # Remove the switches we parsed above.
 shift "$(( OPTIND - 1 ))"
@@ -1924,6 +1928,23 @@ _pingctl_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
 
 test -z "${_pingctl_command}" && usage
 
+################################################################################
+# Clear STANDARD variables and Source devops file
+################################################################################
+# shellcheck disable=SC2034
+for _var_to_unset in ${STANDARD_VARIABLES};
+do
+  eval "unset \${_var_to_unset}"
+done
+case "${_pingctl_command}" in
+    config|version|clean)
+        ;;
+    *)
+        check_config_file
+        # shellcheck disable=SC2039
+        source "${PING_CONFIG_FILE}"
+        ;;
+esac
 
 case "${_pingctl_command}" in
     info)

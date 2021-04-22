@@ -10,20 +10,47 @@ a `pingctl` config file.  The default location of the file is `~/.pingidentity/c
 In cases where the a configuration item might be specified at any of the three levels of the
 `pingctl` config file, the users current environment, or the command line arguments.  The rule is:
 
-* Command-Line argument overrides
+* Command-Line argument overrides (when available)
 * `pingctl` config file
 * Environment variable overrides
 
-The available variables honored by `pingctl` are as follows:
+## PingOne Variables
 
-| Variable                                   | Description                                                                                                     |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| **PINGCTL_CONFIG**                         | Location of the `pingctl` configuration file. Defaults to: `~/.pingidentity/config`                             |
-| **PINGCTL_DEFAULT_OUTPUT**                 | Specifies format of data returned. Defaults to: `table`                                                         |
-| **PINGCTL_OUTPUT_COLUMNS_{resource_type}** | Specify custom format of table csv data to be returned.  See more detail [below](#ping_output-columns-and-sort) |
-| **PINGCTL_OUTPUT_SORT_{resource_type}**    | Specify column to sort data.  See more detail [below](#ping_output-columns-and-sort)                            |
+The standard **PingOne variables** honored by `pingctl` are as follows:
 
-## PINGCTL_OUTPUT Columns and Sort
+| Variable                             | Description                                                                                                                                         |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PINGONE_API_URL**                  | [PingOne API URL](https://apidocs.pingidentity.com/pingone/platform/v1/api/#get-read-external-authentication-status) (i.e. api.pingone.com/v1)      |
+| **PINGONE_AUTH_URL**                 | [PingOne Auth URL](https://apidocs.pingidentity.com/pingone/platform/v1/api/#changelog) (i.e. auth.pingone.com, auth.pingone.eu, auth.pingone.asia) |
+| **PINGONE_ENVIRONMENT_ID**           | PingOne Environment ID GUID                                                                                                                         |
+| **PINGONE_WORKER_APP_CLIENT_ID**     | PingOne Worker App ID GUID with access to PingOne Environment                                                                                       |
+| **PINGONE_WORKER_APP_CLIENT_SECRET** | PingOne Worker App Secret providing authentication to PingOne Worker App ID GUID                                                                    |
+
+## Ping DevOps Variables
+
+The standard **Ping DevOps** variables honored by `pingctl` are as follows:
+
+| Variable                          | Description                                                                                                             |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **PING_IDENTITY_ACCEPT_EULA**     | Specify `YES` or `NO` to accept [Ping Identity EULA](https://www.pingidentity.com/en/legal/subscription-agreement.html) |
+| **PING_IDENTITY_DEVOPS_USER**     | [Ping DevOps User](https://devops.pingidentity.com/get-started/devopsRegistration/)                                     |
+| **PING_IDENTITY_DEVOPS_KEY**      | [Ping DevOps Key](https://devops.pingidentity.com/get-started/devopsRegistration/)                                      |
+| **PING_IDENTITY_DEVOPS_HOME**     | Home directory/path of your DevOps projects                                                                             |
+| **PING_IDENTITY_DEVOPS_REGISTRY** | Default Docker registry to pull images from                                                                             |
+| **PING_IDENTITY_DEVOPS_TAG**      | Default DevOps tag to use for deployments (i.e. 2103)                                                                   |
+
+## pingctl Variables
+
+The **additional variables** honored by `pingctl` are as follows:
+
+| Variable                                   | Description                                                                                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **PINGCTL_CONFIG**                         | Location of the `pingctl` configuration file. Defaults to: `~/.pingidentity/config`                                                     |
+| **PINGCTL_DEFAULT_OUTPUT**                 | Specifies format of data returned. Command-Line arg `-o`. Defaults to: `table`                                                          |
+| **PINGCTL_OUTPUT_COLUMNS_{resource_type}** | Specify custom format of table csv data to be returned.   Command-Line arg `-c`. See more detail [below](#pingctl_output_columns) |
+| **PINGCTL_OUTPUT_SORT_{resource_type}**    | Specify column to sort data.   Command-Line arg `-s`. See more detail [below](#pingctl_output_sort)                            |
+
+## PINGCTL_OUTPUT_COLUMNS
 
 There are two classes of variables under the `PINGCTL_OUTPUT` name that provides:
 
@@ -63,6 +90,7 @@ There are two classes of variables under the `PINGCTL_OUTPUT` name that provides
         2 'USERS' returned
         ```
 
+## PINGCTL_OUTPUT_SORT
 
 * `PINGCTL_OUTPUT_SORT_{resource}` - Specifies the column to sort on.
 

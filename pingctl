@@ -47,8 +47,8 @@ test -d "${WORK_DIR}" || mkdir -p "${WORK_DIR}"
 ################################################################################
 # pingctl config environmental variables
 ################################################################################
-PING_CONFIG_FILE="${PING_CONFIG_FILE:-${DOT_PINGIDENTITY}/config}"
-PING_DEFAULT_OUTPUT="${PING_DEFAULT_OUTPUT:-table}"
+PINGCTL_CONFIG="${PINGCTL_CONFIG:-${DOT_PINGIDENTITY}/config}"
+PINGCTL_DEFAULT_OUTPUT="${PINGCTL_DEFAULT_OUTPUT:-table}"
 
 ################################################################################
 # Kube OIDC Cache Infomation
@@ -164,8 +164,8 @@ run_command()
 ################################################################################
 check_config_file()
 {
-  test ! -f "${PING_CONFIG_FILE}" \
-    && echo_red "No ${CMD} config found (PING_CONFIG_FILE=${PING_CONFIG_FILE}).  Please run:\n" \
+  test ! -f "${PINGCTL_CONFIG}" \
+    && echo_red "No ${CMD} config found (PINGCTL_CONFIG=${PINGCTL_CONFIG}).  Please run:\n" \
     && echo "  ${CMD} config" \
     && exit
 }
@@ -249,6 +249,11 @@ OPTIONS_R="  -r
      Provide REST Calls"
 
 ################################################################################
+OPTIONS_P="  -p {population name}
+     Population to add user/group into.
+     If not provided 'Default' population used"
+
+################################################################################
 USAGE_PINGONE_GET_DETAIL="Get PingOne Objects
 
 Usage:
@@ -259,7 +264,7 @@ Usage:
 Options:
   -o [ table | csv | json ]
      Output format (default: table)
-     also set with env variable: PING_DEFAULT_OUTPUT
+     also set with env variable: PINGCTL_DEFAULT_OUTPUT
 
   -i {id}
      Search based on object guid
@@ -272,13 +277,26 @@ Options:
         ex: '.name.given eq \"john\"'
             '.email sw \"john\"'
 
+  -c {columns}
+     Columns to ouptut based on \"heading:jsonAttr\"
+     An example of available jsonAttrs can be found by using a json output first.
+        ex: 'LastName:name.family,FirstName:name.given'
+
+  -s {sort column}
+     Columns to sort ouptut on based on \"jsonAttr\"
+     The jsonAttr MUST be listed in the list of columns (-c option).
+        ex: 'name.family'
+
+${OPTIONS_P}
+
 ${OPTIONS_R}
 
 Examples:
   ${CMD} pingone get users -i 5c07e067-3eeb-40bb-924b-a419d01ee28f
   ${CMD} pingone get users -n johnsmith@example.com
   ${CMD} pingone get users -f 'name.given eq \"john\"'
-  ${CMD} pingone get users -f 'email sw \"john\"'"
+  ${CMD} pingone get users -f 'email sw \"john\"'
+  ${CMD} pingone get users -c \"LastName:name.family,FirstName:name.given\" -s name.family"
 
 ################################################################################
 USAGE_PINGONE_ADD_DETAIL="Add PingOne Objects
@@ -292,10 +310,7 @@ Usage:
      * REQUIRED: username, first last
        OPTIONAL: email (same as username if not provided)
 
-Options:
-  -p {population name}
-     Population to add user/group into.
-     If not provided 'Default' population used
+${OPTIONS_P}
 
 ${OPTIONS_R}
 
@@ -453,20 +468,20 @@ source_config()
     ZSHRC="${HOME}/.zshrc"
 
     if test -f "${BASH_PROFILE}"; then
-      grep "${PING_CONFIG_FILE}" "${BASH_PROFILE}" > /dev/null
+      grep "${PINGCTL_CONFIG}" "${BASH_PROFILE}" > /dev/null
 
       if test "${?}" = "1"; then
           echo "
 ################################################################################
 # Checking your bash profile
 ################################################################################
-  OK if we add a 'source ${PING_CONFIG_FILE}' to your '${BASH_PROFILE}' (y/n) [y] ? \c"
+  OK if we add a 'source ${PINGCTL_CONFIG}' to your '${BASH_PROFILE}' (y/n) [y] ? \c"
           read -r answer
 
           if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
               echo "
 # Ping Identity - Added with '${CMD} config' on $(date)
-test -f '${PING_CONFIG_FILE}' && source '${PING_CONFIG_FILE}'" >> "${BASH_PROFILE}"
+test -f '${PINGCTL_CONFIG}' && source '${PINGCTL_CONFIG}'" >> "${BASH_PROFILE}"
           else
             echo "Skipping ${BASH_PROFILE}"
           fi
@@ -474,20 +489,20 @@ test -f '${PING_CONFIG_FILE}' && source '${PING_CONFIG_FILE}'" >> "${BASH_PROFIL
     fi
 
     if test -f "${ZSHRC}"; then
-      grep "${PING_CONFIG_FILE}" "${ZSHRC}" > /dev/null
+      grep "${PINGCTL_CONFIG}" "${ZSHRC}" > /dev/null
 
       if test "${?}" = "1"; then
           echo "
 ################################################################################
 # Checking your zsh profile
 ################################################################################
-  OK if we add a 'source ${PING_CONFIG_FILE}' to your '${ZSHRC}' (y/n) [y] ? \c"
+  OK if we add a 'source ${PINGCTL_CONFIG}' to your '${ZSHRC}' (y/n) [y] ? \c"
           read -r answer
 
           if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
               echo "
 # Ping Identity - Added with '${CMD} config' on $(date)
-test -f '${PING_CONFIG_FILE}' && source '${PING_CONFIG_FILE}'" >> "${ZSHRC}"
+test -f '${PINGCTL_CONFIG}' && source '${PINGCTL_CONFIG}'" >> "${ZSHRC}"
           else
             echo "Skipping ${ZSHRC}"
           fi
@@ -502,7 +517,7 @@ test -f '${PING_CONFIG_FILE}' && source '${PING_CONFIG_FILE}'" >> "${ZSHRC}"
 ################################################################################
 get_custom_variables()
 {
-    grep -v "^#" "${PING_CONFIG_FILE}" | \
+    grep -v "^#" "${PINGCTL_CONFIG}" | \
     while read -r _line
     do
         test -z "${_line}" && continue
@@ -650,13 +665,13 @@ info_command()
       PING_IDENTITY_DEVOPS_KEY="*** REDACTED *** (use -v to display)"
     fi
 
-    test ! -f "${PING_CONFIG_FILE}" && _not_found="(NOT FOUND)"
+    test ! -f "${PINGCTL_CONFIG}" && _not_found="(NOT FOUND)"
 
     echo "
 ################################################################################
 #     pingctl CLI (version $VERSION)
 #
-#               PING_CONFIG_FILE : ${PING_CONFIG_FILE} ${_not_found}
+#                PINGCTL_CONFIG : ${PINGCTL_CONFIG} ${_not_found}
 ################################################################################
 #     PingOne variables
 ################################################################################
@@ -1007,14 +1022,14 @@ config_command()
     ################################################################################
     # Check for existance of the devops file and backup to .prev
     ################################################################################
-    if test -f "${PING_CONFIG_FILE}"; then
-        mv "${PING_CONFIG_FILE}" "${PING_CONFIG_FILE}".prev
+    if test -f "${PINGCTL_CONFIG}"; then
+        mv "${PINGCTL_CONFIG}" "${PINGCTL_CONFIG}".prev
 
         # If the config is broken (i.e. ctrl-c) then restore the previous file
         trap '
             echo
-            echo "restoring: ${PING_CONFIG_FILE}"
-            mv "${PING_CONFIG_FILE}".prev "${PING_CONFIG_FILE}"
+            echo "restoring: ${PINGCTL_CONFIG}"
+            mv "${PINGCTL_CONFIG}".prev "${PINGCTL_CONFIG}"
             exit
         ' HUP INT PIPE TERM
     fi
@@ -1028,8 +1043,8 @@ config_command()
 #  We will run through a few config items to make your experiance as easy as
 #  possible.  These include:
 #
-#    - Setting up your default '${PING_CONFIG_FILE}' settings
-#    - Source your '${PING_CONFIG_FILE}' in your shell startup files
+#    - Setting up your default '${PINGCTL_CONFIG}' settings
+#    - Source your '${PINGCTL_CONFIG}' in your shell startup files
 #"
 
     print_variable_setting_instructions
@@ -1038,14 +1053,14 @@ config_command()
 # Variables used to assist PingOne operations.  If you aren't using a PingOne
 # environment, you can ignore these settings.
 ################################################################################
-" | tee -a "${PING_CONFIG_FILE}"
+" | tee -a "${PINGCTL_CONFIG}"
 
 
-    add_config "${PING_CONFIG_FILE}" "PINGONE_API_URL"                        "https://api.pingone.com/v1" "PingOne API URL"
-    add_config "${PING_CONFIG_FILE}" "PINGONE_AUTH_URL"                        "https://auth.pingone.com"  "PingOne Authentication URL"
-    add_config "${PING_CONFIG_FILE}" "PINGONE_ENVIRONMENT_ID"                 ""                           "PingOne Environment ID"
-    add_config "${PING_CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_ID"           ""                           "PingOne Worker App Client ID"
-    add_config "${PING_CONFIG_FILE}" "PINGONE_WORKER_APP_CLIENT_SECRET"       ""                           "PingOne Worker App Client Secret"
+    add_config "${PINGCTL_CONFIG}" "PINGONE_API_URL"                        "https://api.pingone.com/v1" "PingOne API URL"
+    add_config "${PINGCTL_CONFIG}" "PINGONE_AUTH_URL"                        "https://auth.pingone.com"  "PingOne Authentication URL"
+    add_config "${PINGCTL_CONFIG}" "PINGONE_ENVIRONMENT_ID"                 ""                           "PingOne Environment ID"
+    add_config "${PINGCTL_CONFIG}" "PINGONE_WORKER_APP_CLIENT_ID"           ""                           "PingOne Worker App Client ID"
+    add_config "${PINGCTL_CONFIG}" "PINGONE_WORKER_APP_CLIENT_SECRET"       ""                           "PingOne Worker App Client Secret"
 
     #
     # Perform a quick test to see if the PINGONE variables can connect
@@ -1056,37 +1071,31 @@ config_command()
 echo "################################################################################
 # Variables used to assist Ping DevOps operations.
 ################################################################################
-" | tee -a "${PING_CONFIG_FILE}"
+" | tee -a "${PINGCTL_CONFIG}"
 
-    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_ACCEPT_EULA"               "NO" "Do you accept the terms of license (found here: https://www.pingidentity.com/en/legal/subscription-agreement.html) with Ping Identity? (YES/NO)"
-    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_USER"               ""                        "Ping Identity DevOps User (Register under Support & Community: https://www.pingidentity.com/en/account/sign-on.html)"
-    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_KEY"                ""                        "Ping Identity DevOps Key"
-    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_HOME"               "${HOME}/projects/devops" "Location of Ping Identity DevOps repos and tools"
-    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_REGISTRY"           "docker.io/pingidentity"  "Ping Identity DevOps Registry (recommend default: docker.io/pingidentity)"
-    add_config "${PING_CONFIG_FILE}" "PING_IDENTITY_DEVOPS_TAG"                "edge"                    "Ping Identity DevOps Tag (recommend default: edge)"
+    add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_ACCEPT_EULA"               "NO" "Do you accept the terms of license (found here: https://www.pingidentity.com/en/legal/subscription-agreement.html) with Ping Identity? (YES/NO)"
+    add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_DEVOPS_USER"               ""                        "Ping Identity DevOps User (Register under Support & Community: https://www.pingidentity.com/en/account/sign-on.html)"
+    add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_DEVOPS_KEY"                ""                        "Ping Identity DevOps Key"
+    add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_DEVOPS_HOME"               "${HOME}/projects/devops" "Location of Ping Identity DevOps repos and tools"
+    add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_DEVOPS_REGISTRY"           "docker.io/pingidentity"  "Ping Identity DevOps Registry (recommend default: docker.io/pingidentity)"
+    add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_DEVOPS_TAG"                "edge"                    "Ping Identity DevOps Tag (recommend default: edge)"
 
     echo "
 ################################################################################
 #              Ping Identity Customized Variables
 ################################################################################
-# Additional variables that you would like to send to containers via
-# docker-compose.yaml and kubernetes .yaml files.
+# Additional variables that you would like to set for DevOps Containers or
+# optional variables to help with PingOne output.
 #
 # Examples include:
-#     PING_CONTAINER_PRIVILEGED=false
-#     PING_CONTAINER_UID=12345
-#     PING_CONTAINER_GID=9876
-#     LDAP_PORT=1389
-#     LDAPS_PORT=1636
-#     HTTPS_PORT=1443
-#     JMX_PORT=1689
-#     PING_IDENTITY_PASSWORD=2FederateM0re
+#     PINGCTL_OUTPUT_COLUMNS_USERS=FirstName:name.given,LastName:name.family
+#     PINGCTL_OUTPUT_SORT_USERS=name.given
 #
 # These are often set to nothing, unless you are using advanced features
 ################################################################################
-" | tee -a "${PING_CONFIG_FILE}"
+" | tee -a "${PINGCTL_CONFIG}"
 
-    add_config_custom "${PING_CONFIG_FILE}" "${_custom_variables}"
+    add_config_custom "${PINGCTL_CONFIG}" "${_custom_variables}"
 
     source_config
 
@@ -1180,11 +1189,11 @@ getPingOneAccessToken ()
 ################################################################################
 print_api_results()
 {
-  case "${PING_DEFAULT_OUTPUT}" in
+  case "${PINGCTL_DEFAULT_OUTPUT}" in
     table) print_api_results_sv "tsv" "${@}" ;;
     csv) print_api_results_sv "csv" "${@}" ;;
     json) print_api_results_json "${@}" ;;
-    *) usage_command $USAGE_CONTEXT "Unknown output format (-o | PING_DEFAULT_OUTPUT)=${PING_DEFAULT_OUTPUT}";;
+    *) usage_command "${USAGE_CONTEXT}" "Unknown output format (-o | PINGCTL_DEFAULT_OUTPUT)=${PINGCTL_DEFAULT_OUTPUT}";;
   esac
 }
 
@@ -1196,41 +1205,69 @@ print_api_results_sv()
   _sv="${1}" && shift
   _res_obj="${1}"
 
+  _res_obj=$(echo "${_res_obj}" | tr '[a-z]' '[A-Z]')
+
   ################################################################################
   # Table/CSV Columns and Sorts
   ################################################################################
-  _default_columns="ID:.id"
+  _default_columns="ID:id"
   _default_sort="id"
   ################################################################################
-  _users_columns="
-      USERNAME  :.username,
-      FIRST     :.name.given,
-      LAST      :.name.family,
-      EMAIL     :.email,
-      POPULATION:.population.id"
-  _users_sort="username"
+  PINGCTL_OUTPUT_COLUMNS_USERS=${PINGCTL_OUTPUT_COLUMNS_USERS:-
+      USERNAME  :username,
+      FIRST     :name.given,
+      LAST      :name.family,
+      EMAIL     :email,
+      POPULATION:population.id}
+  PINGCTL_OUTPUT_SORT_USERS=${PINGCTL_OUTPUT_SORT_USERS:-username}
   ################################################################################
-  _groups_columns="
-      NAME   :.name,
-      MEMBERS:.directMemberCounts.users,
-      POPULATION:.population.id"
-  _groups_sort="name"
+  PINGCTL_OUTPUT_COLUMNS_GROUPS=${PINGCTL_OUTPUT_COLUMNS_GROUPS:-
+      NAME      :name,
+      MEMBERS   :directMemberCounts.users,
+      POPULATION:population.id}
+  PINGCTL_OUTPUT_SORT_GROUPS=${PINGCTL_OUTPUT_SORT_GROUPS:-name}
   ################################################################################
-  _groupMemberships_columns="
-      GROUPS   :.name"
-  _groupMemberships_sort="name"
+  PINGCTL_OUTPUT_COLUMNS_GROUPMEMBERSHIPS=${PINGCTL_OUTPUT_COLUMNS_GROUPMEMBERSHIPS:-
+      GROUPS   :name}
+  PINGCTL_OUTPUT_SORT_GROUPMEMBERSHIPS=${PINGCTL_OUTPUT_SORT_GROUPMEMBERSHIPS:-name}
   ################################################################################
-  _populations_columns="
-      NAME   :.name,
-      MEMBERS:.userCount"
-  _populations_sort="name"
+  PINGCTL_OUTPUT_COLUMNS_POPULATIONS=${PINGCTL_OUTPUT_COLUMNS_POPULATIONS:-
+      NAME   :name,
+      MEMBERS:userCount}
+  PINGCTL_OUTPUT_SORT_POPULATIONS=${PINGCTL_OUTPUT_SORT_POPULATIONS:-name}
   ################################################################################
 
-  _columns=$(get_value "_${_res_obj}_columns")
-  _sort_column=$(get_value "_${_res_obj}_sort")
+  #
+  # if user has supplied a COLUMNS and SORT setting, override with that
+  #
+  test -n "${OPT_PINGONE_c}" && eval "export PINGCTL_OUTPUT_COLUMNS_\${_res_obj}=\"\${OPT_PINGONE_c}\""
+  test -n "${OPT_PINGONE_s}" && eval "export PINGCTL_OUTPUT_SORT_\${_res_obj}=\"\${OPT_PINGONE_s}\""
 
+  #
+  # Set the columns and sort to column based on resource object
+  #
+  _columns=$(get_value "PINGCTL_OUTPUT_COLUMNS_${_res_obj}")
+  _sort_column=$(get_value "PINGCTL_OUTPUT_SORT_${_res_obj}")
+
+  #
+  # If not set, then set the the default
+  #
   test -z "${_columns}" && _columns="${_default_columns}"
   test -z "${_sort_column}" && _sort_column="${_default_sort}"
+
+  #
+  # Ensure that the sort column is in the list of columns
+  #
+  case "${_columns}" in
+    *:${_sort_column}*)  ;;
+    *)  echo_error "Sort column '${_sort_column}' not found in columns '${_columns}'"
+        exit  ;;
+  esac
+
+  #
+  # Ensure that each column starts with a dot (.) Required for jq
+  #
+  _columns="${_columns//:/:.}"
 
   test "${_sv}" == "tsv" && _dash_row='| (.,map(length*"-"))'
 
@@ -1285,14 +1322,14 @@ pingone_api_get_and_print()
 pingone_api_get()
 {
   _pingone_resource="${1}" && shift
-  _filter="${1}" && shift
+  _api_filter="${1}" && shift
   _print_results="${1}"
 
   rm -f "${PINGONE_API_RESULTS}"
 
   case "${_pingone_resource}" in
     organization)
-      _api_url="organizations/${_filter}"
+      _api_url="organizations/${_api_filter}"
       _res_obj="organizations"
       _json_res=""
       ;;
@@ -1325,7 +1362,7 @@ pingone_api_get()
   while test ! -z "${_url}"
   do
       PINGONE_CALL_RESULT=$($CURL -G --request GET "${_url}" \
-          --data-urlencode "${_filter}" \
+          --data-urlencode "${_api_filter}" \
           --data-urlencode "limit=100" \
           --header 'Content-Type: application/json' \
           --header "Authorization: Bearer ${PINGONE_ACCESS_TOKEN}" \
@@ -1338,7 +1375,7 @@ pingone_api_get()
       if test "${OPT_PINGONE_r}" == "true"; then
         (
           echo "        GET: ${_url}"
-          test ! -z "${_filter}" && echo "      query: ${_filter}"
+          test ! -z "${_filter}" && echo "      query: ${_api_filter}"
           echo ""
           echo "Result Code: ${PINGONE_CALL_RESULT}"
           echo "  Page Size: $(cat "${PINGONE_CALL_RESPONSE}" | $JQ .size)"
@@ -1358,7 +1395,7 @@ pingone_api_get()
 
         if test "${_next}" != "null"; then
           _url=$($JQ -r .href <<<"${_next}")
-          _filter=""
+          _api_filter=""
         fi
       fi
 
@@ -1527,8 +1564,8 @@ pingone_print_environment ()
     pingone_api_get "organization" "${_org_id}"
     _org_name=$(get_api_attr name)
 
-    echo "               ORGANIZATION NAME : ${_org_name}"
-    echo "                ENVIRONMENT NAME : ${_env_name}"
+    echo "  ORGANIZATION NAME              : ${_org_name}"
+    echo "  ENVIRONMENT NAME               : ${_env_name}"
   fi
 }
 
@@ -1564,6 +1601,24 @@ pingone_get ()
   elif test ! -z "${OPT_PINGONE_f}"; then
     _filter="filter=${OPT_PINGONE_f}"
   fi
+
+  #
+  # if -p (population) is provided, then we will add that to the
+  # filter
+  #
+  if test -n "${OPT_PINGONE_p}"; then
+    pingone_api_get "populations" "filter=name eq \"${OPT_PINGONE_p}\""
+
+    test -z "${PINGONE_RESULT_ID}" && echo_error "Unknown population '${OPT_PINGONE_p}'" && exit
+    _pop_filter="population.id eq \"${PINGONE_RESULT_ID}\""
+
+    if test -z "${_filter}"; then
+      _filter="filter=${_pop_filter}"
+    else
+      _filter="${_filter} and ${_pop_filter}"
+    fi
+  fi
+
 
   case "${_resource}" in
       users)
@@ -1901,12 +1956,12 @@ get_global_options()
 ################################################################################
 get_pingone_options()
 {
-  while getopts hro:p:i:n:f: OPT; do
+  while getopts hro:p:i:n:f:c:s: OPT; do
       case "$OPT" in
           h) usage_command ;;
           r) OPT_PINGONE_r=true ;;
-          o) PING_DEFAULT_OUTPUT=${OPTARG} ;;
-          p|i|n|f) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
+          o) PINGCTL_DEFAULT_OUTPUT=${OPTARG} ;;
+          p|i|n|f|c|s) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
           ?)
               # getopts issues an error message
               usage "Unknown Option ${OPT}"
@@ -1937,13 +1992,16 @@ for _var_to_unset in ${STANDARD_VARIABLES};
 do
   eval "unset \${_var_to_unset}"
 done
+
 case "${_pingctl_command}" in
-    config|version|clean)
+    version|clean)
+        ;;
+    config)
+        test -f "${PINGCTL_CONFIG}" && source "${PINGCTL_CONFIG}"
         ;;
     *)
         check_config_file
-        # shellcheck disable=SC2039
-        source "${PING_CONFIG_FILE}"
+        source "${PINGCTL_CONFIG}"
         ;;
 esac
 

@@ -2,7 +2,7 @@
 title: pingctl Environment and Configuration variables
 ---
 
-# Congiguration & Environment variables
+# Configuration & Environment variables
 
 Congiguration and Environment variables allow for users to cache secure and repetitive settings into
 a `pingctl` config file.  The default location of the file is `~/.pingidentity/config`.
@@ -16,7 +16,7 @@ In cases where the a configuration item might be specified at any of the three l
 
 ## PingOne Variables
 
-The standard **PingOne variables** honored by `pingctl` are as follows:
+The standard **PingOne variables** used by `pingctl` are as follows:
 
 | Variable                             | Description                                                                                                                                         |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -28,7 +28,12 @@ The standard **PingOne variables** honored by `pingctl` are as follows:
 
 ## Ping DevOps Variables
 
-The standard **Ping DevOps** variables honored by `pingctl` are as follows:
+Priot to the `pingctl` CLI tool, [ping-devops](https://devops.pingidentity.com/get-started/pingDevopsUtil/)
+was available to help with the management of docker, docker-console and kustomize
+deployments.  Part of the tools and aliases provided with that made use of several variables used when deploying docker images
+into different environments.
+
+The standard **Ping DevOps** variables still supported and manged by `pingctl` are as follows:
 
 | Variable                          | Description                                                                                                             |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
@@ -43,12 +48,13 @@ The standard **Ping DevOps** variables honored by `pingctl` are as follows:
 
 The **additional variables** honored by `pingctl` are as follows:
 
-| Variable                                   | Description                                                                                                                             |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **PINGCTL_CONFIG**                         | Location of the `pingctl` configuration file. Defaults to: `~/.pingidentity/config`                                                     |
-| **PINGCTL_DEFAULT_OUTPUT**                 | Specifies format of data returned. Command-Line arg `-o`. Defaults to: `table`                                                          |
+| Variable                                   | Description                                                                                                                       |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| **PINGCTL_CONFIG**                         | Location of the `pingctl` configuration file. Defaults to: `~/.pingidentity/config`                                               |
+| **PINGCTL_DEFAULT_OUTPUT**                 | Specifies default format of data returned. Command-Line arg `-o`. Defaults to: `table`                                            |
+| **PINGCTL_DEFAULT_POPULATION**             | Specifies default population to use for PingOne commands. Command-Line arg `-p`. Defaults to: `Default`                           |
 | **PINGCTL_OUTPUT_COLUMNS_{resource_type}** | Specify custom format of table csv data to be returned.   Command-Line arg `-c`. See more detail [below](#pingctl_output_columns) |
-| **PINGCTL_OUTPUT_SORT_{resource_type}**    | Specify column to sort data.   Command-Line arg `-s`. See more detail [below](#pingctl_output_sort)                            |
+| **PINGCTL_OUTPUT_SORT_{resource_type}**    | Specify column to sort data.   Command-Line arg `-s`. See more detail [below](#pingctl_output_sort)                               |
 
 ## PINGCTL_OUTPUT_COLUMNS
 

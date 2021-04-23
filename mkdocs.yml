@@ -41,7 +41,7 @@ nav:
   - pingctl:
       - Usage: index.md
       - Configuration: config.md
-      - Release Notes: releasenotes.md
+      - Release Notes: release-notes.md
       - License: LICENSE.md
       - Disclaimer: DISCLAIMER.md
       - Contributing: CONTRIBUTING.md

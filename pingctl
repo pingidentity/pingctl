@@ -1214,7 +1214,7 @@ print_api_results_sv()
 
   if test "${_sv}" == "tsv"; then
     echo "--"
-    echo "${PINGONE_RESULT_COUNT} '${_res_obj}' returned"
+    echo "${PINGONE_RESULT_COUNT} '${_res_obj}' returned ${_in_population}"
   fi
 }
 
@@ -1272,6 +1272,16 @@ pingone_api_get()
     users/*)
       _api_url="environments/${PINGONE_ENVIRONMENT_ID}/${_pingone_resource}"
       _res_obj="users"
+      _json_res=""
+      ;;
+    groups/*)
+      _api_url="environments/${PINGONE_ENVIRONMENT_ID}/${_pingone_resource}"
+      _res_obj="groups"
+      _json_res=""
+      ;;
+    populations/*)
+      _api_url="environments/${PINGONE_ENVIRONMENT_ID}/${_pingone_resource}"
+      _res_obj="populations"
       _json_res=""
       ;;
     *)
@@ -1348,7 +1358,7 @@ pingone_api_get()
     if test -s "${PINGONE_API_RESULTS}"; then
       print_api_results "${_res_obj}"
     else
-      echo "No '${_res_obj}' found"
+      echo "No '${_res_obj}' found ${_in_population}"
     fi
   fi
 }
@@ -1532,10 +1542,10 @@ pingone_get ()
   # if -p (population) is provided, then we will add that to the
   # filter
   #
-  if test -n "${OPT_PINGONE_p}"; then
-    pingone_api_get "populations" "filter=name eq \"${OPT_PINGONE_p}\""
+  if test "${_resource}" != "populations" && test -n "${PINGCTL_DEFAULT_POPULATION}"; then
+    pingone_api_get "populations" "filter=name eq \"${PINGCTL_DEFAULT_POPULATION}\""
 
-    test -z "${PINGONE_RESULT_ID}" && echo_error "Unknown population '${OPT_PINGONE_p}'" && exit
+    test -z "${PINGONE_RESULT_ID}" && echo_error "Unknown population '${PINGCTL_DEFAULT_POPULATION}'" && exit
     _pop_filter="population.id eq \"${PINGONE_RESULT_ID}\""
 
     if test -z "${_filter}"; then
@@ -1543,8 +1553,12 @@ pingone_get ()
     else
       _filter="${_filter} and ${_pop_filter}"
     fi
-  fi
 
+    #
+    # used when printing totals in table format
+    #
+    _in_population="in population '${PINGCTL_DEFAULT_POPULATION}'"
+  fi
 
   case "${_resource}" in
       users)
@@ -1566,9 +1580,12 @@ pingone_get ()
       populations)
           pingone_api_get_and_print "populations${_exact_id}" "${_filter}"
 
-          if test -n "${PINGONE_RESULT_ID}"; then
+          _tmp_population_id="${PINGONE_RESULT_ID}"
+          if test -n "${_tmp_population_id}"; then
             echo
-            pingone_api_get_and_print "users" "filter=population.id eq \"${PINGONE_RESULT_ID}\""
+            pingone_api_get_and_print "users" "filter=population.id eq \"${_tmp_population_id}\""
+            echo
+            pingone_api_get_and_print "groups" "filter=population.id eq \"${_tmp_population_id}\""
           fi
           ;;
       *)
@@ -1633,16 +1650,16 @@ pingone_add()
   # Remove the switches we parsed above.
   shift "$(( OPTIND - 1 ))"
 
-  _population="${OPT_PINGONE_p:-Default}"
+  PINGCTL_DEFAULT_POPULATION="${PINGCTL_DEFAULT_POPULATION:-Default}"
 
   #
   # Create the Body Post
   #
   case "${_resource}" in
       user)
-          pingone_api_get "populations" "filter=name eq \"${_population}\""
+          pingone_api_get "populations" "filter=name eq \"${PINGCTL_DEFAULT_POPULATION}\""
 
-          test -z "${PINGONE_RESULT_ID}" && echo_error "Unknown population '${_population}'" && exit
+          test -z "${PINGONE_RESULT_ID}" && echo_error "Unknown population '${PINGCTL_DEFAULT_POPULATION}'" && exit
 
           $JQ -n '{email: $email,
                   name: {given: $first,
@@ -1656,9 +1673,9 @@ pingone_add()
               --arg last "${_last_name}" > "${PINGONE_POST_JSON}"
           ;;
       group)
-          pingone_api_get "populations" "filter=name eq \"${_population}\""
+          pingone_api_get "populations" "filter=name eq \"${PINGCTL_DEFAULT_POPULATION}\""
 
-          test -z "${PINGONE_RESULT_ID}" && echo_error "Unknown population '${_population}'" && exit
+          test -z "${PINGONE_RESULT_ID}" && echo_error "Unknown population '${PINGCTL_DEFAULT_POPULATION}'" && exit
 
           $JQ -n '{name: $name,
                   population: {id: $populationId}
@@ -1682,7 +1699,7 @@ pingone_add()
         echo "Added ${_resource} '${_name}'"
         ;;
       *)
-        echo "Added ${_resource} '${_name}' to population '${_population}'"
+        echo "Added ${_resource} '${_name}' to population '${PINGCTL_DEFAULT_POPULATION}'"
         ;;
   esac
 }
@@ -1887,7 +1904,8 @@ get_pingone_options()
           h) usage_command ;;
           r) OPT_PINGONE_r=true ;;
           o) PINGCTL_DEFAULT_OUTPUT=${OPTARG} ;;
-          p|i|n|f|c|s) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
+          p) PINGCTL_DEFAULT_POPULATION=${OPTARG} ;;
+          i|n|f|c|s) eval "export OPT_PINGONE_\${OPT}=\"\${OPTARG}\"" ;;
           ?)
               # getopts issues an error message
               usage "Unknown Option ${OPT}"

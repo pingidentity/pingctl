@@ -1,5 +1,5 @@
 ---
-title: pingctl - a Ping Identity CLI
+title: pingctl pingone - Managing PingOne environments
 ---
 
 # pingctl pingone
@@ -34,7 +34,7 @@ Provides ability to manage PingOne environments.  Includes features:
 
     -o [ table | csv | json ]
         Output format (default: table)
-        also set with env variable: PING_DEFAULT_OUTPUT
+        also set with env variable: PINGCTL_DEFAULT_OUTPUT
 
     -i {id}
         Search based on object guid
@@ -46,6 +46,20 @@ Provides ability to manage PingOne environments.  Includes features:
         PingOne filter (SCIM based)
             ex: '.name.given eq "john"'
                 '.email sw "john"'
+
+    -c {columns}
+        Columns to ouptut based on "heading:jsonAttr"
+        An example of available jsonAttrs can be found by using a json output first.
+            ex: 'LastName:name.family,FirstName:name.given'
+
+    -s {sort column}
+        Columns to sort ouptut on based on "jsonAttr"
+        The jsonAttr MUST be listed in the list of columns (-c option).
+            ex: 'name.family'
+
+    -p {population name}
+        Population to add user/group into.
+        If not provided 'Default' population used
 
 ### add
 

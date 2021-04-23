@@ -39,7 +39,9 @@ markdown_extensions:
 
 nav:
   - pingctl:
-      - Home: index.md
+      - Usage: index.md
+      - Configuration: config.md
+      - Release Notes: release-notes.md
       - License: LICENSE.md
       - Disclaimer: DISCLAIMER.md
       - Contributing: CONTRIBUTING.md
@@ -47,4 +49,3 @@ nav:
       - kubernetes: commands/kubernetes.md
       - license: commands/license.md
       - pingone: commands/pingone.md
-  #- Release Notes:

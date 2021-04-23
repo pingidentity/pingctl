@@ -6,7 +6,7 @@ title: pingctl - a Ping Identity CLI
 
 ## Description
 
-Ping Identity Command Line Interface (CLI) tool used for PineOne, PingDevops and future command line tools and aliases.
+Ping Identity Command Line Interface (CLI) tool used for PineOne and future command line tools and aliases.
 
 ## Usage
 

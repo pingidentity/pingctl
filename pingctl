@@ -9,8 +9,13 @@
 # ------------
 # Installation
 # ------------
-#   brew install pi
-#   brew upgrade pi
+#   brew tap pingidentity/tap
+#   brew install pingctl
+#
+# ------------
+# Upgrades
+# ------------
+#   brew upgrade pingctl
 #
 # ------------
 # Requirements
@@ -21,14 +26,6 @@ BASE64="base64"
 OPENSSL="openssl"
 CURL="curl -sL "
 JWT="jwt"
-#
-########################################################################################################################
-
-CWD=$(pwd)
-# shellcheck disable=SC2164
-# cd "$( dirname "${0}" )"
-#THIS="$( basename "${0}" )"
-#THIS_DIR=`pwd`
 
 ################################################################################
 # Command and Version Info
@@ -97,67 +94,16 @@ cleanup ()
 trap cleanup EXIT
 
 ################################################################################
-# Terminal codes for echoing of RED or GREEN colors, and back to NORMAL
-################################################################################
-if test "${PI_COLORIZE}" == "on"; then
-  RED='\033[0;31m'
-  GREEN='\033[0;32m'
-  NORMAL='\033[0m'
-  BOLD='\033[1m'
-else
-  RED=
-  GREEN=
-  NORMAL=
-  BOLD=
-fi
-
-################################################################################
-# echo_red - Echo message in red color
-################################################################################
-echo_red()
-{
-    echo "${RED}$*${NORMAL}"
-}
-
-################################################################################
-# echo_green - Echo message in green color
-################################################################################
-echo_green()
-{
-    echo "${GREEN}$*${NORMAL}"
-}
-
-################################################################################
 # echo_error (message) - Echo's an Error: message
 ################################################################################
 echo_error()
 {
     if test  ! -z "$*"; then
       echo "-------------------------------------------------------------------------"
-	    echo_red "Error: ${1}"
+	    echo "Error: ${1}"
       echo "-------------------------------------------------------------------------"
     fi
 }
-
-banner()
-{
-  echo "-------------------------------------------------------------------------"
-  echo "$*"
-  echo "-------------------------------------------------------------------------"
-
-}
-
-run_command()
-{
-  CMD="${1}"
-  CMD_OUTPUT="${2}"
-
-  banner "Command: ${BOLD}$CMD $(test ! -z "${CMD_OUTPUT}" && echo "> ${CMD_OUTPUT}")${NORMAL}"
-
-  test -z "${CMD_OUTPUT}" && $CMD
-  test ! -z "${CMD_OUTPUT}" && $CMD > "${CMD_OUTPUT}"
-}
-
 
 ################################################################################
 # check_config_file - Verify that the config_file is found
@@ -165,7 +111,7 @@ run_command()
 check_config_file()
 {
   test ! -f "${PINGCTL_CONFIG}" \
-    && echo_red "No ${CMD} config found (PINGCTL_CONFIG=${PINGCTL_CONFIG}).  Please run:\n" \
+    && echo "No ${CMD} config found (PINGCTL_CONFIG=${PINGCTL_CONFIG}).  Please run:" \
     && echo "  ${CMD} config" \
     && exit
 }
@@ -177,23 +123,20 @@ check_variables()
 {
   for _var in "${@}"; do
     test -z "$(get_value "${_var}")" \
-      && echo_red "Variable is not set: ${_var}" \
+      && echo "Variable is not set: ${_var}" \
       && _var_check_fails=true
   done
 
   test ${_var_check_fails} \
     && echo \
     && echo "To get more information on these variables:" \
-    && echo_green "  https://pingctl.pingidentity.com/" \
+    && echo "  https://pingctl.pingidentity.com/" \
     && echo \
     && echo "Set this/these in your config with:" \
-    && echo_green "  ${CMD} config" \
+    && echo "  ${CMD} config" \
     && echo \
     && exit
 }
-
-
-
 
 ################################################################################
 USAGE_KUBERNETES_DETAIL="Kubernetes Tools
@@ -440,24 +383,6 @@ get_value ()
 }
 
 ################################################################################
-# get_value (variable)
-#
-# Get the value of a vaiable, preserving the spaces
-################################################################################
-find_setup_arg_value()
-{
-  _valToFind="${1}"
-  _findFile="${2}"
-  _defaultVal="${3}"
-
-  _valFound=$(grep "$_valToFind" "${_findFile}" | sed "s/.*$_valToFind \(.*\) .*\\\\$/\1/g")
-
-  test -z "${_valFound}" && _valFound="${_defaultVal}"
-
-  echo "${_valFound}"
-}
-
-################################################################################
 # source_config ()
 #
 # Ensure that we source the CONFIG_FILE
@@ -549,7 +474,7 @@ add_config()
   test -z "${CURRENT_VALUE}" && CURRENT_VALUE="${VAR_DEFAULT}"
 
   echo "${VAR_PROMPT}"
-  echo "    [${GREEN}${CURRENT_VALUE}${NORMAL}] ? \c"
+  echo "    [${CURRENT_VALUE}] ? \c"
   read -r answer
   echo
 
@@ -586,6 +511,7 @@ add_config()
 }
 
 ################################################################################
+# print_variable_setting_instructions
 ################################################################################
 print_variable_setting_instructions()
 {
@@ -600,7 +526,7 @@ print_variable_setting_instructions()
 }
 
 ################################################################################
-# add_config_customize (file)
+# add_config_custom (file)
 #
 # Add a config variale to the devops file, using the prompt sent, and defaulting
 # if no value is provided.
@@ -754,9 +680,9 @@ version_command()
 
     if test "${_latest_tool_version}" = "${VERSION}" ||
        test "${_latest_tool_version}" = "UNKNOWN"; then
-        _version_msg="${GREEN}${VERSION}${NORMAL} (no update required)"
+        _version_msg="${VERSION} (no update required)"
     else
-        _version_msg="${RED}${VERSION}${NORMAL} (updated version ${_latest_tool_version} is available)\n$(print_update_information)"
+        _version_msg="${VERSION} (updated version ${_latest_tool_version} is available)\n$(print_update_information)"
     fi
 
     echo "${CMD} version ${_version_msg}"
@@ -771,7 +697,7 @@ clean_command()
 {
 
     echo
-    echo_red "IMPORTANT: This is destructive of all content ${WORK_DIR}"
+    echo "IMPORTANT: This is destructive of all content ${WORK_DIR}"
     echo
     echo "Are you SURE you want to clean/remove this content (y/n) [n] ? \c"
     read -r answer
@@ -1817,7 +1743,7 @@ pingone_delete_user_group()
 }
 
 ################################################################################
-# pingone_jwt_token
+# print_jwt_token
 ################################################################################
 print_jwt_token()
 {
@@ -1973,8 +1899,6 @@ get_pingone_options()
 ################################################################################
 # main
 ################################################################################
-
-
 
 get_global_options "${@}"
 # Remove the switches we parsed above.

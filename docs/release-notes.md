@@ -3,6 +3,10 @@ title: pingctl Release Notes
 ---
 # Release Notes
 
+## Release 1.0.2 (April 26, 2021)
+
+Fixed minor typos with pingctl tool and docs.
+
 ## Release 1.0.1 (April 26, 2021)
 
 Added support for Authorization Code (w/ pkce) and Implicit flows so that users of the tool can

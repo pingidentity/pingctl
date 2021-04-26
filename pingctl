@@ -319,7 +319,7 @@ Available Commands:
 
   kubernetes      Kubernetes Tools
   license         Ping Identity Licensing Tools
-  pingone         PineOne Tools
+  pingone         PingOne Tools
 
 Options:
   -h              Help for ${CMD}

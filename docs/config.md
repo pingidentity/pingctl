@@ -24,6 +24,8 @@ The standard **PingOne variables** used by `pingctl` are as follows:
 | **PINGONE_AUTH_URL**                 | [PingOne Auth URL](https://apidocs.pingidentity.com/pingone/platform/v1/api/#changelog) (i.e. auth.pingone.com, auth.pingone.eu, auth.pingone.asia) |
 | **PINGONE_ENVIRONMENT_ID**           | PingOne Environment ID GUID                                                                                                                         |
 | **PINGONE_WORKER_APP_CLIENT_ID**     | PingOne Worker App ID GUID with access to PingOne Environment                                                                                       |
+| **PINGONE_WORKER_APP_GRANT_TYPE**    | PingOne Worker App Grant Type to use.  Should be one of authorization_code, implisit or client_credential                                           |
+| **PINGONE_WORKER_APP_REDIRECT_URI**  | PingOne Worker App available redirect_uri.  Defaults to http://localhost:8000                                                                       |
 | **PINGONE_WORKER_APP_CLIENT_SECRET** | PingOne Worker App Secret providing authentication to PingOne Worker App ID GUID                                                                    |
 
 ## Ping DevOps Variables

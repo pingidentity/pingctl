@@ -3,6 +3,11 @@ title: pingctl Release Notes
 ---
 # Release Notes
 
+## Release 1.0.1 (April 26, 2021)
+
+Added support for Authorization Code (w/ pkce) and Implicit flows so that users of the tool can
+login with a user account, with proper role access.  This is in addition to client_credentials.
+
 ## Release 1.0.0 (April 22, 2021)
 
 Initial release of pingctl CLI tool, as well as documentation for all product features including

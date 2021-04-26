@@ -29,7 +29,7 @@ trap cleanup EXIT
 
 cd "$TMP_DIR" >& /dev/null || echo "Unable to chanage to temporary directory" || exit 1
 
-curl -s https://raw.githubusercontent.com/pingidentity/homebrew-devops/master/Formula/pingctl.rb |\
+curl -s https://raw.githubusercontent.com/pingidentity/homebrew-top/master/Formula/pingctl.rb |\
   grep url |\
   cut -d '"' -f 2 |\
   xargs curl -s -O -L

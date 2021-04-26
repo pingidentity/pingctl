@@ -31,7 +31,7 @@ JWT="jwt"
 # Command and Version Info
 ################################################################################
 CMD="pingctl"
-VERSION="1.0.0"
+VERSION="1.0.1"
 
 ################################################################################
 # Ping Identity tools & config information
@@ -44,7 +44,8 @@ test -d "${WORK_DIR}" || mkdir -p "${WORK_DIR}"
 ################################################################################
 # pingctl config environmental variables
 ################################################################################
-PINGCTL_CONFIG="${PINGCTL_CONFIG:-${DOT_PINGIDENTITY}/config}"
+DEFAULT_PINGCTL_CONFIG="${DOT_PINGIDENTITY}/config"
+PINGCTL_CONFIG="${PINGCTL_CONFIG:-${DEFAULT_PINGCTL_CONFIG}}"
 PINGCTL_DEFAULT_OUTPUT="${PINGCTL_DEFAULT_OUTPUT:-table}"
 
 ################################################################################
@@ -66,7 +67,9 @@ STANDARD_VARIABLES="
   PINGONE_AUTH_URL
   PINGONE_ENVIRONMENT_ID
   PINGONE_WORKER_APP_CLIENT_ID
-  PINGONE_WORKER_APP_CLIENT_SECRET"
+  PINGONE_WORKER_APP_CLIENT_SECRET
+  PINGONE_WORKER_APP_GRANT_TYPE
+  PINGONE_WORKER_APP_REDIRECT_URI"
 
 ################################################################################
 # Check for a .pingidentity directory
@@ -282,6 +285,13 @@ Options:
 ${OPTIONS_R}"
 
 ################################################################################
+USAGE_PINGONE_TOKEN_DETAIL="kubectl/kubelogin OIDC Tools
+
+Usage:
+  ${CMD} pingone token clear         # Remove ${PINGONE_ACCESS_TOKEN_FILE}
+  ${CMD} pingone token info          # Display access_token"
+
+################################################################################
 
 USAGE_PINGONE_DELETE_USER_GROUP_DETAIL="Delete PingOne Group from User
   ${CMD} pingone delete-user-group {username} {groupname}  # Delete group from user
@@ -468,15 +478,33 @@ add_config()
   PROPS_FILE="${1}" && shift
   VAR_TO_SET="${1}" && shift
   VAR_DEFAULT="${1}" && shift
-  VAR_PROMPT="${*}"
+  VAR_PROMPT="${1}" && shift
+  VAR_REQ_OPTIONS="${1}"
 
   CURRENT_VALUE=$(get_value "${VAR_TO_SET}")
   test -z "${CURRENT_VALUE}" && CURRENT_VALUE="${VAR_DEFAULT}"
 
-  echo "${VAR_PROMPT}"
-  echo "    [${CURRENT_VALUE}] ? \c"
-  read -r answer
-  echo
+  while true
+  do
+
+    echo "${VAR_PROMPT}"
+    echo "    [${CURRENT_VALUE}] ? \c"
+    read -r answer
+    echo
+
+    # If no required options were sent then, simply break out
+    if test -z "${VAR_REQ_OPTIONS}"; then
+      break
+    else
+      test -z "${answer}" && answer="${CURRENT_VALUE}"
+      eval 'case "${answer}" in
+        '"${VAR_REQ_OPTIONS}"') break;;
+        *)  echo "Invalid Value [${answer}].  Must be one of [${VAR_REQ_OPTIONS}]"
+            echo;;
+      esac'
+    fi
+  done
+
 
   if test ! -z "${answer}"; then
     if test "${answer}" = "-"; then
@@ -570,7 +598,7 @@ echo_info_variable()
 {
   _varToEcho="${1}"
 
-  printf "  %-30s : %s\n" "${_varToEcho}" "$(get_value "${_varToEcho}")"
+  printf "  %-32s : %s\n" "${_varToEcho}" "$(get_value "${_varToEcho}")"
 }
 
 ################################################################################
@@ -605,11 +633,12 @@ info_command()
     echo_info_variable PINGONE_API_URL
     echo_info_variable PINGONE_AUTH_URL
     echo_info_variable PINGONE_ENVIRONMENT_ID
+    echo
     echo_info_variable PINGONE_WORKER_APP_CLIENT_ID
+    echo_info_variable PINGONE_WORKER_APP_GRANT_TYPE
+    echo_info_variable PINGONE_WORKER_APP_REDIRECT_URI
     echo_info_variable PINGONE_WORKER_APP_CLIENT_SECRET
-
     PINGONE_WORKER_APP_CLIENT_SECRET="${_save_PINGONE_WORKER_APP_CLIENT_SECRET}"
-    pingone_print_environment
 
     echo
 
@@ -969,7 +998,7 @@ config_command()
 #  We will run through a few config items to make your experiance as easy as
 #  possible.  These include:
 #
-#    - Setting up your default '${PINGCTL_CONFIG}' settings
+#    - Setting up your PINGCTL_CONFIG '${PINGCTL_CONFIG}' settings
 #    - Source your '${PINGCTL_CONFIG}' in your shell startup files
 #"
 
@@ -985,14 +1014,48 @@ config_command()
     add_config "${PINGCTL_CONFIG}" "PINGONE_API_URL"                        "https://api.pingone.com/v1" "PingOne API URL"
     add_config "${PINGCTL_CONFIG}" "PINGONE_AUTH_URL"                        "https://auth.pingone.com"  "PingOne Authentication URL"
     add_config "${PINGCTL_CONFIG}" "PINGONE_ENVIRONMENT_ID"                 ""                           "PingOne Environment ID"
-    add_config "${PINGCTL_CONFIG}" "PINGONE_WORKER_APP_CLIENT_ID"           ""                           "PingOne Worker App Client ID"
-    add_config "${PINGCTL_CONFIG}" "PINGONE_WORKER_APP_CLIENT_SECRET"       ""                           "PingOne Worker App Client Secret"
+
 
     #
     # Perform a quick test to see if the PINGONE variables can connect
     #
-    test ! -z "${PINGONE_WORKER_APP_CLIENT_ID}" && getPingOneAccessToken true
-    test -z "${PINGONE_ACCESS_TOKEN}" && echo_error "Unable to validate (authenticate) PingOne settings.  Re-run config to resolve."
+    if test ! -z "${PINGONE_ENVIRONMENT_ID}"; then
+      add_config "${PINGCTL_CONFIG}" "PINGONE_WORKER_APP_CLIENT_ID"           ""                           "PingOne Worker App Client ID"
+      add_config "${PINGCTL_CONFIG}" "PINGONE_WORKER_APP_GRANT_TYPE"          ""                           "PingOne Worker App Grant Type (valid options: authorization_code, implicit, client_credentials)" "authorization_code|implicit|client_credentials"
+      add_config "${PINGCTL_CONFIG}" "PINGONE_WORKER_APP_REDIRECT_URI"        "http://localhost:8000"      "PingOne Worker App Redirect URI"
+
+      if test "${PINGONE_WORKER_APP_GRANT_TYPE}" == "client_credentials"; then
+        add_config "${PINGCTL_CONFIG}" "PINGONE_WORKER_APP_CLIENT_SECRET"     ""                           "PingOne Worker App Client Secret (required for client_credentials grant type)"
+      fi
+
+      while true
+      do
+        echo "Would you like to perform a test to validate your PINGONE_WORKER_APP settings? [y] ? \c"
+        read -r answer
+
+        if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+            echo "############################################################################"
+            echo "#  Attempting to retrieve token for:"
+            echo "#     Worker App Clint Id: ${PINGONE_WORKER_APP_CLIENT_ID}"
+            echo "#        using Grant Type: ${PINGONE_WORKER_APP_GRANT_TYPE}"
+            echo "#            Redirect URI: ${PINGONE_WORKER_APP_REDIRECT_URI}"
+            echo "############################################################################"
+            echo
+            getPingOneAccessToken true
+
+            if test -z "${PINGONE_ACCESS_TOKEN}"; then
+              troubleshootPingOneSettings
+            else
+              echo
+              echo "Congrats!  You've obtained a valid access_token."
+              echo
+              break
+            fi
+        else
+            break
+        fi
+      done
+    fi
 
 echo "################################################################################
 # Variables used to assist Ping DevOps operations.
@@ -1011,9 +1074,12 @@ echo "##########################################################################
 #              Ping Identity Customized Variables
 ################################################################################
 # Additional variables that you would like to set for DevOps Containers or
-# optional variables to help with PingOne output.
+# optional variables to help with PingOne credentials/output.
 #
 # Examples include:
+#     PINEONE_USERNAME=jsmith@example.com
+#     PINGONE_PASSWORD=......... (*** CONSIDERED UNSECURE ***)
+#
 #     PINGCTL_OUTPUT_COLUMNS_USERS=FirstName:name.given,LastName:name.family
 #     PINGCTL_OUTPUT_SORT_USERS=name.given
 #
@@ -1023,7 +1089,7 @@ echo "##########################################################################
 
     add_config_custom "${PINGCTL_CONFIG}" "${_custom_variables}"
 
-    source_config
+    test "${PINGCTL_CONFIG}" == "${DEFAULT_PINGCTL_CONFIG}" && source_config
 
     echo "
 
@@ -1056,6 +1122,333 @@ base64_no_newlines()
   fi
 }
 
+################################################################################
+# troubleshootPingOneSettings
+################################################################################
+troubleshootPingOneSettings ()
+{
+    echo_error "Unable to validate PingOne settings."
+    echo "############################################################################"
+    echo "# There are a number of reasons why this didn't work..."
+    echo "#"
+    echo "#   - Incorrect Client ID"
+    echo "#   - Incorrect Client Type - Must be Worker App"
+    echo "#   - Incorrect Redirect URI - You've specified: ${PINGONE_WORKER_APP_REDIRECT_URI}"
+    echo "#   - Incorrect Client Grant Type Settings"
+    echo "#"
+
+    case "${PINGONE_WORKER_APP_GRANT_TYPE}" in
+      authorization_code)
+          echo "#     - authorization_code (w/ pkce) (recommended)"
+          echo "#                Response Type: Code"
+          echo "#                   Grant Type: Authorization Code"
+          echo "#             PKCE Enforcement: S256_REQUIRED (recommended)"
+          echo "#  Token Endpoint AuthN Method: None"
+          ;;
+      implicit)
+          echo "#     - implicit"
+          echo "#                Response Type: Token"
+          echo "#                   Grant Type: Implicit"
+          echo "#  Token Endpoint AuthN Method: None"
+          ;;
+      client_credentials)
+          echo "#     - client_credentials"
+          echo "#                Client Secret: ${PINGONE_WORKER_APP_CLIENT_SECRET}"
+          echo "#                Response Type: Token"
+          echo "#                   Grant Type: Client Credentials"
+          echo "#  Token Endpoint AuthN Method: Client Secret Basic"
+          ;;
+      *)  echo "#     - INVALID Grant Type: ${PINGONE_WORKER_APP_GRANT_TYPE}"
+    esac
+
+    echo "############################################################################"
+}
+
+################################################################################
+# getPingOneAccessTokenViaClientCredienals
+################################################################################
+getPingOneAccessTokenViaClientCredienals ()
+{
+  _clearToken="${1}"
+
+  check_variables \
+      PINGONE_WORKER_APP_CLIENT_SECRET
+
+  _url="${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/token"
+
+  PINGONE_CALL_RESULT=$( $CURL --request POST "${_url}" \
+                  --header 'Content-Type: application/x-www-form-urlencoded' \
+                  --user "${PINGONE_WORKER_APP_CLIENT_ID}:${PINGONE_WORKER_APP_CLIENT_SECRET}" \
+                  --data 'grant_type=client_credentials' \
+                  --write-out '%{http_code}' \
+                  --output "${PINGONE_CALL_RESPONSE}")
+
+  #
+  # Print out DEBUG info
+  #
+  if test "${OPT_PINGONE_r}" == "true"; then
+      (
+        echo "       POST: ${_url}"
+        echo "       data: grant_type=client_credentials"
+        echo "       user: ${PINGONE_WORKER_APP_CLIENT_ID}:*************"
+        echo ""
+        echo "Result Code: ${PINGONE_CALL_RESULT}"
+        echo "--------------------------------------"
+      ) >> "${PINGONE_DEBUG}"
+  fi
+
+  error_pingone_call 200
+  test $? -eq 1 && return
+
+  PINGONE_ACCESS_TOKEN=$($JQ --raw-output '.access_token'  <"${PINGONE_CALL_RESPONSE}" | tee "${PINGONE_ACCESS_TOKEN_FILE}")
+}
+
+################################################################################
+# getPingOneAccessTokenViaAuthorizationCode
+################################################################################
+getPingOneAccessTokenViaAuthorizationCode ()
+{
+  _clearToken="${1}"
+
+	_az_verifier=$(cat /dev/urandom | env LC_CTYPE=C tr -cd 'a-zA-Z0-9' | head -c 50)
+	# echo "Verifier is: $VERIFIER"
+
+  # Get the correct sha 256 checksum tool, as it's different on mac/linux
+  echo | sha256sum 2>/dev/null >/dev/null && test $? -eq 0 && SHASUM="sha256sum"
+  echo | shasum -a 256 2>/dev/null >/dev/null && test $? -eq 0 && SHASUM="shasum -a 256"
+
+  if test -z "${SHASUM}"; then
+    echo_error "Unable to find a suitable SHA 256 Checksum tool.  Required to create OIDC PKCE Challenge.  (tried both sha256sum and shasum)"
+    exit
+  fi
+
+	#Generate PKCE Challenge from Verifier and convert / + = characters"
+	_az_challenge=$(echo "${_az_verifier}\c" | ${SHASUM} | cut -d " " -f 1 | xxd -r -p | ${BASE64} | tr / _ | tr + - | tr -d =)
+
+  ########################################################################
+  # Start with a request for an AUTHORIZATION_CODE flow...
+
+  _url="${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/authorize"
+
+  _az_flow_id=$(curl -G --request GET "${_url}" \
+                  --header 'Content-Type: application/x-www-form-urlencoded' \
+                  --data 'response_type=code' \
+                  --data "client_id=${PINGONE_WORKER_APP_CLIENT_ID}" \
+                  --data 'scope=openid' \
+                  --data "redirect_uri=${PINGONE_WORKER_APP_REDIRECT_URI}" \
+                  --data "code_challenge=${_az_challenge}" \
+                  --data "code_challenge_method=S256" \
+                  --write-out '%{redirect_url}' 2>/dev/null | awk -F "flowId=" '{print $2}')
+
+  #
+  # Print out DEBUG info
+  #
+  if test "${OPT_PINGONE_r}" == "true"; then
+      (
+        echo "        GET: ${_url}"
+        echo "      query: response_type=code"
+        echo "           : client_id=${PINGONE_WORKER_APP_CLIENT_ID}"
+        echo "           : code_challenge=${_az_challenge}"
+        echo ""
+        echo "Result Code: ${PINGONE_CALL_RESULT}"
+        echo "     flowId: ${_az_flow_id}"
+        echo "--------------------------------------"
+      ) >> "${PINGONE_DEBUG}"
+  fi
+
+  test -z "${_az_flow_id}" && echo_error "Unable to start Auhorization Code flow\n\nOften issue with client_id or mis-configured client" && return
+
+  ########################################################################
+  # Login with user/password
+  authenticatePingOneUser
+
+  error_pingone_call 200
+  test $? -eq 1 && return
+
+  ########################################################################
+  # Get the Authorization Code...
+
+  _url="${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/resume"
+
+  _az_code=$(curl -b "${_pingone_cookies}" -G --request GET "${_url}" \
+                  --data "flowId=${_az_flow_id}" \
+                  --write-out '%{redirect_url}' 2>/dev/null | awk -F "code=" '{print $2}')
+
+  #
+  # Print out DEBUG info
+  #
+  if test "${OPT_PINGONE_r}" == "true"; then
+      (
+        echo "        GET: ${_url}"
+        echo "      query: flowId=${_az_flow_id}"
+        echo ""
+        echo "Result Code: ${PINGONE_CALL_RESULT}"
+        echo "    AZ Code: ${_az_code}"
+        echo "--------------------------------------"
+      ) >> "${PINGONE_DEBUG}"
+  fi
+
+  test -z "${_az_code}" && echo_error "Unable to get Auhorization Code" && return
+
+  ########################################################################
+  # Trade in the Authorization Code for an access_token, along with the pkce verifier
+
+  _url="${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/token"
+
+  PINGONE_CALL_RESULT=$($CURL --request POST "${_url}" \
+                  --header 'Content-Type: application/x-www-form-urlencoded' \
+                  --data "client_id=${PINGONE_WORKER_APP_CLIENT_ID}" \
+                  --data "grant_type=authorization_code" \
+                  --data "code=${_az_code}" \
+                  --data "redirect_uri=${PINGONE_WORKER_APP_REDIRECT_URI}" \
+                  --data "code_verifier=${_az_verifier}" \
+                  --write-out '%{http_code}' \
+                  --output "${PINGONE_CALL_RESPONSE}" )
+
+  #
+  # Print out DEBUG info
+  #
+  if test "${OPT_PINGONE_r}" == "true"; then
+      (
+        echo "       POST: ${_url}"
+        echo "      query: client_id=${PINGONE_WORKER_APP_CLIENT_ID}"
+        echo "           : grant_type=authorization_code"
+        echo "           : code=${_az_code}"
+        echo "           : code_verifier=${_az_verifier}"
+        echo ""
+        echo "Result Code: ${PINGONE_CALL_RESULT}"
+        echo "--------------------------------------"
+      ) >> "${PINGONE_DEBUG}"
+  fi
+
+  error_pingone_call 200
+  test $? -eq 1 && return
+
+  PINGONE_ACCESS_TOKEN=$($JQ --raw-output '.access_token'  <"${PINGONE_CALL_RESPONSE}" | tee "${PINGONE_ACCESS_TOKEN_FILE}")
+}
+
+################################################################################
+# getPingOneAccessTokenViaImplicit
+################################################################################
+getPingOneAccessTokenViaImplicit ()
+{
+  _clearToken="${1}"
+
+  ########################################################################
+  # Start with a request for an AUTHORIZATION_CODE flow...
+
+  _url="${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/authorize"
+
+  _az_flow_id=$(curl --request POST "${_url}" \
+                  --header 'Content-Type: application/x-www-form-urlencoded' \
+                  --data-urlencode 'response_type=token' \
+                  --data-urlencode "client_id=${PINGONE_WORKER_APP_CLIENT_ID}" \
+                  --data-urlencode 'scope=openid' \
+                  --data-urlencode "redirect_uri=${PINGONE_WORKER_APP_REDIRECT_URI}" \
+                  --write-out '%{redirect_url}' 2>/dev/null | awk -F "flowId=" '{print $2}')
+
+  #
+  # Print out DEBUG info
+  #
+  if test "${OPT_PINGONE_r}" == "true"; then
+      (
+        echo "        GET: ${_url}"
+        echo "      query: response_type=token"
+        echo "           : client_id=${PINGONE_WORKER_APP_CLIENT_ID}"
+        echo ""
+        echo "Result Code: ${PINGONE_CALL_RESULT}"
+        echo "     flowId: ${_az_flow_id}"
+        echo "--------------------------------------"
+      ) >> "${PINGONE_DEBUG}"
+  fi
+
+  test -z "${_az_flow_id}" && echo_error "Unable to start Implicit Grant Flow\n\nOften issue with client_id or mis-configured client" && return
+
+  ########################################################################
+  # Login with user/password
+  authenticatePingOneUser
+
+  error_pingone_call 200
+  test $? -eq 1 && return
+
+  ########################################################################
+  # Get the access_token...
+
+  _url="${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/resume"
+
+  PINGONE_ACCESS_TOKEN=$(curl -b "${_pingone_cookies}" -G --request GET "${_url}" \
+                  --data "flowId=${_az_flow_id}" \
+                  --write-out '%{redirect_url}' 2>/dev/null | sed -n 's/.*access_token=\([^\&]*\).*/\1/p')
+
+  #
+  # Print out DEBUG info
+  #
+  if test "${OPT_PINGONE_r}" == "true"; then
+      (
+        echo "        GET: ${_url}"
+        echo "      query: flowId=${_az_flow_id}"
+        echo ""
+        echo "Result Code: ${PINGONE_CALL_RESULT}"
+        echo " access_tok: ${_az_code}"
+        echo "--------------------------------------"
+      ) >> "${PINGONE_DEBUG}"
+  fi
+
+  test -z "${PINGONE_ACCESS_TOKEN}" && echo_error "Unable to get access_token" && return
+
+  echo "${PINGONE_ACCESS_TOKEN}" > "${PINGONE_ACCESS_TOKEN_FILE}"
+}
+
+################################################################################
+# authenticatePingOneUser
+################################################################################
+authenticatePingOneUser ()
+{
+  ########################################################################
+  # Get the user/password...
+
+  _pingone_cookies="${TMP_DIR}/pingone.cookies"
+  _pingone_username_password="${TMP_DIR}/pingone.auth"
+
+  echo " What is your username [${PINGONE_USERNAME}]? \c"
+  read -r _answer
+  test -n "${_answer}" && PINGONE_USERNAME="${_answer}"
+
+  echo "          and password [********]? \c"
+  read -s _answer
+  echo
+  test -n "${_answer}" && PINGONE_PASSWORD="${_answer}"
+
+  $JQ -n '{username:$username,password:$password}' \
+              --arg username "${PINGONE_USERNAME}" \
+              --arg password "${PINGONE_PASSWORD}" > "${_pingone_username_password}"
+
+  ########################################################################
+  # Login with user/password
+
+  _pingone_cookies="${TMP_DIR}/pingone.cookies"
+
+  _url="${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/flows/${_az_flow_id}"
+
+  PINGONE_CALL_RESULT=$($CURL -c "${_pingone_cookies}" --request POST "${_url}" \
+                  --header 'Content-Type: application/vnd.pingidentity.usernamePassword.check+json' \
+                  --data "@${_pingone_username_password}" \
+                  --write-out '%{http_code}' \
+                  --output "${PINGONE_CALL_RESPONSE}" )
+
+  #
+  # Print out DEBUG info
+  #
+  if test "${OPT_PINGONE_r}" == "true"; then
+      (
+        echo "       POST: ${_url}"
+        echo "       data: {username:....,password:....}"
+        echo ""
+        echo "Result Code: ${PINGONE_CALL_RESULT}"
+        echo "--------------------------------------"
+      ) >> "${PINGONE_DEBUG}"
+  fi
+}
 
 ################################################################################
 # getPingOneAccessToken
@@ -1064,49 +1457,49 @@ getPingOneAccessToken ()
 {
     _clearToken="${1}"
 
+    if test "${_clearToken}" == "true"; then
+        rm -f "${PINGONE_ACCESS_TOKEN_FILE}"
+        PINGONE_ACCESS_TOKEN=""
+    fi
+
     check_variables \
         PINGONE_API_URL \
         PINGONE_AUTH_URL \
         PINGONE_ENVIRONMENT_ID \
-        PINGONE_WORKER_APP_CLIENT_ID \
-        PINGONE_WORKER_APP_CLIENT_SECRET
-
-    if test "${_clearToken}" == "true"; then
-        rm -f "${PINGONE_ACCESS_TOKEN_FILE}"
-    fi
+        PINGONE_WORKER_APP_CLIENT_ID
 
     #
     # Check the current token file.  If it has the same client-id and expires more than 60 seconds
     # then use it, otherwise, get a new token.
     #
     if test -f "${PINGONE_ACCESS_TOKEN_FILE}"; then
-        ${JWT} --version 2>/dev/null >/dev/null
+      ${JWT} --version 2>/dev/null >/dev/null
 
-        if test ${?} -eq 0; then
-          _expire=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.exp")
-          _client_id=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.client_id")
-          _now=$(date +%s)
+      if test ${?} -eq 0; then
+        _expire=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.exp")
+        _client_id=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.client_id")
+        _now=$(date +%s)
 
-          if test "${PINGONE_WORKER_APP_CLIENT_ID}" == "${_client_id}" && test $((${_expire} - 60)) -gt ${_now}; then
-              PINGONE_ACCESS_TOKEN=$(cat "${PINGONE_ACCESS_TOKEN_FILE}")
-          fi
+        if test "${PINGONE_WORKER_APP_CLIENT_ID}" == "${_client_id}" && test $((${_expire} - 60)) -gt ${_now}; then
+            PINGONE_ACCESS_TOKEN=$(cat "${PINGONE_ACCESS_TOKEN_FILE}")
         fi
+      fi
     fi
 
     if test -z "${PINGONE_ACCESS_TOKEN}"; then
-      PINGONE_CALL_RESULT=$( $CURL --request POST "${PINGONE_AUTH_URL}/${PINGONE_ENVIRONMENT_ID}/as/token" \
-                      --header 'Content-Type: application/x-www-form-urlencoded' \
-                      --user "${PINGONE_WORKER_APP_CLIENT_ID}:${PINGONE_WORKER_APP_CLIENT_SECRET}" \
-                      --data-urlencode 'grant_type=client_credentials' \
-                      --write-out '%{http_code}' \
-                      --output "${PINGONE_CALL_RESPONSE}")
-
-      if test ${PINGONE_CALL_RESULT} -ne 200; then
-        echo_error "Unable to authenticate to environment '${PINGONE_ENVIRONMENT_ID}'"
-        PINGONE_ACCESS_TOKEN=""
-      else
-        PINGONE_ACCESS_TOKEN=$($JQ --raw-output '.access_token'  <"${PINGONE_CALL_RESPONSE}" | tee "${PINGONE_ACCESS_TOKEN_FILE}")
-      fi
+      case "${PINGONE_WORKER_APP_GRANT_TYPE}" in
+        client_credentials)
+            getPingOneAccessTokenViaClientCredienals "${@}"
+            ;;
+        authorization_code)
+            getPingOneAccessTokenViaAuthorizationCode "${@}"
+            ;;
+        implicit)
+            getPingOneAccessTokenViaImplicit "${@}"
+            ;;
+        *)  echo_error "Unknown PINGONE_WORKER_APP_GRANT_TYPE [${PINGONE_WORKER_APP_GRANT_TYPE}]" && exit
+            ;;
+      esac
     fi
 }
 
@@ -1365,26 +1758,32 @@ pingone_api_get()
 
 ################################################################################
 # error_pingone_call
+#
+# SUCCESS - Return 0
+# FAILURE - Return 1
 ################################################################################
 error_pingone_call()
 {
   _expected_result="${1}"
 
-  test "${PINGONE_CALL_RESULT}" == "${_expected_result}" && return
+  test "${PINGONE_CALL_RESULT}" == "${_expected_result}" && return 0
 
   print_rest_debug
 
+  if test -f "${PINGONE_CALL_RESPONSE}"; then
+    _possible_errors="error_description details[].message message"
 
-  _err_message=$($JQ -r .details[].message <${PINGONE_CALL_RESPONSE})
+    for _error_try in $_possible_errors; do
+      _err_message=$($JQ -r .${_error_try} <${PINGONE_CALL_RESPONSE} 2>/dev/null)
+      if test $? -eq 0 && test "${_err_message}" != "null"; then
+        echo "ERROR: ${_err_message}"
+      fi
+    done
 
-  echo "ERROR: ${_err_message}"
+    # $JQ . <"${PINGONE_CALL_RESPONSE}"
+  fi
 
-
-  _err_message=$($JQ -r .message <${PINGONE_CALL_RESPONSE})
-
-  echo "ERROR: ${_err_message}"
-
-  exit
+  return 1
 }
 
 ################################################################################
@@ -1791,7 +2190,43 @@ Token details (header/claims) not available - Install jwt-cli tool for more info
 ################################################################################
 pingone_token()
 {
-  print_jwt_token "${PINGONE_ACCESS_TOKEN}"
+  _pingone_token_opt="${1}" && shift
+
+  test -z "${_pingone_token_opt}" && usage_command USAGE_PINGONE_TOKEN_DETAIL "Missing pingone token command"
+
+  get_pingone_options "${@}"
+  # Remove the switches we parsed above.
+  shift "$(( OPTIND - 1 ))"
+
+  case "${_pingone_token_opt}" in
+      clear)
+          echo "Removing ${PINGONE_ACCESS_TOKEN_FILE}"
+          rm -f "${PINGONE_ACCESS_TOKEN_FILE}"
+          ;;
+      info)
+          if test ! -f "${PINGONE_ACCESS_TOKEN_FILE}"; then
+              echo "Retrieving PingOne access_token"
+              getPingOneAccessToken
+          else
+              echo "Using cached access_token [${PINGONE_ACCESS_TOKEN_FILE}]"
+              echo
+              echo "Run following to remove:"
+              echo "   pingctl pingone token clear"
+          fi
+
+          if test ! -f "${PINGONE_ACCESS_TOKEN_FILE}"; then
+              troubleshootPingOneSettings
+              exit
+          fi
+
+          check_for_tool $JWT
+          $JWT decode - <"${PINGONE_ACCESS_TOKEN_FILE}"
+          ;;
+      *)
+          usage_command USAGE_PINGONE_TOKEN_DETAIL "Unknown pingone token command"
+          ;;
+  esac
+
 }
 
 ################################################################################
@@ -1847,30 +2282,50 @@ pingone_command()
 {
   _pingone_command="${1}" && shift $(( $# > 0 ? 1 : 0 ))
 
-  getPingOneAccessToken
-
   case "${_pingone_command}" in
-      get)
-          pingone_get "${@}"
-          ;;
-      add)
-          pingone_add "${@}"
-          ;;
-      delete)
-          pingone_delete "${@}"
-          ;;
-      add-user-group)
-          pingone_add_user_group "${@}"
-          ;;
-      delete-user-group)
-          pingone_delete_user_group "${@}"
-          ;;
-      token)
-          pingone_token "${@}"
+      token) #fall through to case below
+        ;;
+      get|add|delete|add-user-group|delete-user-group)
+          getPingOneAccessToken
+
+          if test -n "${PINGONE_ACCESS_TOKEN}"; then
+              case "${_pingone_command}" in
+                  get)
+                      pingone_get "${@}"
+                      ;;
+                  add)
+                      pingone_add "${@}"
+                      ;;
+                  delete)
+                      pingone_delete "${@}"
+                      ;;
+                  add-user-group)
+                      pingone_add_user_group "${@}"
+                      ;;
+                  delete-user-group)
+                      pingone_delete_user_group "${@}"
+                      ;;
+                  *)
+                      usage_command USAGE_PINGONE_DETAIL "unknown/missing pingone command: ${_pingone_command}"
+                      ;;
+              esac
+          else
+              echo_error "Unable to get a PingOne Access Token.  Options to help troubleshoot:
+
+  pingctl pingone token info -r   # To see REST calls
+  pingctl config                  # To reconfigure settings"
+          fi
           ;;
       *)
           usage_command USAGE_PINGONE_DETAIL "unknown/missing pingone command: ${_pingone_command}"
           ;;
+  esac
+
+  case "${_pingone_command}" in
+      token)
+          pingone_token "${@}"
+          ;;
+      *)  ;;
   esac
 
   print_rest_debug

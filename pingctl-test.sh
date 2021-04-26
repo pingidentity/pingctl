@@ -14,6 +14,9 @@ pingctl()
 pingctl info
 pingctl version
 
+pingctl pingone token clear
+pingctl pingone token info
+
 pingctl pingone get users
 pingctl pingone get groups
 pingctl pingone get populations
@@ -36,8 +39,6 @@ pingctl pingone delete-user-group pingctl-test-user@_example.com pingctl-test-gr
 pingctl pingone delete user pingctl-test-user@_example.com
 pingctl pingone delete group pingctl-test-group
 pingctl pingone delete population pingctl-test-pop
-
-pingctl pingone token
 
 pingctl license pingfederate 10.2
 pingctl k8s generate devops-secret

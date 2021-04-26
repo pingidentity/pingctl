@@ -1045,41 +1045,6 @@ config_command()
 
             if test -z "${PINGONE_ACCESS_TOKEN}"; then
               troubleshootPingOneSettings
-              echo_error "Unable to validate PingOne settings."
-              echo "############################################################################"
-              echo "# There are a number of reasons why this didn't work..."
-              echo "#"
-              echo "#   - Incorrect Client ID"
-              echo "#   - Incorrect Client Type - Must be Worker App"
-              echo "#   - Incorrect Redirect URI - You've specified: ${PINGONE_WORKER_APP_REDIRECT_URI}"
-              echo "#   - Incorrect Client Grant Type Settings"
-              echo "#"
-
-              case "${PINGONE_WORKER_APP_GRANT_TYPE}" in
-                authorization_code)
-                    echo "#     - authorization_code (w/ pkce)"
-                    echo "#                Response Type: Code"
-                    echo "#                   Grant Type: Authorization Code"
-                    echo "#             PKCE Enforcement: S256_REQUIRED"
-                    echo "#  Token Endpoint AuthN Method: None"
-                    ;;
-                implicit)
-                    echo "#     - implicit"
-                    echo "#                Response Type: Token"
-                    echo "#                   Grant Type: Implicit"
-                    echo "#  Token Endpoint AuthN Method: None"
-                    ;;
-                client_credentials)
-                    echo "#     - client_credentials"
-                    echo "#                Client Secret: ${PINGONE_WORKER_APP_CLIENT_SECRET}"
-                    echo "#                Response Type: Token"
-                    echo "#                   Grant Type: Client Credentials"
-                    echo "#  Token Endpoint AuthN Method: Client Secret Basic"
-                    ;;
-                *)  echo "#     - INVALID Grant Type: ${PINGONE_WORKER_APP_GRANT_TYPE}"
-              esac
-
-              echo "############################################################################"
             else
               echo
               echo "Congrats!  You've obtained a valid access_token."
@@ -1112,8 +1077,8 @@ echo "##########################################################################
 # optional variables to help with PingOne credentials/output.
 #
 # Examples include:
-#     PINGCTL_USERNAME=jsmith@example.com
-#     PINGCTL_PASSWORD=......... (*** CONSIDERED UNSECURE ***)
+#     PINEONE_USERNAME=jsmith@example.com
+#     PINGONE_PASSWORD=......... (*** CONSIDERED UNSECURE ***)
 #
 #     PINGCTL_OUTPUT_COLUMNS_USERS=FirstName:name.given,LastName:name.family
 #     PINGCTL_OUTPUT_SORT_USERS=name.given

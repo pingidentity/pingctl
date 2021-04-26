@@ -2,6 +2,9 @@
 title: pingctl Release Notes
 ---
 # Release Notes
+## Release 1.0.3 (April 26, 2021)
+
+* Fix version check and upgrade instructions
 
 ## Release 1.0.2 (April 26, 2021)
 

@@ -31,7 +31,7 @@ JWT="jwt"
 # Command and Version Info
 ################################################################################
 CMD="pingctl"
-VERSION="1.0.2"
+VERSION="1.0.3"
 
 ################################################################################
 # Ping Identity tools & config information
@@ -684,7 +684,7 @@ print_update_information()
 {
   echo "
 to update, you can use:
-  macosx : brew upgrade pi
+  macosx : brew upgrade pingctl
   linux  : curl -L https://raw.githubusercontent.com/pingidentity/pingctl/master/install.sh | bash"
 }
 
@@ -697,9 +697,9 @@ version_command()
 {
     # Looks for the URL and pulls out the version.  Example should be:
     #
-    #      url "https://github.com/pingidentity/pi/archive/v0.5.0.tar.gz"
+    #      url "https://github.com/pingidentity/pingctl/archive/v0.5.0.tar.gz"
     #
-    _latest_tool_version=$(${CURL} https://raw.githubusercontent.com/pingidentity/homebrew-devops/master/Formula/pingctl.rb \
+    _latest_tool_version=$(${CURL} https://raw.githubusercontent.com/pingidentity/homebrew-tap/master/Formula/pingctl.rb \
       |  grep -e '^  url ".*"$' \
       |  sed "s/.*archive\/v\(.*\)\.tar.*/\1/")
 

@@ -31,7 +31,7 @@ JWT="jwt"
 # Command and Version Info
 ################################################################################
 CMD="pingctl"
-VERSION="1.0.2"
+VERSION="1.0.3"
 
 ################################################################################
 # Ping Identity tools & config information
@@ -40,6 +40,11 @@ DOT_PINGIDENTITY="${HOME}/.pingidentity"
 WORK_DIR="${DOT_PINGIDENTITY}/${CMD}"
 PINGONE_ACCESS_TOKEN_FILE="${WORK_DIR}/pingone.token"
 test -d "${WORK_DIR}" || mkdir -p "${WORK_DIR}"
+
+################################################################################
+# legacy ping-devops config file
+################################################################################
+PING_DEVOPS_CONFIG="${DOT_PINGIDENTITY}/devops"
 
 ################################################################################
 # pingctl config environmental variables
@@ -113,10 +118,60 @@ echo_error()
 ################################################################################
 check_config_file()
 {
-  test ! -f "${PINGCTL_CONFIG}" \
-    && echo "No ${CMD} config found (PINGCTL_CONFIG=${PINGCTL_CONFIG}).  Please run:" \
-    && echo "  ${CMD} config" \
-    && exit
+    _pingctl_command="${1}"
+
+    case "${_pingctl_command}" in
+      version|clean)
+        return
+        ;;
+    esac
+
+    if test ! -f "${PINGCTL_CONFIG}"; then
+        if test -f "${PING_DEVOPS_CONFIG}"; then
+            echo "################################################################################"
+            echo "A pingctl config file '${PINGCTL_CONFIG}' wasn't found.  Maybe first time you are running pingctl."
+
+            #
+            # First, let's try to start from a an existing default pingctl config
+            if test -f "${DEFAULT_PINGCTL_CONFIG}"; then
+                echo
+                echo "  Found a default pingctl config file '${DEFAULT_PINGCTL_CONFIG}'"
+                echo
+                echo "  Would you like to seed your config with this? [y] ? \c"
+                read -r answer
+
+                if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+                    cp "${DEFAULT_PINGCTL_CONFIG}" "${PINGCTL_CONFIG}"
+                fi
+            #
+            # else, let's start from an existing ping-devops config
+            elif test -f "${PING_DEVOPS_CONFIG}"; then
+                echo
+                echo "  Found a default ping-devops config file '${PING_DEVOPS_CONFIG}'"
+                echo
+                echo "  Would you like to seed your config with this? [y] ? \c"
+                read -r answer
+
+                if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+                    cp "${PING_DEVOPS_CONFIG}" "${PINGCTL_CONFIG}"
+                fi
+            fi
+
+            if test "${_pingctl_command}" == "config"; then
+                echo
+                echo "   continuing with config..."
+            elif test ! -f "${PINGCTL_CONFIG}"; then
+                echo
+                echo "   To continue with '${_pingctl_command}' command, configure pingctl first with:"
+                echo
+                echo "      pingctl config"
+                exit
+            fi
+            echo "################################################################################"
+        fi
+    fi
+
+    test -f "${PINGCTL_CONFIG}" && source "${PINGCTL_CONFIG}"
 }
 
 ################################################################################
@@ -684,7 +739,7 @@ print_update_information()
 {
   echo "
 to update, you can use:
-  macosx : brew upgrade pi
+  macosx : brew upgrade pingctl
   linux  : curl -L https://raw.githubusercontent.com/pingidentity/pingctl/master/install.sh | bash"
 }
 
@@ -697,9 +752,9 @@ version_command()
 {
     # Looks for the URL and pulls out the version.  Example should be:
     #
-    #      url "https://github.com/pingidentity/pi/archive/v0.5.0.tar.gz"
+    #      url "https://github.com/pingidentity/pingctl/archive/v0.5.0.tar.gz"
     #
-    _latest_tool_version=$(${CURL} https://raw.githubusercontent.com/pingidentity/homebrew-devops/master/Formula/pingctl.rb \
+    _latest_tool_version=$(${CURL} https://raw.githubusercontent.com/pingidentity/homebrew-tap/master/Formula/pingctl.rb \
       |  grep -e '^  url ".*"$' \
       |  sed "s/.*archive\/v\(.*\)\.tar.*/\1/")
 
@@ -1131,6 +1186,7 @@ troubleshootPingOneSettings ()
     echo "############################################################################"
     echo "# There are a number of reasons why this didn't work..."
     echo "#"
+    echo "#   - Incorrect Username/Password (authorizatio_code, implicit flows)"
     echo "#   - Incorrect Client ID"
     echo "#   - Incorrect Client Type - Must be Worker App"
     echo "#   - Incorrect Redirect URI - You've specified: ${PINGONE_WORKER_APP_REDIRECT_URI}"
@@ -1410,11 +1466,13 @@ authenticatePingOneUser ()
   _pingone_cookies="${TMP_DIR}/pingone.cookies"
   _pingone_username_password="${TMP_DIR}/pingone.auth"
 
+  test -n "${PINGONE_PASSWORD}" && _mask_password="********"
+
   echo " What is your username [${PINGONE_USERNAME}]? \c"
   read -r _answer
   test -n "${_answer}" && PINGONE_USERNAME="${_answer}"
 
-  echo "          and password [********]? \c"
+  echo "          and password [${_mask_password}]? \c"
   read -s _answer
   echo
   test -n "${_answer}" && PINGONE_PASSWORD="${_answer}"
@@ -2390,17 +2448,7 @@ do
   eval "unset \${_var_to_unset}"
 done
 
-case "${_pingctl_command}" in
-    version|clean)
-        ;;
-    config)
-        test -f "${PINGCTL_CONFIG}" && source "${PINGCTL_CONFIG}"
-        ;;
-    *)
-        check_config_file
-        source "${PINGCTL_CONFIG}"
-        ;;
-esac
+check_config_file "${_pingctl_command}"
 
 case "${_pingctl_command}" in
     info)

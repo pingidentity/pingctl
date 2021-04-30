@@ -2,6 +2,11 @@
 title: pingctl Release Notes
 ---
 # Release Notes
+## Release 1.0.3 (April 30, 2021)
+
+* Fix version check and upgrade instructions
+* Allow user to default ping-devops configuration if pingctl configuration not setup yet.  Easier
+  for first time users.
 
 ## Release 1.0.2 (April 26, 2021)
 

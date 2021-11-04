@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 ########################################################################################################################
 #
 # This script is used to Install pingctl, a Ping Identity CLI
@@ -16,18 +16,18 @@ if [ -f "$INSTALL_DIR/pingctl" ]; then
 fi
 
 TMP_DIR=$(mktemp -d)
-if [[ ! "$TMP_DIR" || ! -d "$TMP_DIR" ]]; then
+if [ ! "$TMP_DIR" ] || [ ! -d "$TMP_DIR" ]; then
   echo "Could not create temp dir."
   exit 1
 fi
 
-function cleanup {
+cleanup() {
   rm -rf "$TMP_DIR"
 }
 
 trap cleanup EXIT
 
-cd "$TMP_DIR" >& /dev/null || echo "Unable to chanage to temporary directory" || exit 1
+cd "$TMP_DIR" >/dev/null 2>&1 || echo "Unable to chanage to temporary directory" || exit 1
 
 curl -s https://raw.githubusercontent.com/pingidentity/homebrew-tap/master/Formula/pingctl.rb |\
   grep url |\

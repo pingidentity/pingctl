@@ -1765,8 +1765,8 @@ pingone_api_get()
           test ! -z "${_filter}" && echo "      query: ${_api_filter}"
           echo ""
           echo "Result Code: ${PINGONE_CALL_RESULT}"
-          echo "  Page Size: $(echo "${PINGONE_CALL_RESPONSE}" | $JQ .size)"
-          echo " Total Szie: $(echo "${PINGONE_CALL_RESPONSE}" | $JQ .count)"
+          echo "  Page Size: $(cat "${PINGONE_CALL_RESPONSE}" | $JQ .size)"
+          echo " Total Szie: $(cat "${PINGONE_CALL_RESPONSE}" | $JQ .count)"
           echo "--------------------------------------"
         ) >> "${PINGONE_DEBUG}"
       fi

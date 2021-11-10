@@ -31,7 +31,7 @@ JWT="jwt"
 # Command and Version Info
 ################################################################################
 CMD="pingctl"
-VERSION="1.0.3"
+VERSION="1.0.4"
 
 ################################################################################
 # Ping Identity tools & config information
@@ -171,7 +171,7 @@ check_config_file()
         fi
     fi
 
-    test -f "${PINGCTL_CONFIG}" && source "${PINGCTL_CONFIG}"
+    test -f "${PINGCTL_CONFIG}" && . "${PINGCTL_CONFIG}"
 }
 
 ################################################################################
@@ -1173,7 +1173,7 @@ base64_no_newlines()
     # shellcheck disable=SC2002
     cat "${1}" | $BASE64 | tr -d '\r?\n'
   else
-    printf "${1}" | $BASE64 | tr -d '\r?\n'
+    printf "%s" "${1}" | $BASE64 | tr -d '\r?\n'
   fi
 }
 
@@ -1473,7 +1473,7 @@ authenticatePingOneUser ()
   test -n "${_answer}" && PINGONE_USERNAME="${_answer}"
 
   echo "          and password [${_mask_password}]? \c"
-  read -s _answer
+  read -r _answer
   echo
   test -n "${_answer}" && PINGONE_PASSWORD="${_answer}"
 
@@ -1538,7 +1538,7 @@ getPingOneAccessToken ()
         _client_id=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.client_id")
         _now=$(date +%s)
 
-        if test "${PINGONE_WORKER_APP_CLIENT_ID}" == "${_client_id}" && test $((${_expire} - 60)) -gt ${_now}; then
+        if test "${PINGONE_WORKER_APP_CLIENT_ID}" == "${_client_id}" && test $((_expire - 60)) -gt "${_now}"; then
             PINGONE_ACCESS_TOKEN=$(cat "${PINGONE_ACCESS_TOKEN_FILE}")
         fi
       fi
@@ -1582,7 +1582,7 @@ print_api_results_sv()
   _sv="${1}" && shift
   _res_obj="${1}"
 
-  _res_obj=$(echo "${_res_obj}" | tr '[a-z]' '[A-Z]')
+  _res_obj=$(echo "${_res_obj}" | tr '[:lower:]' '[:upper:]')
 
   ################################################################################
   # Table/CSV Columns and Sorts
@@ -1644,7 +1644,7 @@ print_api_results_sv()
   #
   # Ensure that each column starts with a dot (.) Required for jq
   #
-  _columns="${_columns//:/:.}"
+  _columns=$(echo "${_columns}" | sed -e 's/:/:./g')
 
   test "${_sv}" == "tsv" && _dash_row='| (.,map(length*"-"))'
 
@@ -1765,8 +1765,8 @@ pingone_api_get()
           test ! -z "${_filter}" && echo "      query: ${_api_filter}"
           echo ""
           echo "Result Code: ${PINGONE_CALL_RESULT}"
-          echo "  Page Size: $(cat "${PINGONE_CALL_RESPONSE}" | $JQ .size)"
-          echo " Total Szie: $(cat "${PINGONE_CALL_RESPONSE}" | $JQ .count)"
+          echo "  Page Size: $(echo "${PINGONE_CALL_RESPONSE}" | $JQ .size)"
+          echo " Total Szie: $(echo "${PINGONE_CALL_RESPONSE}" | $JQ .count)"
           echo "--------------------------------------"
         ) >> "${PINGONE_DEBUG}"
       fi
@@ -1781,7 +1781,7 @@ pingone_api_get()
         _next=$($JQ ._links.next <"${PINGONE_CALL_RESPONSE}")
 
         if test "${_next}" != "null"; then
-          _url=$($JQ -r .href <<<"${_next}")
+          _url=$(echo "${_next}" | $JQ -r .href)
           _api_filter=""
         fi
       fi

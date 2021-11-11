@@ -129,7 +129,7 @@ check_config_file()
     if test ! -f "${PINGCTL_CONFIG}"; then
         if test -f "${PING_DEVOPS_CONFIG}"; then
             echo "################################################################################"
-            echo "A pingctl config file '${PINGCTL_CONFIG}' wasn't found.  Maybe first time you are running pingctl."
+            echo "A pingctl config file '${PINGCTL_CONFIG}' was not found.  Is this the first time running pingctl?"
 
             #
             # First, let's try to start from a an existing default pingctl config
@@ -137,7 +137,7 @@ check_config_file()
                 echo
                 echo "  Found a default pingctl config file '${DEFAULT_PINGCTL_CONFIG}'"
                 echo
-                echo "  Would you like to seed your config with this? [y] ? \c"
+                echo "  Would you like to seed your config with this? [y] ?"
                 read -r answer
 
                 if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
@@ -149,7 +149,7 @@ check_config_file()
                 echo
                 echo "  Found a default ping-devops config file '${PING_DEVOPS_CONFIG}'"
                 echo
-                echo "  Would you like to seed your config with this? [y] ? \c"
+                echo "  Would you like to seed your config with this? [y] ?"
                 read -r answer
 
                 if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
@@ -436,7 +436,7 @@ check_for_tool()
 ################################################################################
 # get_value (variable)
 #
-# Get the value of a vaiable, preserving the spaces
+# Get the value of a variable, preserving the spaces
 ################################################################################
 get_value ()
 {
@@ -456,16 +456,18 @@ source_config()
 {
     BASH_PROFILE="${HOME}/.bash_profile"
     ZSHRC="${HOME}/.zshrc"
+    DEF_PROFILE="${HOME}/.profile"
 
-    if test -f "${BASH_PROFILE}"; then
-      grep "${PINGCTL_CONFIG}" "${BASH_PROFILE}" > /dev/null
-
-      if test "${?}" = "1"; then
+      #if test "${?}" = "1"; then
+      case "${SHELL}" in
+      *bash)
+        grep "${PINGCTL_CONFIG}" "${BASH_PROFILE}" > /dev/null
+        if test "${?}" = "1"; then
           echo "
 ################################################################################
 # Checking your bash profile
 ################################################################################
-  OK if we add a 'source ${PINGCTL_CONFIG}' to your '${BASH_PROFILE}' (y/n) [y] ? \c"
+  OK if we add a 'source ${PINGCTL_CONFIG}' to your '${BASH_PROFILE}' (y/n) [y] ?"
           read -r answer
 
           if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
@@ -475,18 +477,16 @@ test -f '${PINGCTL_CONFIG}' && source '${PINGCTL_CONFIG}'" >> "${BASH_PROFILE}"
           else
             echo "Skipping ${BASH_PROFILE}"
           fi
-      fi
-    fi
-
-    if test -f "${ZSHRC}"; then
-      grep "${PINGCTL_CONFIG}" "${ZSHRC}" > /dev/null
-
-      if test "${?}" = "1"; then
+        fi
+      ;;
+      *zsh)
+        grep "${PINGCTL_CONFIG}" "${ZSHRC}" > /dev/null
+        if test "${?}" = "1"; then
           echo "
 ################################################################################
 # Checking your zsh profile
 ################################################################################
-  OK if we add a 'source ${PINGCTL_CONFIG}' to your '${ZSHRC}' (y/n) [y] ? \c"
+  OK if we add a 'source ${PINGCTL_CONFIG}' to your '${ZSHRC}' (y/n) [y] ?"
           read -r answer
 
           if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
@@ -496,8 +496,30 @@ test -f '${PINGCTL_CONFIG}' && source '${PINGCTL_CONFIG}'" >> "${ZSHRC}"
           else
             echo "Skipping ${ZSHRC}"
           fi
+        fi
+      ;;
+      *)
+      #putting a -s since it'll error if this doesn't exist. If it doesn't then you will need to source it where applicable.
+      grep -s "${PINGCTL_CONFIG}" "${DEF_PROFILE}" > /dev/null
+      if test "${?}" = "1"; then
+        echo "
+################################################################################
+# Checking all other profiles
+################################################################################
+OK if we add a 'source ${PINGCTL_CONFIG}' to your '${DEF_PROFILE}' (y/n) [y] ?"
+        read -r answer
+
+        if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
+            echo "
+# Ping Identity - Added with '${CMD} config' on $(date)
+test -f '${PINGCTL_CONFIG}' && . '${PINGCTL_CONFIG}'" >> "${DEF_PROFILE}"
+        else
+          echo "Skipping ${DEF_PROFILE}"
+        fi
       fi
-    fi
+    ;;
+    esac
+
 }
 
 ################################################################################
@@ -543,7 +565,7 @@ add_config()
   do
 
     echo "${VAR_PROMPT}"
-    echo "    [${CURRENT_VALUE}] ? \c"
+    echo "    [${CURRENT_VALUE}] ?"
     read -r answer
     echo
 
@@ -636,7 +658,7 @@ add_config_custom()
 
   while true
   do
-      echo "Enter a new NAME=VALUE [enter to end] : \c"
+      echo "Enter a new NAME=VALUE [enter to end] :"
 
       read -r answer
 
@@ -783,7 +805,7 @@ clean_command()
     echo
     echo "IMPORTANT: This is destructive of all content ${WORK_DIR}"
     echo
-    echo "Are you SURE you want to clean/remove this content (y/n) [n] ? \c"
+    echo "Are you SURE you want to clean/remove this content (y/n) [n] ?"
     read -r answer
 
     if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
@@ -1060,7 +1082,7 @@ config_command()
     print_variable_setting_instructions
 
     echo "################################################################################
-# Variables used to assist PingOne operations.  If you aren't using a PingOne
+# Variables used to assist PingOne operations.  If you are not using a PingOne
 # environment, you can ignore these settings.
 ################################################################################
 " | tee -a "${PINGCTL_CONFIG}"
@@ -1085,7 +1107,7 @@ config_command()
 
       while true
       do
-        echo "Would you like to perform a test to validate your PINGONE_WORKER_APP settings? [y] ? \c"
+        echo "Would you like to perform a test to validate your PINGONE_WORKER_APP settings? [y] ?"
         read -r answer
 
         if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
@@ -1150,12 +1172,21 @@ echo "##########################################################################
 
 ################################################################################
 #
-# To get these changes effective in your current shell, you should either:
+# To make these changes effective to the shell, please do one of the following:
 #
-#    o Restart your Terminal Session (will source your shell profiles)
-#    o Source your:
-#        - bash - 'source ~/.bash_profile'
-#        - zsh  - 'source ~/.zshrc
+#    o If you selected to add a source referencing .pingidentity
+#        - Restart your terminal session
+#
+#    o Alternatively, source the current profile to load the new reference:
+#        - bash   - 'source ~/.bash_profile'
+#        - zsh    - 'source ~/.zshrc
+#        - others - '. ~/.profile'
+#
+#    o If you did not accept the prompt to source, add the following
+#      line to your profile of choice:
+#
+#       . "~/.pingidentity/config"
+#
 #
 ################################################################################
     "
@@ -1184,9 +1215,9 @@ troubleshootPingOneSettings ()
 {
     echo_error "Unable to validate PingOne settings."
     echo "############################################################################"
-    echo "# There are a number of reasons why this didn't work..."
+    echo "# There are a number of reasons why this did not work..."
     echo "#"
-    echo "#   - Incorrect Username/Password (authorizatio_code, implicit flows)"
+    echo "#   - Incorrect Username/Password (authorization_code, implicit flows)"
     echo "#   - Incorrect Client ID"
     echo "#   - Incorrect Client Type - Must be Worker App"
     echo "#   - Incorrect Redirect URI - You've specified: ${PINGONE_WORKER_APP_REDIRECT_URI}"
@@ -1279,7 +1310,7 @@ getPingOneAccessTokenViaAuthorizationCode ()
   fi
 
 	#Generate PKCE Challenge from Verifier and convert / + = characters"
-	_az_challenge=$(echo "${_az_verifier}\c" | ${SHASUM} | cut -d " " -f 1 | xxd -r -p | ${BASE64} | tr / _ | tr + - | tr -d =)
+	_az_challenge=$(echo "${_az_verifier}" | ${SHASUM} | cut -d " " -f 1 | xxd -r -p | ${BASE64} | tr / _ | tr + - | tr -d =)
 
   ########################################################################
   # Start with a request for an AUTHORIZATION_CODE flow...
@@ -1468,11 +1499,11 @@ authenticatePingOneUser ()
 
   test -n "${PINGONE_PASSWORD}" && _mask_password="********"
 
-  echo " What is your username [${PINGONE_USERNAME}]? \c"
+  echo " What is your username [${PINGONE_USERNAME}]?"
   read -r _answer
   test -n "${_answer}" && PINGONE_USERNAME="${_answer}"
 
-  echo "          and password [${_mask_password}]? \c"
+  echo "          and password [${_mask_password}]?"
   read -r _answer
   echo
   test -n "${_answer}" && PINGONE_PASSWORD="${_answer}"
@@ -1765,8 +1796,8 @@ pingone_api_get()
           test ! -z "${_filter}" && echo "      query: ${_api_filter}"
           echo ""
           echo "Result Code: ${PINGONE_CALL_RESULT}"
-          echo "  Page Size: $(cat "${PINGONE_CALL_RESPONSE}" | $JQ .size)"
-          echo " Total Szie: $(cat "${PINGONE_CALL_RESPONSE}" | $JQ .count)"
+          echo "  Page Size: $(echo "${PINGONE_CALL_RESPONSE}" | $JQ .size)"
+          echo " Total Szie: $(echo "${PINGONE_CALL_RESPONSE}" | $JQ .count)"
           echo "--------------------------------------"
         ) >> "${PINGONE_DEBUG}"
       fi

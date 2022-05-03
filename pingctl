@@ -535,7 +535,7 @@ test -f '${PINGCTL_CONFIG}' && . '${PINGCTL_CONFIG}'" >> "${DEF_PROFILE}"
 # Obtain a list of custom variables
 ################################################################################
 get_custom_variables() {
-    grep -v "^#" "${PINGCTL_CONFIG}" |
+    grep -v "^#" "${PINGCTL_CONFIG}" 2> /dev/null |
         while read -r _line; do
             test -z "${_line}" && continue
             _name="${_line%%=*}"

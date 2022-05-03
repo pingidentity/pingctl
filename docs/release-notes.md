@@ -1,7 +1,19 @@
 ---
 title: pingctl Release Notes
 ---
+
 # Release Notes
+
+## Release 1.0.5 (May 03, 2022)
+
+* Fix some issues where pingctl did not function correctly on Ubuntu.
+* Update pingctl to better comply with POSIX standards.
+
+## Release 1.0.4 (Feb 03, 2022)
+
+* Update pingctl to better comply with POSIX standards and better support adding source to shell
+* Fixed some minor prompt syntax
+
 ## Release 1.0.3 (April 30, 2021)
 
 * Fix version check and upgrade instructions

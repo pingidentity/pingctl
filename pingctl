@@ -1003,7 +1003,7 @@ generate_license_secret() {
             --write-out '%{http_code}' \
             --output "${LICENSE_RESPONSE}")
 
-        test "${LICENSE_CALL_RESULT}" -ne 200 && usage_command USAGE_GENERATE_DETAIL "Unable to pull eval license for '${_licenseProd}' ver '${_licenseVer}'\n       Check that your PING_IDENTITY_DEVOPS_USER and PING_IDENTITY_DEVOPS_USER are valid.\n       Check your product and version are valid."
+        test "${LICENSE_CALL_RESULT}" -ne 200 && usage_command USAGE_GENERATE_DETAIL "Unable to pull eval license for '${_licenseProd}' ver '${_licenseVer}'\n       Check that your PING_IDENTITY_DEVOPS_USER and PING_IDENTITY_DEVOPS_KEY are valid.\n       Check your product and version are valid."
     fi
 
     case "${_licenseType}" in

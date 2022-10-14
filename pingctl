@@ -39,6 +39,7 @@ VERSION="1.0.5"
 PLATFORM="unknown"
 unamestr=$(uname)
 [ "${unamestr}" = "Linux" ] && PLATFORM="linux"
+# shellcheck disable=SC2034
 [ "${unamestr}" = "Darwin" ] && PLATFORM="mac"
 
 ################################################################################

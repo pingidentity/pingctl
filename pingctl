@@ -880,7 +880,7 @@ k8s_oidc_tools() {
             ${JQ} -r .id_token "${KUBE_OIDC_CACHE}"/* | ${JWT} decode -
             ;;
         *)
-            check_for_tool ${JWT}
+            check_for_tool ${JQ}
             check_for_tool ${JWT}
             ${JQ} -r .id_token "${KUBE_OIDC_CACHE}"/* | ${JWT} decode - -j | ${JQ} -r ".payload.${_oidc_opt}"
             ;;

@@ -109,15 +109,6 @@ cleanup() {
 trap cleanup EXIT
 
 ################################################################################
-# jwt_decode (token) - decode JWT using jq only for portability to Linux
-################################################################################
-jwt_decode() {
-    if test ! -z "$*"; then
-        jq -r .id_token "${1}" | jq -R 'split(".") | .[0],.[1] | @base64d | fromjson'
-    fi
-}
-
-################################################################################
 # echo_error (message) - prints an Error: message
 ################################################################################
 echo_error() {
@@ -240,7 +231,7 @@ Usage:
   ${CMD} license {product} {ver}          # Obtain an evaluation license file for product/ver
 
 Examples:
-  ${CMD} license pingfederate 10.2"
+  ${CMD} license pingfederate 11.1"
 
 ################################################################################
 # USAGE_OIDC_DETAIL is used as an indirect argument for usage_command(). Disable shellcheck.
@@ -390,7 +381,7 @@ ${OPTIONS_R}"
 ################################################################################
 usage() {
     echo_error "$*"
-    # long multi-line printf with CMD repeated; having vars in printf is more readable
+    # long multi-line printf with CMD repeated; having vars inline is more readable
     # shellcheck disable=SC2059
     printf "${CMD} is a CLI from Ping Identity to manage PingOne and other Ping Identity projects/tools.
 
@@ -872,31 +863,25 @@ k8s_oidc_tools() {
 
     case "${_oidc_opt}" in
         clear)
+            printf "Are you SURE you want to clean/remove %s (y/n) [n]\n" "${KUBE_OIDC_CACHE}"
+            read -r answer
+
+            if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
+                echo_error "OIDC cache clear aborted!"
+                exit
+            fi
+
             printf "Removing %s\n" "${KUBE_OIDC_CACHE}"
             rm -rf "${KUBE_OIDC_CACHE}"
             ;;
         info)
-            if [ "${PLATFORM}" = "linux" ]; then
-                check_for_tool ${JQ}
-                # We want to expand * so it is outside quotes
-                # shellcheck disable=SC2125
-                _jwt_token="${KUBE_OIDC_CACHE}/"*
-                # shellcheck disable=SC2086
-                jwt_decode ${_jwt_token}
-            elif [ "${PLATFORM}" = "mac" ]; then
-                check_for_tool ${JWT}
-                ${JQ} -r .id_token "${KUBE_OIDC_CACHE}"/* | ${JWT} decode -
-            else
-                printf "Unknown or unsupported platform\n" && exit 1
-            fi
+            check_for_tool ${JWT}
+            ${JQ} -r .id_token "${KUBE_OIDC_CACHE}"/* | ${JWT} decode -
             ;;
         *)
-            if [ "${PLATFORM}" != "mac" ]; then
-                printf "This option is unsupported on this platform at this time.\nUse the 'info' option to see all claims.\n" && exit
-            else
-                check_for_tool ${JWT}
-                ${JQ} -r .id_token "${KUBE_OIDC_CACHE}"/* | ${JWT} decode - -j | ${JQ} -r ".payload.${_oidc_opt}"
-            fi
+            check_for_tool ${JWT}
+            check_for_tool ${JWT}
+            ${JQ} -r .id_token "${KUBE_OIDC_CACHE}"/* | ${JWT} decode - -j | ${JQ} -r ".payload.${_oidc_opt}"
             ;;
     esac
 }
@@ -916,7 +901,7 @@ k8s_generate_resource() {
 
             check_for_tool $BASE64
 
-            # long multi-line printf with many vars; having vars in printf is more readable
+            # long multi-line printf with many vars; having vars inline is more readable
             # shellcheck disable=SC2059
             printf "
 apiVersion: v1
@@ -956,7 +941,7 @@ data:
                 -reqexts SAN -extensions SAN \
                 -config "${_opensslcnf}" > /dev/null 2>&1
 
-            # long multi-line printf with many vars; having vars in printf is more readable
+            # long multi-line printf with many vars; having vars inline is more readable
             # shellcheck disable=SC2059
             printf "
 apiVersion: v1
@@ -974,7 +959,7 @@ data:
         ssh-id-secret)
             _idKey="${2}"
 
-            # long multi-line printf with many vars; having vars in printf is more readable
+            # long multi-line printf with many vars; having vars inline is more readable
             # shellcheck disable=SC2059
             printf "
 apiVersion: v1
@@ -1053,7 +1038,7 @@ generate_license_secret() {
         license-secret)
             _licenseSecret=$(base64_no_newlines "${LICENSE_RESPONSE}")
 
-            # long multi-line printf with many vars; having vars in printf is more readable
+            # long multi-line printf with many vars; having vars inline is more readable
             # shellcheck disable=SC2059
             printf "
 apiVersion: v1

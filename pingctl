@@ -382,28 +382,29 @@ ${OPTIONS_R}"
 ################################################################################
 usage() {
     echo_error "$*"
-    # long multi-line printf with CMD repeated; having vars inline is more readable
-    # shellcheck disable=SC2059
-    printf "${CMD} is a CLI from Ping Identity to manage PingOne and other Ping Identity projects/tools.
+    # using HEREDOC for longer objects
+    cat << CMD_USAGE
+${CMD} is a CLI from Ping Identity to manage PingOne and other Ping Identity projects/tools.
 
 Usage:
   ${CMD} [command] [options]
 
 Available Commands:
-  info            Print ${CMD} config
-  config          Manage ${CMD} config
-  version         Version Details and Check
-  clean           Remove ~/.pingidentity/${CMD}
+  info               Print ${CMD} config
+  config             Manage ${CMD} config
+  version            Version Details and Check
+  clean              Remove ~/.pingidentity/${CMD}
 
-  kubernetes      Kubernetes Tools
-  license         Ping Identity Licensing Tools
-  pingone         PingOne Tools
+  kubernetes | k8s   Kubernetes Tools
+  license    | lic   Ping Identity Licensing Tools
+  pingone    | p1    PingOne Tools
 
 Options:
   -h              Help for ${CMD}
 
 Further help:
-  https://pingidentity.github.io/pingctl\n"
+  https://pingidentity.github.io/pingctl
+CMD_USAGE
 
     exit
 }
@@ -855,7 +856,7 @@ license_command() {
 k8s_oidc_tools() {
     _oidc_opt="${1}"
 
-    test -z "${_oidc_opt}" && usage_command USAGE_OIDC_DETAIL "missing kubernetes oidc command"
+    test -z "${_oidc_opt}" && usage_command USAGE_OIDC_DETAIL "missing Kubernetes oidc command"
 
     if test ! -d "${KUBE_OIDC_CACHE}"; then
         printf "==  no-token  ==\n"
@@ -902,9 +903,8 @@ k8s_generate_resource() {
 
             check_for_tool $BASE64
 
-            # long multi-line printf with many vars; having vars inline is more readable
-            # shellcheck disable=SC2059
-            printf "
+            # using HEREDOC for longer objects
+            cat << DO_SECRET
 apiVersion: v1
 kind: Secret
 metadata:
@@ -917,7 +917,7 @@ data:
   PING_IDENTITY_DEVOPS_USER: $(base64_no_newlines "${PING_IDENTITY_DEVOPS_USER}")
   PING_IDENTITY_DEVOPS_KEY: $(base64_no_newlines "${PING_IDENTITY_DEVOPS_KEY}")
   PING_IDENTITY_ACCEPT_EULA: $(base64_no_newlines "${PING_IDENTITY_ACCEPT_EULA}")
-"
+DO_SECRET
             ;;
 
         tls-secret)
@@ -942,9 +942,8 @@ data:
                 -reqexts SAN -extensions SAN \
                 -config "${_opensslcnf}" > /dev/null 2>&1
 
-            # long multi-line printf with many vars; having vars inline is more readable
-            # shellcheck disable=SC2059
-            printf "
+            # using HEREDOC for longer objects
+            cat << TLS_SECRET
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/tls
@@ -955,21 +954,22 @@ metadata:
     ${CMD}.app-version: v${VERSION}
 data:
   tls.crt: $(base64_no_newlines "${_tlsCrt}")
-  tls.key: $(base64_no_newlines "${_tlsKey}")"
+  tls.key: $(base64_no_newlines "${_tlsKey}")
+TLS_SECRET
             ;;
         ssh-id-secret)
             _idKey="${2}"
 
-            # long multi-line printf with many vars; having vars inline is more readable
-            # shellcheck disable=SC2059
-            printf "
+            # using HEREDOC for longer objects
+            cat << SSH_SECRET
 apiVersion: v1
 kind: Secret
 metadata:
   name: ssh-id-key-secret
 data:
   id_rsa: |
-    $(base64_no_newlines "${_idKey}")"
+    $(base64_no_newlines "${_idKey}")
+SSH_SECRET
             ;;
         license-secret)
             generate_license_secret "${@}"
@@ -1039,9 +1039,8 @@ generate_license_secret() {
         license-secret)
             _licenseSecret=$(base64_no_newlines "${LICENSE_RESPONSE}")
 
-            # long multi-line printf with many vars; having vars inline is more readable
-            # shellcheck disable=SC2059
-            printf "
+            # using HEREDOC for longer objects
+            cat << LIC_SECRET
 apiVersion: v1
 kind: Secret
 metadata:
@@ -1050,7 +1049,8 @@ metadata:
     pingidentity.com/generated-by: ${CMD}
 data:
   license: |
-    ${_licenseSecret}"
+    ${_licenseSecret}
+LIC_SECRET
             ;;
         license)
             cat "${LICENSE_RESPONSE}"

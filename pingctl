@@ -34,6 +34,15 @@ CMD="pingctl"
 VERSION="1.0.5"
 
 ################################################################################
+# Platform vars
+################################################################################
+PLATFORM="unknown"
+unamestr=$(uname)
+[ "${unamestr}" = "Linux" ] && PLATFORM="linux"
+# shellcheck disable=SC2034
+[ "${unamestr}" = "Darwin" ] && PLATFORM="mac"
+
+################################################################################
 # Ping Identity tools & config information
 ################################################################################
 DOT_PINGIDENTITY="${HOME}/.pingidentity"
@@ -101,13 +110,15 @@ cleanup() {
 trap cleanup EXIT
 
 ################################################################################
-# echo_error (message) - Echo's an Error: message
+# echo_error (message) - prints an Error: message
 ################################################################################
 echo_error() {
     if test ! -z "$*"; then
-        echo "-------------------------------------------------------------------------"
-        echo "Error: ${1}"
-        echo "-------------------------------------------------------------------------"
+        printf "=========================================================================\n"
+        # redirect with control characters not expanded using %s
+        # shellcheck disable=SC2059
+        printf "Error: ${1}\n"
+        printf "=========================================================================\n"
     fi
 }
 
@@ -125,28 +136,28 @@ check_config_file() {
 
     if test ! -f "${PINGCTL_CONFIG}"; then
         if test -f "${PING_DEVOPS_CONFIG}"; then
-            echo "################################################################################"
-            echo "A pingctl config file '${PINGCTL_CONFIG}' was not found.  Is this the first time running pingctl?"
+            printf "################################################################################\n"
+            printf "A pingctl config file '%s' was not found.  Is this the first time running pingctl?\n" "${PINGCTL_CONFIG}"
 
             #
-            # First, let's try to start from a an existing default pingctl config
+            # First, try to start from an existing default pingctl config
             if test -f "${DEFAULT_PINGCTL_CONFIG}"; then
-                echo
-                echo "  Found a default pingctl config file '${DEFAULT_PINGCTL_CONFIG}'"
-                echo
-                echo "  Would you like to seed your config with this? [y] ?"
+                printf "\n"
+                printf "  Found a default pingctl config file '%s'\n" "${DEFAULT_PINGCTL_CONFIG}"
+                printf "\n"
+                printf "  Would you like to seed your config with this? [y] ?\n"
                 read -r answer
 
                 if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
                     cp "${DEFAULT_PINGCTL_CONFIG}" "${PINGCTL_CONFIG}"
                 fi
             #
-            # else, let's start from an existing ping-devops config
+            # else, start from an existing ping-devops config
             elif test -f "${PING_DEVOPS_CONFIG}"; then
-                echo
-                echo "  Found a default ping-devops config file '${PING_DEVOPS_CONFIG}'"
-                echo
-                echo "  Would you like to seed your config with this? [y] ?"
+                printf "\n"
+                printf "  Found a default ping-devops config file '%s'\n" "${PING_DEVOPS_CONFIG}"
+                printf "\n"
+                printf "  Would you like to seed your config with this? [y] ?\n"
                 read -r answer
 
                 if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
@@ -155,16 +166,16 @@ check_config_file() {
             fi
 
             if test "${_pingctl_command}" = "config"; then
-                echo
-                echo "   continuing with config..."
+                printf "\n"
+                printf "   continuing with config...\n"
             elif test ! -f "${PINGCTL_CONFIG}"; then
-                echo
-                echo "   To continue with '${_pingctl_command}' command, configure pingctl first with:"
-                echo
-                echo "      pingctl config"
+                printf "\n"
+                printf "   To continue with '%s' command, configure pingctl first with:\n" "${_pingctl_command}"
+                printf "\n"
+                printf "      pingctl config\n"
                 exit
             fi
-            echo "################################################################################"
+            printf "################################################################################\n"
         fi
     fi
 
@@ -178,18 +189,18 @@ check_config_file() {
 check_variables() {
     for _var in "${@}"; do
         test -z "$(get_value "${_var}")" &&
-            echo "Variable is not set: ${_var}" &&
+            printf "Variable is not set: %s\n" "${_var}" &&
             _var_check_fails=true
     done
 
     test ${_var_check_fails} &&
-        echo &&
-        echo "To get more information on these variables:" &&
-        echo "  https://pingctl.pingidentity.com/" &&
-        echo &&
-        echo "Set this/these in your config with:" &&
-        echo "  ${CMD} config" &&
-        echo &&
+        printf "\n" &&
+        printf "To get more information on these variables:\n" &&
+        printf "  https://pingctl.pingidentity.com/\n" &&
+        printf "\n" &&
+        printf "Set this/these in your config with:\n" &&
+        printf "  %s config\n" "${CMD}" &&
+        printf "\n" &&
         exit
 }
 
@@ -221,7 +232,7 @@ Usage:
   ${CMD} license {product} {ver}          # Obtain an evaluation license file for product/ver
 
 Examples:
-  ${CMD} license pingfederate 10.2"
+  ${CMD} license pingfederate 11.1"
 
 ################################################################################
 # USAGE_OIDC_DETAIL is used as an indirect argument for usage_command(). Disable shellcheck.
@@ -371,27 +382,29 @@ ${OPTIONS_R}"
 ################################################################################
 usage() {
     echo_error "$*"
-
-    echo "${CMD} is a CLI from Ping Identity to manage PingOne and other Ping Identity projects/tools.
+    # using HEREDOC for longer objects
+    cat << CMD_USAGE
+${CMD} is a CLI from Ping Identity to manage PingOne and other Ping Identity projects/tools.
 
 Usage:
   ${CMD} [command] [options]
 
 Available Commands:
-  info            Print ${CMD} config
-  config          Manage ${CMD} config
-  version         Version Details and Check
-  clean           Remove ~/.pingidentity/${CMD}
+  info               Print ${CMD} config
+  config             Manage ${CMD} config
+  version            Version Details and Check
+  clean              Remove ~/.pingidentity/${CMD}
 
-  kubernetes      Kubernetes Tools
-  license         Ping Identity Licensing Tools
-  pingone         PingOne Tools
+  kubernetes | k8s   Kubernetes Tools
+  license    | lic   Ping Identity Licensing Tools
+  pingone    | p1    PingOne Tools
 
 Options:
   -h              Help for ${CMD}
 
 Further help:
-  https://pingidentity.github.io/pingctl"
+  https://pingidentity.github.io/pingctl
+CMD_USAGE
 
     exit
 }
@@ -409,37 +422,38 @@ usage_command() {
 
     get_value "${_usageCmd}"
 
-    echo
+    printf "\n"
     exit
     case "${_usageCmd}" in
         pingone)
-            echo "${USAGE_PINGONE_DETAIL}"
+            printf "%s\n" "${USAGE_PINGONE_DETAIL}"
             ;;
         pingone-get)
             get_value "${_usageCmd}"
             ;;
         generate)
-            echo "${USAGE_GENERATE_DETAIL}"
+            printf "%s\n" "${USAGE_GENERATE_DETAIL}"
             ;;
         *)
             usage
             ;;
     esac
 
-    echo
+    printf "\n"
     exit
 }
 
 ################################################################################
 # check_for_tool (tool_name)
 #
-# Using which command, validate that the tool_name is found
+# Using command function, validate that the tool_name is found
+# Any non-zero return code indicates a problem
 ################################################################################
 check_for_tool() {
     _tool="${1}"
-    which "${_tool}" 2> /dev/null > /dev/null || command -v "${_tool}" 2> /dev/null > /dev/null
+    command -v "${_tool}" 2> /dev/null > /dev/null
 
-    test $? -eq 1 && echo_error "'${_tool}' not found, but required to perform function. Please install" && exit
+    test $? -ne 0 && echo_error "'${_tool}' not found, but required to perform function. Please install to continue." && exit
 }
 
 ################################################################################
@@ -470,38 +484,38 @@ source_config() {
         *bash)
             grep "${PINGCTL_CONFIG}" "${BASH_PROFILE}" > /dev/null
             if test "${?}" = "1"; then
-                echo "
+                printf "
 ################################################################################
 # Checking your bash profile
 ################################################################################
-  OK if we add a 'source ${PINGCTL_CONFIG}' to your '${BASH_PROFILE}' (y/n) [y] ?"
+  OK if we add a 'source %s' to your '%s' (y/n) [y] ?\n" "${PINGCTL_CONFIG}" "${BASH_PROFILE}"
                 read -r answer
 
                 if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
-                    echo "
-# Ping Identity - Added with '${CMD} config' on $(date)
-test -f '${PINGCTL_CONFIG}' && source '${PINGCTL_CONFIG}'" >> "${BASH_PROFILE}"
+                    printf "
+# Ping Identity - Added with '%s config' on $(date)
+test -f '%s' && source '%s'\n" "${CMD}" "${PINGCTL_CONFIG}" "${PINGCTL_CONFIG}" >> "${BASH_PROFILE}"
                 else
-                    echo "Skipping ${BASH_PROFILE}"
+                    printf "Skipping %s\n" "${BASH_PROFILE}"
                 fi
             fi
             ;;
         *zsh)
             grep "${PINGCTL_CONFIG}" "${ZSHRC}" > /dev/null
             if test "${?}" = "1"; then
-                echo "
+                printf "
 ################################################################################
 # Checking your zsh profile
 ################################################################################
-  OK if we add a 'source ${PINGCTL_CONFIG}' to your '${ZSHRC}' (y/n) [y] ?"
+  OK if we add a 'source %s' to your '%s' (y/n) [y] ?\n" "${PINGCTL_CONFIG}" "${ZSHRC}"
                 read -r answer
 
                 if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
-                    echo "
-# Ping Identity - Added with '${CMD} config' on $(date)
-test -f '${PINGCTL_CONFIG}' && source '${PINGCTL_CONFIG}'" >> "${ZSHRC}"
+                    printf "
+# Ping Identity - Added with '%s config' on $(date)
+test -f '%s' && source '%s'\n" "${CMD}" "${PINGCTL_CONFIG}" "${PINGCTL_CONFIG}" >> "${ZSHRC}"
                 else
-                    echo "Skipping ${ZSHRC}"
+                    printf "Skipping %s\n" "${ZSHRC}"
                 fi
             fi
             ;;
@@ -509,19 +523,19 @@ test -f '${PINGCTL_CONFIG}' && source '${PINGCTL_CONFIG}'" >> "${ZSHRC}"
             #putting a -s since it'll error if this doesn't exist. If it doesn't then you will need to source it where applicable.
             grep -s "${PINGCTL_CONFIG}" "${DEF_PROFILE}" > /dev/null
             if test "${?}" = "1"; then
-                echo "
+                printf "
 ################################################################################
 # Checking all other profiles
 ################################################################################
-OK if we add a 'source ${PINGCTL_CONFIG}' to your '${DEF_PROFILE}' (y/n) [y] ?"
+OK if we add a 'source %s' to your '%s' (y/n) [y] ?\n" "${PINGCTL_CONFIG}" "${DEF_PROFILE}"
                 read -r answer
 
                 if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
-                    echo "
-# Ping Identity - Added with '${CMD} config' on $(date)
-test -f '${PINGCTL_CONFIG}' && . '${PINGCTL_CONFIG}'" >> "${DEF_PROFILE}"
+                    printf "
+# Ping Identity - Added with '%s config' on $(date)
+test -f '%s' && . ''\n" "${CMD}" "${PINGCTL_CONFIG}" "${PINGCTL_CONFIG}" >> "${DEF_PROFILE}"
                 else
-                    echo "Skipping ${DEF_PROFILE}"
+                    printf "Skipping %s\n" "${DEF_PROFILE}"
                 fi
             fi
             ;;
@@ -540,11 +554,11 @@ get_custom_variables() {
             test -z "${_line}" && continue
             _name="${_line%%=*}"
 
-            echo "${STANDARD_VARIABLES}" | grep "${_name}" > /dev/null
+            printf "%s" "${STANDARD_VARIABLES}" | grep "${_name}" > /dev/null
             _grepRC=$?
 
             if test ${_grepRC} -ne 0; then
-                echo "${_name}"
+                printf "%s\n" "${_name}"
             fi
         done
 }
@@ -567,10 +581,10 @@ add_config() {
 
     while true; do
 
-        echo "${VAR_PROMPT}"
-        echo "    [${CURRENT_VALUE}] ?"
+        printf "%s\n" "${VAR_PROMPT}"
+        printf "    [%s] ?\n" "${CURRENT_VALUE}"
         read -r answer
-        echo
+        printf "\n"
 
         # If no required options were sent then, simply break out
         if test -z "${VAR_REQ_OPTIONS}"; then
@@ -579,8 +593,8 @@ add_config() {
             test -z "${answer}" && answer="${CURRENT_VALUE}"
             eval 'case "${answer}" in
         '"${VAR_REQ_OPTIONS}"') break;;
-        *)  echo "Invalid Value [${answer}].  Must be one of [${VAR_REQ_OPTIONS}]"
-            echo;;
+        *)  printf "Invalid Value [${answer}].  Must be one of [${VAR_REQ_OPTIONS}]\n"
+            printf "\n";;
       esac'
         fi
     done
@@ -588,31 +602,31 @@ add_config() {
     if test ! -z "${answer}"; then
         if test "${answer}" = "-"; then
             if test -z "${VAR_TO_SET}"; then
-                echo >> "${PROPS_FILE}"
+                printf >> "${PROPS_FILE}\n"
             else
                 eval "unset \${VAR_TO_SET}"
 
                 # If the variable being set is a standard variable, then echo an
                 # empty value in the property file, otherwise lose it from new
                 # property file
-                echo "${STANDARD_VARIABLES}" | grep "${VAR_TO_SET}" > /dev/null
+                printf "%s" "${STANDARD_VARIABLES}" | grep "${VAR_TO_SET}" > /dev/null
 
-                test $? -eq 0 && echo "${VAR_TO_SET}=" >> "${PROPS_FILE}"
+                test $? -eq 0 && printf "%s=\n" "${VAR_TO_SET}" >> "${PROPS_FILE}"
             fi
         else
             if test -z "${VAR_TO_SET}"; then
-                echo "${answer}" >> "${PROPS_FILE}"
+                printf "%s\n" "${answer}" >> "${PROPS_FILE}"
             else
                 eval "export \${VAR_TO_SET}=${answer}"
-                echo "${VAR_TO_SET}=${answer}" >> "${PROPS_FILE}"
+                printf "%s=%s\n" "${VAR_TO_SET}" "${answer}" >> "${PROPS_FILE}"
             fi
         fi
     else
         if test -z "${VAR_TO_SET}"; then
-            echo "${CURRENT_VALUE}" >> "${PROPS_FILE}"
+            printf "%s\n" "${CURRENT_VALUE}" >> "${PROPS_FILE}"
         else
             eval "export \${VAR_TO_SET}=${CURRENT_VALUE}"
-            echo "${VAR_TO_SET}=${CURRENT_VALUE}" >> "${PROPS_FILE}"
+            printf "%s=%s\n" "${VAR_TO_SET}" "${CURRENT_VALUE}" >> "${PROPS_FILE}"
         fi
     fi
 }
@@ -621,14 +635,14 @@ add_config() {
 # print_variable_setting_instructions
 ################################################################################
 print_variable_setting_instructions() {
-    echo "
+    printf "
 ################################################################################
 #  Setting Variables:
 #      [enter]     to accept current value
 #      [-]         to unset the value
 #      new value   to change value
 ################################################################################
-  "
+\n "
 }
 
 ################################################################################
@@ -647,23 +661,23 @@ add_config_custom() {
         add_config "${PROPS_FILE}" "${_varName}" "" "Set Custom Variable '${_varName}'"
     done
 
-    echo "
+    printf "
 ################################################################################
 #  Add Additional Variables:
 #
 #      [enter]     to end adding additional variables
 #      NAME=VALUE  to add that variable with setting (i.e. VERBOSE=true)
 ################################################################################
-  "
+\n"
 
     while true; do
-        echo "Enter a new NAME=VALUE [enter to end] :"
+        printf "Enter a new NAME=VALUE [enter to end] :\n"
 
         read -r answer
 
         test -z "${answer}" && break
 
-        echo "$answer" >> "${PROPS_FILE}"
+        printf "%s\n" "$answer" >> "${PROPS_FILE}"
     done
 }
 
@@ -694,69 +708,69 @@ info_command() {
 
     test ! -f "${PINGCTL_CONFIG}" && _not_found="(NOT FOUND)"
 
-    echo "
+    printf "
 ################################################################################
-#     pingctl CLI (version $VERSION)
+#     pingctl CLI (version %s)
 #
-#                PINGCTL_CONFIG : ${PINGCTL_CONFIG} ${_not_found}
+#                PINGCTL_CONFIG : %s
 ################################################################################
 #     PingOne variables
 ################################################################################
-"
+\n" "${VERSION}" "${PINGCTL_CONFIG} ${_not_found}"
     echo_info_variable PINGONE_API_URL
     echo_info_variable PINGONE_AUTH_URL
     echo_info_variable PINGONE_ENVIRONMENT_ID
-    echo
+    printf "\n"
     echo_info_variable PINGONE_WORKER_APP_CLIENT_ID
     echo_info_variable PINGONE_WORKER_APP_GRANT_TYPE
     echo_info_variable PINGONE_WORKER_APP_REDIRECT_URI
     echo_info_variable PINGONE_WORKER_APP_CLIENT_SECRET
     PINGONE_WORKER_APP_CLIENT_SECRET="${_save_PINGONE_WORKER_APP_CLIENT_SECRET}"
 
-    echo
+    printf "\n"
 
-    echo "################################################################################
+    printf "################################################################################
 #     Ping DevOps variables
 ################################################################################
-"
+\n"
 
     echo_info_variable PING_IDENTITY_DEVOPS_USER
     echo_info_variable PING_IDENTITY_DEVOPS_KEY
     PING_IDENTITY_DEVOPS_KEY="${_save_PING_IDENTITY_DEVOPS_KEY}"
-    echo
+    printf "\n"
     echo_info_variable PING_IDENTITY_DEVOPS_HOME
     echo_info_variable PING_IDENTITY_DEVOPS_REGISTRY
-    echo
+    printf "\n"
     echo_info_variable PING_IDENTITY_DEVOPS_TAG
-    echo
+    printf "\n"
     echo_info_variable PING_IDENTITY_ACCEPT_EULA
 
     _listOfCustom_Variables=$(get_custom_variables)
 
     if test ! -z "$_listOfCustom_Variables"; then
-        echo "
+        printf "
 ################################################################################
 #     Custom Variables
 ################################################################################
-"
+\n"
 
         for _custVar in $_listOfCustom_Variables; do
             echo_info_variable "${_custVar}"
         done
     fi
 
-    echo "
+    printf "
 ################################################################################
  To change config, run:
-    ${CMD} config
-"
+    %s config
+\n" "${CMD}"
 }
 
 print_update_information() {
-    echo "
+    printf "
 to update, you can use:
   macosx : brew upgrade pingctl
-  linux  : curl -L https://raw.githubusercontent.com/pingidentity/pingctl/master/install.sh | bash"
+  linux  : curl -L https://raw.githubusercontent.com/pingidentity/pingctl/master/install.sh | bash\n"
 }
 
 ################################################################################
@@ -784,7 +798,7 @@ version_command() {
         _version_msg="${VERSION} (updated version ${_latest_tool_version} is available)\n$(print_update_information)"
     fi
 
-    echo "${CMD} version ${_version_msg}"
+    printf "%s version %s\n" "${CMD}" "${_version_msg}"
 }
 
 ################################################################################
@@ -794,10 +808,11 @@ version_command() {
 ################################################################################
 clean_command() {
 
-    echo
-    echo "IMPORTANT: This is destructive of all content ${WORK_DIR}"
-    echo
-    echo "Are you SURE you want to clean/remove this content (y/n) [n] ?"
+    printf "\n"
+    printf "IMPORTANT: This action will remove all content located under the directory:\n"
+    printf "                        %s\n" "${WORK_DIR}"
+    printf "\n"
+    printf "Are you SURE you want to clean/remove this content? (y/n) [n]\n"
     read -r answer
 
     if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
@@ -817,7 +832,7 @@ k8s_command() {
     case "${_k8s_cmd}" in
         oidc) k8s_oidc_tools "${@}" ;;
         generate) k8s_generate_resource "${@}" ;;
-        *) usage_command USAGE_KUBERNETES_DETAIL "unknown/missing kubernetes command: ${_k8s_cmd}" ;;
+        *) usage_command USAGE_KUBERNETES_DETAIL "unknown/missing Kubernetes command: ${_k8s_cmd}" ;;
     esac
 
 }
@@ -841,25 +856,34 @@ license_command() {
 k8s_oidc_tools() {
     _oidc_opt="${1}"
 
-    test -z "${_oidc_opt}" && usage_command USAGE_OIDC_DETAIL "missing kubernetes oidc command"
+    test -z "${_oidc_opt}" && usage_command USAGE_OIDC_DETAIL "missing Kubernetes oidc command"
 
     if test ! -d "${KUBE_OIDC_CACHE}"; then
-        echo "--no-token--"
+        printf "==  no-token  ==\n"
         exit
     fi
 
     case "${_oidc_opt}" in
         clear)
-            echo "Removing ${KUBE_OIDC_CACHE}"
+            printf "Are you SURE you want to clean/remove %s (y/n) [n]\n" "${KUBE_OIDC_CACHE}"
+            read -r answer
+
+            if [ "${answer}" != "Y" ] && [ "${answer}" != "y" ]; then
+                echo_error "OIDC cache clear aborted!"
+                exit
+            fi
+
+            printf "Removing %s\n" "${KUBE_OIDC_CACHE}"
             rm -rf "${KUBE_OIDC_CACHE}"
             ;;
         info)
-            check_for_tool $JWT
-            $JQ -r .id_token "${KUBE_OIDC_CACHE}"/* | $JWT decode -
+            check_for_tool ${JWT}
+            ${JQ} -r .id_token "${KUBE_OIDC_CACHE}"/* | ${JWT} decode -
             ;;
         *)
-            check_for_tool $JWT
-            $JQ -r .id_token "${KUBE_OIDC_CACHE}"/* | jwt decode - -j | $JQ -r ".payload.${_oidc_opt}"
+            check_for_tool ${JQ}
+            check_for_tool ${JWT}
+            ${JQ} -r .id_token "${KUBE_OIDC_CACHE}"/* | ${JWT} decode - -j | ${JQ} -r ".payload.${_oidc_opt}"
             ;;
     esac
 }
@@ -879,7 +903,8 @@ k8s_generate_resource() {
 
             check_for_tool $BASE64
 
-            echo "
+            # using HEREDOC for longer objects
+            cat << DO_SECRET
 apiVersion: v1
 kind: Secret
 metadata:
@@ -892,7 +917,7 @@ data:
   PING_IDENTITY_DEVOPS_USER: $(base64_no_newlines "${PING_IDENTITY_DEVOPS_USER}")
   PING_IDENTITY_DEVOPS_KEY: $(base64_no_newlines "${PING_IDENTITY_DEVOPS_KEY}")
   PING_IDENTITY_ACCEPT_EULA: $(base64_no_newlines "${PING_IDENTITY_ACCEPT_EULA}")
-"
+DO_SECRET
             ;;
 
         tls-secret)
@@ -909,7 +934,7 @@ data:
             _tlsCrt="${TMP_DIR}/tls.crt"
 
             cat /etc/ssl/openssl.cnf > "${_opensslcnf}"
-            printf "[SAN]\nsubjectAltName=DNS:*.%s" "${_domain} " >> "${_opensslcnf}"
+            printf "[SAN]\nsubjectAltName=DNS:*.%s" "${_domain}" >> "${_opensslcnf}"
 
             $OPENSSL req -x509 -nodes -newkey rsa:2048 -days 3650 -sha256 \
                 -out "${_tlsKey}" -keyout "${_tlsCrt}" \
@@ -917,7 +942,8 @@ data:
                 -reqexts SAN -extensions SAN \
                 -config "${_opensslcnf}" > /dev/null 2>&1
 
-            echo "
+            # using HEREDOC for longer objects
+            cat << TLS_SECRET
 apiVersion: v1
 kind: Secret
 type: kubernetes.io/tls
@@ -928,19 +954,22 @@ metadata:
     ${CMD}.app-version: v${VERSION}
 data:
   tls.crt: $(base64_no_newlines "${_tlsCrt}")
-  tls.key: $(base64_no_newlines "${_tlsKey}")"
+  tls.key: $(base64_no_newlines "${_tlsKey}")
+TLS_SECRET
             ;;
         ssh-id-secret)
             _idKey="${2}"
 
-            echo "
+            # using HEREDOC for longer objects
+            cat << SSH_SECRET
 apiVersion: v1
 kind: Secret
 metadata:
   name: ssh-id-key-secret
 data:
   id_rsa: |
-    $(base64_no_newlines "${_idKey}")"
+    $(base64_no_newlines "${_idKey}")
+SSH_SECRET
             ;;
         license-secret)
             generate_license_secret "${@}"
@@ -1003,14 +1032,15 @@ generate_license_secret() {
             --write-out '%{http_code}' \
             --output "${LICENSE_RESPONSE}")
 
-        test "${LICENSE_CALL_RESULT}" -ne 200 && usage_command USAGE_GENERATE_DETAIL "Unable to pull eval license for '${_licenseProd}' ver '${_licenseVer}'\n       Check that your PING_IDENTITY_DEVOPS_USER and PING_IDENTITY_DEVOPS_KEY are valid.\n       Check your product and version are valid."
+        test "${LICENSE_CALL_RESULT}" -ne 200 && usage_command USAGE_GENERATE_DETAIL "Unable to pull evaluation license for '${_licenseProd}' version '${_licenseVer}'\n       Check that your PING_IDENTITY_DEVOPS_USER and PING_IDENTITY_DEVOPS_KEY are valid.\n       Check that the product and version specified are valid."
     fi
 
     case "${_licenseType}" in
         license-secret)
             _licenseSecret=$(base64_no_newlines "${LICENSE_RESPONSE}")
 
-            echo "
+            # using HEREDOC for longer objects
+            cat << LIC_SECRET
 apiVersion: v1
 kind: Secret
 metadata:
@@ -1019,7 +1049,8 @@ metadata:
     pingidentity.com/generated-by: ${CMD}
 data:
   license: |
-    ${_licenseSecret}"
+    ${_licenseSecret}
+LIC_SECRET
             ;;
         license)
             cat "${LICENSE_RESPONSE}"
@@ -1046,33 +1077,34 @@ config_command() {
 
         # If the config is broken (i.e. ctrl-c) then restore the previous file
         trap '
-            echo
-            echo "restoring: ${PINGCTL_CONFIG}"
+            printf "\n"
+            # shellcheck disable=SC2059
+            printf "restoring: ${PINGCTL_CONFIG}\n"
             mv "${PINGCTL_CONFIG}".prev "${PINGCTL_CONFIG}"
             exit
         ' HUP INT PIPE TERM
     fi
 
-    echo "
+    printf "
 
 ################################################################################
 #
-#                     Welcome to Ping Identity Command Line Tool!
+#                   Welcome to the Ping Identity Command Line Tool!
 #
-#  We will run through a few config items to make your experience as easy as
-#  possible.  These include:
+#  We will run through a few configuration items to make your experience as easy as
+#  possible.  Actions to be taken include:
 #
-#    - Setting up your PINGCTL_CONFIG '${PINGCTL_CONFIG}' settings
-#    - Source your '${PINGCTL_CONFIG}' in your shell startup files
-#"
+#    - Setting up your PINGCTL_CONFIG '%s' settings
+#    - Source your '%s' in your shell startup files
+#\n" "${PINGCTL_CONFIG}" "${PINGCTL_CONFIG}"
 
     print_variable_setting_instructions
 
-    echo "################################################################################
+    printf "################################################################################
 # Variables used to assist PingOne operations.  If you are not using a PingOne
 # environment, you can ignore these settings.
 ################################################################################
-" | tee -a "${PINGCTL_CONFIG}"
+\n" | tee -a "${PINGCTL_CONFIG}"
 
     add_config "${PINGCTL_CONFIG}" "PINGONE_API_URL" "https://api.pingone.com/v1" "PingOne API URL"
     add_config "${PINGCTL_CONFIG}" "PINGONE_AUTH_URL" "https://auth.pingone.com" "PingOne Authentication URL"
@@ -1091,25 +1123,25 @@ config_command() {
         fi
 
         while true; do
-            echo "Would you like to perform a test to validate your PINGONE_WORKER_APP settings? [y] ?"
+            printf "Would you like to perform a test to validate your PINGONE_WORKER_APP settings? [y] ?\n"
             read -r answer
 
             if [ "${answer}" = "" ] || [ "${answer}" = "Y" ] || [ "${answer}" = "y" ]; then
-                echo "############################################################################"
-                echo "#  Attempting to retrieve token for:"
-                echo "#     Worker App Clint Id: ${PINGONE_WORKER_APP_CLIENT_ID}"
-                echo "#        using Grant Type: ${PINGONE_WORKER_APP_GRANT_TYPE}"
-                echo "#            Redirect URI: ${PINGONE_WORKER_APP_REDIRECT_URI}"
-                echo "############################################################################"
-                echo
+                printf "############################################################################\n"
+                printf "#  Attempting to retrieve token for:\n"
+                printf "#    Worker App Client Id: %s\n" "${PINGONE_WORKER_APP_CLIENT_ID}"
+                printf "#        using Grant Type: %s\n" "${PINGONE_WORKER_APP_GRANT_TYPE}"
+                printf "#            Redirect URI: %s\n" "${PINGONE_WORKER_APP_REDIRECT_URI}"
+                printf "############################################################################\n"
+                printf "\n"
                 getPingOneAccessToken true
 
                 if test -z "${PINGONE_ACCESS_TOKEN}"; then
                     troubleshootPingOneSettings
                 else
-                    echo
-                    echo "Congrats!  You've obtained a valid access_token."
-                    echo
+                    printf "\n"
+                    printf "Congrats!  You've obtained a valid access_token.\n"
+                    printf "\n"
                     break
                 fi
             else
@@ -1118,10 +1150,10 @@ config_command() {
         done
     fi
 
-    echo "################################################################################
+    printf "################################################################################
 # Variables used to assist Ping DevOps operations.
 ################################################################################
-" | tee -a "${PINGCTL_CONFIG}"
+\n" | tee -a "${PINGCTL_CONFIG}"
 
     add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_ACCEPT_EULA" "NO" "Do you accept the terms of license (found here: https://www.pingidentity.com/en/legal/subscription-agreement.html) with Ping Identity? (YES/NO)"
     add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_DEVOPS_USER" "" "Ping Identity DevOps User (Register under Support & Community: https://www.pingidentity.com/en/account/sign-on.html)"
@@ -1130,7 +1162,7 @@ config_command() {
     add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_DEVOPS_REGISTRY" "docker.io/pingidentity" "Ping Identity DevOps Registry (recommend default: docker.io/pingidentity)"
     add_config "${PINGCTL_CONFIG}" "PING_IDENTITY_DEVOPS_TAG" "edge" "Ping Identity DevOps Tag (recommend default: edge)"
 
-    echo "
+    printf "
 ################################################################################
 #              Ping Identity Customized Variables
 ################################################################################
@@ -1144,15 +1176,15 @@ config_command() {
 #     PINGCTL_OUTPUT_COLUMNS_USERS=FirstName:name.given,LastName:name.family
 #     PINGCTL_OUTPUT_SORT_USERS=name.given
 #
-# These are often set to nothing, unless you are using advanced features
+# These variables are often set to empty values except when using advanced features
 ################################################################################
-" | tee -a "${PINGCTL_CONFIG}"
+\n" | tee -a "${PINGCTL_CONFIG}"
 
     add_config_custom "${PINGCTL_CONFIG}" "${_custom_variables}"
 
     test "${PINGCTL_CONFIG}" = "${DEFAULT_PINGCTL_CONFIG}" && source_config
 
-    echo "
+    printf "
 
 ################################################################################
 #
@@ -1173,7 +1205,7 @@ config_command() {
 #
 #
 ################################################################################
-    "
+    \n"
 }
 
 ########################################################################################################################
@@ -1196,41 +1228,41 @@ base64_no_newlines() {
 ################################################################################
 troubleshootPingOneSettings() {
     echo_error "Unable to validate PingOne settings."
-    echo "############################################################################"
-    echo "# There are a number of reasons why this did not work..."
-    echo "#"
-    echo "#   - Incorrect Username/Password (authorization_code, implicit flows)"
-    echo "#   - Incorrect Client ID"
-    echo "#   - Incorrect Client Type - Must be Worker App"
-    echo "#   - Incorrect Redirect URI - You've specified: ${PINGONE_WORKER_APP_REDIRECT_URI}"
-    echo "#   - Incorrect Client Grant Type Settings"
-    echo "#"
+    printf "############################################################################\n"
+    printf "# There are a number of reasons why this did not work...\n"
+    printf "#\n"
+    printf "#   - Incorrect Username/Password (authorization_code, implicit flows)\n"
+    printf "#   - Incorrect Client ID\n"
+    printf "#   - Incorrect Client Type - Must be Worker App\n"
+    printf "#   - Incorrect Redirect URI - You've specified: %s\n" "${PINGONE_WORKER_APP_REDIRECT_URI}"
+    printf "#   - Incorrect Client Grant Type Settings\n"
+    printf "#\n"
 
     case "${PINGONE_WORKER_APP_GRANT_TYPE}" in
         authorization_code)
-            echo "#     - authorization_code (w/ pkce) (recommended)"
-            echo "#                Response Type: Code"
-            echo "#                   Grant Type: Authorization Code"
-            echo "#             PKCE Enforcement: S256_REQUIRED (recommended)"
-            echo "#  Token Endpoint AuthN Method: None"
+            printf "#     - authorization_code (w/ pkce) (recommended)\n"
+            printf "#                Response Type: Code\n"
+            printf "#                   Grant Type: Authorization Code\n"
+            printf "#             PKCE Enforcement: S256_REQUIRED (recommended)\n"
+            printf "#  Token Endpoint AuthN Method: None\n"
             ;;
         implicit)
-            echo "#     - implicit"
-            echo "#                Response Type: Token"
-            echo "#                   Grant Type: Implicit"
-            echo "#  Token Endpoint AuthN Method: None"
+            printf "#     - implicit\n"
+            printf "#                Response Type: Token\n"
+            printf "#                   Grant Type: Implicit\n"
+            printf "#  Token Endpoint AuthN Method: None\n"
             ;;
         client_credentials)
-            echo "#     - client_credentials"
-            echo "#                Client Secret: ${PINGONE_WORKER_APP_CLIENT_SECRET}"
-            echo "#                Response Type: Token"
-            echo "#                   Grant Type: Client Credentials"
-            echo "#  Token Endpoint AuthN Method: Client Secret Basic"
+            printf "#     - client_credentials\n"
+            printf "#                Client Secret: %s\n" "${PINGONE_WORKER_APP_CLIENT_SECRET}"
+            printf "#                Response Type: Token\n"
+            printf "#                   Grant Type: Client Credentials\n"
+            printf "#  Token Endpoint AuthN Method: Client Secret Basic\n"
             ;;
-        *) echo "#     - INVALID Grant Type: ${PINGONE_WORKER_APP_GRANT_TYPE}" ;;
+        *) printf "#     - INVALID Grant Type: %s\n" "${PINGONE_WORKER_APP_GRANT_TYPE}" ;;
     esac
 
-    echo "############################################################################"
+    printf "############################################################################\n"
 }
 
 ################################################################################
@@ -1256,19 +1288,19 @@ getPingOneAccessTokenViaClientCredentials() {
     #
     if test "${OPT_PINGONE_r}" = "true"; then
         (
-            echo "       POST: ${_url}"
-            echo "       data: grant_type=client_credentials"
-            echo "       user: ${PINGONE_WORKER_APP_CLIENT_ID}:*************"
-            echo ""
-            echo "Result Code: ${PINGONE_CALL_RESULT}"
-            echo "--------------------------------------"
+            printf "       POST: %s\n" "${_url}"
+            printf "       data: grant_type=client_credentials\n"
+            printf "       user: %s:*************\n" "${PINGONE_WORKER_APP_CLIENT_ID}"
+            printf "\n"
+            printf "Result Code: %s\n" "${PINGONE_CALL_RESULT}"
+            printf "======================================\n"
         ) >> "${PINGONE_DEBUG}"
     fi
 
     error_pingone_call 200
     test $? -eq 1 && return
 
-    PINGONE_ACCESS_TOKEN=$($JQ --raw-output '.access_token' < "${PINGONE_CALL_RESPONSE}" | tee "${PINGONE_ACCESS_TOKEN_FILE}")
+    PINGONE_ACCESS_TOKEN=$(${JQ} --raw-output '.access_token' < "${PINGONE_CALL_RESPONSE}" | tee "${PINGONE_ACCESS_TOKEN_FILE}")
 }
 
 ################################################################################
@@ -1278,19 +1310,19 @@ getPingOneAccessTokenViaAuthorizationCode() {
     _clearToken="${1}"
 
     _az_verifier=$(env LC_CTYPE=C tr -cd 'a-zA-Z0-9' < /dev/urandom | head -c 50)
-    # echo "Verifier is: $VERIFIER"
+    # printf "Verifier is: $VERIFIER\n"
 
     # Get the correct sha 256 checksum tool, as it's different on mac/linux
-    echo | sha256sum 2> /dev/null > /dev/null && test $? -eq 0 && SHASUM="sha256sum"
-    echo | shasum -a 256 2> /dev/null > /dev/null && test $? -eq 0 && SHASUM="shasum -a 256"
+    printf "\n" | sha256sum 2> /dev/null > /dev/null && test $? -eq 0 && SHASUM="sha256sum"
+    printf "\n" | shasum -a 256 2> /dev/null > /dev/null && test $? -eq 0 && SHASUM="shasum -a 256"
 
     if test -z "${SHASUM}"; then
-        echo_error "Unable to find a suitable SHA 256 Checksum tool.  Required to create OIDC PKCE Challenge.  (tried both sha256sum and shasum)"
+        echo_error "Unable to find a suitable SHA 256 Checksum tool required to create OIDC PKCE Challenge.  (tried both sha256sum and shasum)"
         exit
     fi
 
-    #Generate PKCE Challenge from Verifier and convert / + = characters"
-    _az_challenge=$(echo "${_az_verifier}" | ${SHASUM} | cut -d " " -f 1 | xxd -r -p | ${BASE64} | tr / _ | tr + - | tr -d =)
+    # Generate PKCE Challenge from Verifier and convert / + = characters"
+    _az_challenge=$(printf "%s" "${_az_verifier}" | ${SHASUM} | cut -d " " -f 1 | xxd -r -p | ${BASE64} | tr / _ | tr + - | tr -d =)
 
     ########################################################################
     # Start with a request for an AUTHORIZATION_CODE flow...
@@ -1312,14 +1344,14 @@ getPingOneAccessTokenViaAuthorizationCode() {
     #
     if test "${OPT_PINGONE_r}" = "true"; then
         (
-            echo "        GET: ${_url}"
-            echo "      query: response_type=code"
-            echo "           : client_id=${PINGONE_WORKER_APP_CLIENT_ID}"
-            echo "           : code_challenge=${_az_challenge}"
-            echo ""
-            echo "Result Code: ${PINGONE_CALL_RESULT}"
-            echo "     flowId: ${_az_flow_id}"
-            echo "--------------------------------------"
+            printf "        GET: %s\n" "${_url}"
+            printf "      query: response_type=code\n"
+            printf "           : client_id=%s\n" "${PINGONE_WORKER_APP_CLIENT_ID}"
+            printf "           : code_challenge=%s\n" "${_az_challenge}"
+            printf "\n"
+            printf "Result Code: %s\n" "${_az_challenge}"
+            printf "     flowId: %s\n" "${_az_flow_id}"
+            printf "======================================\n"
         ) >> "${PINGONE_DEBUG}"
     fi
 
@@ -1346,12 +1378,12 @@ getPingOneAccessTokenViaAuthorizationCode() {
     #
     if test "${OPT_PINGONE_r}" = "true"; then
         (
-            echo "        GET: ${_url}"
-            echo "      query: flowId=${_az_flow_id}"
-            echo ""
-            echo "Result Code: ${PINGONE_CALL_RESULT}"
-            echo "    AZ Code: ${_az_code}"
-            echo "--------------------------------------"
+            printf "        GET: %s\n" "${_url}"
+            printf "      query: flowId=%s\n" "${_az_flow_id}"
+            printf "\n"
+            printf "Result Code: %s\n" "${PINGONE_CALL_RESULT}"
+            printf "    AZ Code: %s\n" "${_az_code}"
+            printf "======================================\n"
         ) >> "${PINGONE_DEBUG}"
     fi
 
@@ -1377,21 +1409,21 @@ getPingOneAccessTokenViaAuthorizationCode() {
     #
     if test "${OPT_PINGONE_r}" = "true"; then
         (
-            echo "       POST: ${_url}"
-            echo "      query: client_id=${PINGONE_WORKER_APP_CLIENT_ID}"
-            echo "           : grant_type=authorization_code"
-            echo "           : code=${_az_code}"
-            echo "           : code_verifier=${_az_verifier}"
-            echo ""
-            echo "Result Code: ${PINGONE_CALL_RESULT}"
-            echo "--------------------------------------"
+            printf "       POST: %s\n" "${_url}"
+            printf "      query: client_id=%s\n" "${PINGONE_WORKER_APP_CLIENT_ID}"
+            printf "           : grant_type=authorization_code\n"
+            printf "           : code=%s\n" "${_az_code}"
+            printf "           : code_verifier=%s\n" "${_az_verifier}"
+            printf "\n"
+            printf "Result Code: %s\n" "${PINGONE_CALL_RESULT}"
+            printf "======================================\n"
         ) >> "${PINGONE_DEBUG}"
     fi
 
     error_pingone_call 200
     test $? -eq 1 && return
 
-    PINGONE_ACCESS_TOKEN=$($JQ --raw-output '.access_token' < "${PINGONE_CALL_RESPONSE}" | tee "${PINGONE_ACCESS_TOKEN_FILE}")
+    PINGONE_ACCESS_TOKEN=$(${JQ} --raw-output '.access_token' < "${PINGONE_CALL_RESPONSE}" | tee "${PINGONE_ACCESS_TOKEN_FILE}")
 }
 
 ################################################################################
@@ -1418,13 +1450,13 @@ getPingOneAccessTokenViaImplicit() {
     #
     if test "${OPT_PINGONE_r}" = "true"; then
         (
-            echo "        GET: ${_url}"
-            echo "      query: response_type=token"
-            echo "           : client_id=${PINGONE_WORKER_APP_CLIENT_ID}"
-            echo ""
-            echo "Result Code: ${PINGONE_CALL_RESULT}"
-            echo "     flowId: ${_az_flow_id}"
-            echo "--------------------------------------"
+            printf "        GET: %s\n" "${_url}"
+            printf "      query: response_type=token\n"
+            printf "           : client_id=%s\n" "${PINGONE_WORKER_APP_CLIENT_ID}"
+            printf "\n"
+            printf "Result Code: %s\n" "${PINGONE_CALL_RESULT}"
+            printf "     flowId: %s\n" "${_az_flow_id}"
+            printf "======================================\n"
         ) >> "${PINGONE_DEBUG}"
     fi
 
@@ -1451,18 +1483,18 @@ getPingOneAccessTokenViaImplicit() {
     #
     if test "${OPT_PINGONE_r}" = "true"; then
         (
-            echo "        GET: ${_url}"
-            echo "      query: flowId=${_az_flow_id}"
-            echo ""
-            echo "Result Code: ${PINGONE_CALL_RESULT}"
-            echo " access_tok: ${_az_code}"
-            echo "--------------------------------------"
+            printf "        GET: %s\n" "${_url}"
+            printf "      query: flowId=%s\n" "${_az_flow_id}"
+            printf "\n"
+            printf "Result Code: %s\n" "${PINGONE_CALL_RESULT}"
+            printf " access_tok: %s\n" "${_az_code}"
+            printf "======================================\n"
         ) >> "${PINGONE_DEBUG}"
     fi
 
     test -z "${PINGONE_ACCESS_TOKEN}" && echo_error "Unable to get access_token" && return
 
-    echo "${PINGONE_ACCESS_TOKEN}" > "${PINGONE_ACCESS_TOKEN_FILE}"
+    printf "%s\n" "${PINGONE_ACCESS_TOKEN}" > "${PINGONE_ACCESS_TOKEN_FILE}"
 }
 
 ################################################################################
@@ -1477,17 +1509,19 @@ authenticatePingOneUser() {
 
     test -n "${PINGONE_PASSWORD}" && _mask_password="********"
 
-    echo " What is your username [${PINGONE_USERNAME}]?"
+    printf " What is your username [%s]?\n" "${PINGONE_USERNAME}"
     read -r _answer
     test -n "${_answer}" && PINGONE_USERNAME="${_answer}"
 
-    echo "          and password [${_mask_password}]?"
+    printf "          and password [%s]?\n" "${_mask_password}"
     read -r _answer
-    echo
+    printf "\n"
     test -n "${_answer}" && PINGONE_PASSWORD="${_answer}"
 
+    check_for_tool ${JQ}
+
     # jq command expects no expansion of variables. Disable shellcheck.
-    # shellcheck disable=SC2016
+    # shellcheck disable=SC2016,SC2154
     $JQ -n '{username:$username,password:$password}' \
         --arg username "${PINGONE_USERNAME}" \
         --arg password "${PINGONE_PASSWORD}" > "${_pingone_username_password}"
@@ -1510,11 +1544,11 @@ authenticatePingOneUser() {
     #
     if test "${OPT_PINGONE_r}" = "true"; then
         (
-            echo "       POST: ${_url}"
-            echo "       data: {username:....,password:....}"
-            echo ""
-            echo "Result Code: ${PINGONE_CALL_RESULT}"
-            echo "--------------------------------------"
+            printf "       POST: %s\n" "${_url}"
+            printf "       data: {username:....,password:....}\n"
+            printf "\n"
+            printf "Result Code: %s\n" "${PINGONE_CALL_RESULT}"
+            printf "======================================\n"
         ) >> "${PINGONE_DEBUG}"
     fi
 }
@@ -1544,8 +1578,8 @@ getPingOneAccessToken() {
         ${JWT} --version 2> /dev/null > /dev/null
 
         if test ${?} -eq 0; then
-            _expire=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.exp")
-            _client_id=$(jwt decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.client_id")
+            _expire=$(${JWT} decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | $JQ -r ".payload.exp")
+            _client_id=$(${JWT} decode - -j < "${PINGONE_ACCESS_TOKEN_FILE}" | ${JQ} -r ".payload.client_id")
             _now=$(date +%s)
 
             if test "${PINGONE_WORKER_APP_CLIENT_ID}" = "${_client_id}" && test $((_expire - 60)) -gt "${_now}"; then
@@ -1591,7 +1625,7 @@ print_api_results_sv() {
     _sv="${1}" && shift
     _res_obj="${1}"
 
-    _res_obj=$(echo "${_res_obj}" | tr '[:lower:]' '[:upper:]')
+    _res_obj=$(printf "%s" "${_res_obj}" | tr '[:lower:]' '[:upper:]')
 
     ################################################################################
     # Table/CSV Columns and Sorts
@@ -1657,11 +1691,11 @@ print_api_results_sv() {
     #
     # Ensure that each column starts with a dot (.) Required for jq
     #
-    _columns=$(echo "${_columns}" | sed -e 's/:/:./g')
+    _columns=$(printf "%s" "${_columns}" | sed -e 's/:/:./g')
 
     test "${_sv}" = "tsv" && _dash_row='| (.,map(length*"-"))'
 
-    $JQ -s -r "
+    ${JQ} -s -r "
     .
     | [sort_by(.${_sort_column}) | .[]
     |
@@ -1677,8 +1711,8 @@ print_api_results_sv() {
     " < "${PINGONE_API_RESULTS}" | column -t -s "$(printf '\t')"
 
     if test "${_sv}" = "tsv"; then
-        echo "--"
-        echo "${PINGONE_RESULT_COUNT} '${_res_obj}' returned ${_in_population}"
+        printf "==\n"
+        printf "%s '%s' returned %s\n" "${PINGONE_RESULT_COUNT}" "${_res_obj}" "${_in_population}"
     fi
 }
 
@@ -1686,14 +1720,14 @@ print_api_results_sv() {
 # get_api_attr
 ################################################################################
 get_api_attr() {
-    $JQ -r ".${1}" < "${PINGONE_API_RESULTS}"
+    ${JQ} -r ".${1}" < "${PINGONE_API_RESULTS}"
 }
 
 ################################################################################
 # print_api_results_json
 ################################################################################
 print_api_results_json() {
-    $JQ -s . < "${PINGONE_API_RESULTS}"
+    ${JQ} -s . < "${PINGONE_API_RESULTS}"
 }
 
 ################################################################################
@@ -1770,13 +1804,16 @@ pingone_api_get() {
         #
         if test "${OPT_PINGONE_r}" = "true"; then
             (
-                echo "        GET: ${_url}"
-                test ! -z "${_filter}" && echo "      query: ${_api_filter}"
-                echo ""
-                echo "Result Code: ${PINGONE_CALL_RESULT}"
-                echo "  Page Size: $(echo "${PINGONE_CALL_RESPONSE}" | $JQ .size)"
-                echo " Total Size: $(echo "${PINGONE_CALL_RESPONSE}" | $JQ .count)"
-                echo "--------------------------------------"
+                printf "        GET: %s\n" "${_url}"
+                test ! -z "${_filter}" && printf "      query: %s\n" "${_api_filter}"
+                printf "\n"
+                printf "Result Code: %s\n" "${PINGONE_CALL_RESULT}"
+                # nested printf redirect
+                # shellcheck disable=SC2059
+                printf "  Page Size: $(echo "${PINGONE_CALL_RESPONSE}" | ${JQ} .size)"
+                # shellcheck disable=SC2059
+                printf " Total Size: $(echo "${PINGONE_CALL_RESPONSE}" | ${JQ} .count)"
+                printf "======================================\n"
             ) >> "${PINGONE_DEBUG}"
         fi
 
@@ -1785,12 +1822,12 @@ pingone_api_get() {
         _url=""
 
         if test -s "${PINGONE_CALL_RESPONSE}"; then
-            $JQ ".${_json_res}" < "${PINGONE_CALL_RESPONSE}" >> "${PINGONE_API_RESULTS}"
+            ${JQ} ".${_json_res}" < "${PINGONE_CALL_RESPONSE}" >> "${PINGONE_API_RESULTS}"
 
-            _next=$($JQ ._links.next < "${PINGONE_CALL_RESPONSE}")
+            _next=$(${JQ} ._links.next < "${PINGONE_CALL_RESPONSE}")
 
             if test "${_next}" != "null"; then
-                _url=$(echo "${_next}" | $JQ -r .href)
+                _url=$(printf "%s" "${_next}" | ${JQ} -r .href)
                 _api_filter=""
             fi
         fi
@@ -1804,10 +1841,10 @@ pingone_api_get() {
     # Also get the PINGONE_RESULT_COUNT
     #
     if test -s "${PINGONE_API_RESULTS}"; then
-        PINGONE_RESULT_COUNT=$($JQ -s '. | length' < "${PINGONE_API_RESULTS}")
+        PINGONE_RESULT_COUNT=$(${JQ} -s '. | length' < "${PINGONE_API_RESULTS}")
 
         if test "${PINGONE_RESULT_COUNT}" -eq 1; then
-            PINGONE_RESULT_ID="$($JQ -s -r '.[0].id' < "${PINGONE_API_RESULTS}")"
+            PINGONE_RESULT_ID="$(${JQ} -s -r '.[0].id' < "${PINGONE_API_RESULTS}")"
         fi
     fi
 
@@ -1818,7 +1855,7 @@ pingone_api_get() {
         if test -s "${PINGONE_API_RESULTS}"; then
             print_api_results "${_res_obj}"
         else
-            echo "No '${_res_obj}' found ${_in_population}"
+            printf "No '%s' found %s\n" "${_res_obj}" "${_in_population}"
         fi
     fi
 }
@@ -1840,13 +1877,13 @@ error_pingone_call() {
         _possible_errors=".error_description .details[].message .message"
 
         for _error_try in $_possible_errors; do
-            _err_message=$($JQ -r "${_error_try}" < "${PINGONE_CALL_RESPONSE}" 2> /dev/null)
+            _err_message=$(${JQ} -r "${_error_try}" < "${PINGONE_CALL_RESPONSE}" 2> /dev/null)
             if test $? -eq 0 && test "${_err_message}" != "null"; then
-                echo "ERROR: ${_err_message}"
+                printf "ERROR: %s\n" "${_err_message}"
             fi
         done
 
-        # $JQ . <"${PINGONE_CALL_RESPONSE}"
+        # ${JQ} . <"${PINGONE_CALL_RESPONSE}"
     fi
 
     return 1
@@ -1873,11 +1910,13 @@ pingone_api_post() {
     #
     if test "${OPT_PINGONE_r}" = "true"; then
         (
-            echo "       POST: ${_url}"
-            echo "       BODY: $($JQ -c . < "${PINGONE_POST_JSON}")"
-            echo ""
-            echo "Result Code: ${PINGONE_CALL_RESULT}"
-            echo "--------------------------------------"
+            printf "       POST: %s\n" "${_url}"
+            # parsing throwing shellcheck
+            # shellcheck disable=SC2059
+            printf "       BODY: $(%s -c . \< %s)\n" "${JQ}" "${PINGONE_POST_JSON}"
+            printf "\n"
+            printf "Result Code: %s\n" "${PINGONE_CALL_RESULT}"
+            printf "======================================\n"
         ) >> "${PINGONE_DEBUG}"
     fi
 
@@ -1896,7 +1935,7 @@ pingone_api_delete_by_filter() {
     if test ! -z "${PINGONE_RESULT_ID}"; then
         pingone_api_delete "${_res_obj}" "${PINGONE_RESULT_ID}"
     else
-        echo "'${_res_name}' not found in ${_res_obj}" && exit
+        printf "'%s' not found in %s\n" "${_res_name}" "${_res_obj}" && exit
     fi
 }
 
@@ -1921,10 +1960,10 @@ pingone_api_delete() {
     #
     if test "${OPT_PINGONE_r}" = "true"; then
         (
-            echo "     DELETE: ${_url}"
-            echo ""
-            echo "Result Code: ${PINGONE_CALL_RESULT}"
-            echo "--------------------------------------"
+            printf "     DELETE: %s\n" "${_url}"
+            printf "\n"
+            printf "Result Code: %s\n" "${PINGONE_CALL_RESULT}"
+            printf "======================================\n"
         ) >> "${PINGONE_DEBUG}"
     fi
 
@@ -1943,11 +1982,11 @@ pingone_print_environment() {
 
     getPingOneAccessToken true
 
-    echo "
+    printf "
 ################################################################################
 #     PingOne Environment/Organization Current Info
-################################################################################"
-    echo
+################################################################################\n"
+    printf "\n"
 
     if test -z "${PINGONE_ACCESS_TOKEN}"; then
         echo_error "Unable to validate (authenticate) PingOne settings.  Re-run config to resolve."
@@ -1960,8 +1999,8 @@ pingone_print_environment() {
         pingone_api_get "organization" "${_org_id}"
         _org_name=$(get_api_attr name)
 
-        echo "  ORGANIZATION NAME              : ${_org_name}"
-        echo "  ENVIRONMENT NAME               : ${_env_name}"
+        printf "  ORGANIZATION NAME              : %s\n" "${_org_name}"
+        printf "  ENVIRONMENT NAME               : %s\n" "${_env_name}"
     fi
 }
 
@@ -2025,7 +2064,7 @@ pingone_get() {
             pingone_api_get_and_print "users${_exact_id}" "${_filter}"
 
             if test -n "${PINGONE_RESULT_ID}"; then
-                echo
+                printf "\n"
                 pingone_api_get_and_print "users/${PINGONE_RESULT_ID}/memberOfGroups" ""
             fi
             ;;
@@ -2033,7 +2072,7 @@ pingone_get() {
             pingone_api_get_and_print "groups${_exact_id}" "${_filter}"
 
             if test -n "${PINGONE_RESULT_ID}"; then
-                echo
+                printf "\n"
                 pingone_api_get_and_print "users" "filter=memberOfGroups[id eq \"${PINGONE_RESULT_ID}\"]"
             fi
             ;;
@@ -2042,9 +2081,9 @@ pingone_get() {
 
             _tmp_population_id="${PINGONE_RESULT_ID}"
             if test -n "${_tmp_population_id}"; then
-                echo
+                printf "\n"
                 pingone_api_get_and_print "users" "filter=population.id eq \"${_tmp_population_id}\""
-                echo
+                printf "\n"
                 pingone_api_get_and_print "groups" "filter=population.id eq \"${_tmp_population_id}\""
             fi
             ;;
@@ -2122,7 +2161,7 @@ pingone_add() {
 
             # jq command expects no expansion of variables. Disable shellcheck.
             # shellcheck disable=SC2016
-            $JQ -n '{email: $email,
+            ${JQ} -n '{email: $email,
                   name: {given: $first,
                          family: $last},
                   population: {id: $populationId},
@@ -2140,7 +2179,7 @@ pingone_add() {
 
             # jq command expects no expansion of variables. Disable shellcheck.
             # shellcheck disable=SC2016
-            $JQ -n '{name: $name,
+            ${JQ} -n '{name: $name,
                   population: {id: $populationId}
                  }' \
                 --arg name "${_name}" \
@@ -2149,7 +2188,7 @@ pingone_add() {
         population)
             # jq command expects no expansion of variables. Disable shellcheck.
             # shellcheck disable=SC2016
-            $JQ -n '{name: $name}' \
+            ${JQ} -n '{name: $name}' \
                 --arg name "${_name}" > "${PINGONE_POST_JSON}"
             ;;
     esac
@@ -2161,10 +2200,10 @@ pingone_add() {
 
     case "${_resource}" in
         population)
-            echo "Added ${_resource} '${_name}'"
+            printf "Added %s '%s'\n" "${_resource}" "${_name}"
             ;;
         *)
-            echo "Added ${_resource} '${_name}' to population '${PINGCTL_DEFAULT_POPULATION}'"
+            printf "Added %s '%s' to population '%s'\n" "${_resource}" "${_name}" "${PINGCTL_DEFAULT_POPULATION}"
             ;;
     esac
 }
@@ -2195,7 +2234,7 @@ pingone_add_user_group() {
 
     # jq command expects no expansion of variables. Disable shellcheck.
     # shellcheck disable=SC2016
-    $JQ -n '{id: $groupId}' \
+    ${JQ} -n '{id: $groupId}' \
         --arg groupId "${_group_id}" > "${PINGONE_POST_JSON}"
 
     pingone_api_post "users/${_user_id}/memberOfGroups"
@@ -2234,18 +2273,18 @@ print_jwt_token() {
     # Remove the switches we parsed above.
     shift "$((OPTIND - 1))"
 
-    echo "
+    printf "
 RAW Token
 ---------
-${_token}"
+%s\n" "${_token}"
 
     ${JWT} --version 2> /dev/null > /dev/null
 
     if test ${?} -eq 0; then
-        echo "${_token}" | jwt decode -
+        printf "%s" "${_token}" | ${JWT} decode -
     else
-        echo "
-Token details (header/claims) not available - Install jwt-cli tool for more info: brew tap mike-engel/jwt-cli; brew install jwt-cli"
+        printf "
+Token details (header/claims) not available - Install jwt-cli tool for more info: brew tap mike-engel/jwt-cli; brew install jwt-cli\n"
     fi
 }
 
@@ -2263,18 +2302,18 @@ pingone_token() {
 
     case "${_pingone_token_opt}" in
         clear)
-            echo "Removing ${PINGONE_ACCESS_TOKEN_FILE}"
+            printf "Removing %s\n" "${PINGONE_ACCESS_TOKEN_FILE}"
             rm -f "${PINGONE_ACCESS_TOKEN_FILE}"
             ;;
         info)
             if test ! -f "${PINGONE_ACCESS_TOKEN_FILE}"; then
-                echo "Retrieving PingOne access_token"
+                printf "Retrieving PingOne access_token\n"
                 getPingOneAccessToken
             else
-                echo "Using cached access_token [${PINGONE_ACCESS_TOKEN_FILE}]"
-                echo
-                echo "Run following to remove:"
-                echo "   pingctl pingone token clear"
+                printf "Using cached access_token [%s]\n" "${PINGONE_ACCESS_TOKEN_FILE}"
+                printf "\n"
+                printf "Run following to remove:\n"
+                printf "   pingctl pingone token clear\n"
             fi
 
             if test ! -f "${PINGONE_ACCESS_TOKEN_FILE}"; then
@@ -2282,8 +2321,8 @@ pingone_token() {
                 exit
             fi
 
-            check_for_tool $JWT
-            $JWT decode - < "${PINGONE_ACCESS_TOKEN_FILE}"
+            check_for_tool ${JWT}
+            ${JWT} decode - < "${PINGONE_ACCESS_TOKEN_FILE}"
             ;;
         *)
             usage_command USAGE_PINGONE_TOKEN_DETAIL "Unknown pingone token command"
@@ -2319,7 +2358,7 @@ pingone_delete() {
             ;;
     esac
 
-    echo "Deleted ${_resource} '${_res_name}'"
+    printf "Deleted %s '%s'\n" "${_resource}" "${_res_name}"
 }
 
 ###############################################################################
@@ -2327,10 +2366,10 @@ pingone_delete() {
 ################################################################################
 print_rest_debug() {
     if test -f "${PINGONE_DEBUG}"; then
-        echo
-        echo "--------------------------------------"
-        echo "PingOne REST API Info (-r option)"
-        echo "--------------------------------------"
+        printf "\n"
+        printf "======================================\n"
+        printf "PingOne REST API Info (-r option)\n"
+        printf "======================================\n"
         cat "${PINGONE_DEBUG}"
     fi
 }

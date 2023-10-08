@@ -27,7 +27,7 @@ cleanup() {
 
 trap cleanup EXIT
 
-cd "$TMP_DIR" >/dev/null 2>&1 || echo "Unable to chanage to temporary directory" || exit 1
+cd "$TMP_DIR" >/dev/null 2>&1 || echo "Unable to change to temporary directory" || exit 1
 
 curl -s https://raw.githubusercontent.com/pingidentity/homebrew-tap/master/Formula/pingctl.rb |\
   grep url |\

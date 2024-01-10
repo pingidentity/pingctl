@@ -2,7 +2,7 @@ site_name: pingctl, A Ping Identity CLI
 repo_name: pingidentity/pingctl
 repo_url: https://github.com/pingidentity/pingctl
 site_url: https://pingidentity.github.io/pingctl/
-copyright: © Copyright 2023 Ping Identity
+copyright: © Copyright 2024 Ping Identity
 google_analytics: ['UA-156953351-1', 'devops.pingidentity.com']
 extra_css:
   - mkdocs/overrides/stylesheets/extra.css

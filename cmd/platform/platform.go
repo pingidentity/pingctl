@@ -18,7 +18,6 @@ package platform
 import (
 	"fmt"
 
-	"github.com/pingidentity/pingctl/cmd/platform/export"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +37,7 @@ to quickly create a Cobra application.`,
 }
 
 func init() {
-	PlatformCmd.AddCommand(export.ExportCmd)
+	PlatformCmd.AddCommand(exportCmd)
 
 	// Here you will define your flags and configuration settings.
 

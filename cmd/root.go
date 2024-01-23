@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pingidentity/pingctl/cmd/feedback"
 	"github.com/pingidentity/pingctl/cmd/platform"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -53,7 +52,7 @@ func init() {
 
 	rootCmd.AddCommand(
 		platform.PlatformCmd,
-		feedback.FeedbackCmd,
+		feedbackCmd,
 	)
 
 	// Here you will define your flags and configuration settings.

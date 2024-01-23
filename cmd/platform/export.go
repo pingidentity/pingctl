@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package export
+package platform
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ import (
 )
 
 // exportCmd represents the export command
-var ExportCmd = &cobra.Command{
+var exportCmd = &cobra.Command{
 	Use:   "export",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples

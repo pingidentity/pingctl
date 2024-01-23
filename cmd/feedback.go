@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package feedback
+package cmd
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ import (
 )
 
 // feedbackCmd represents the feedback command
-var FeedbackCmd = &cobra.Command{
+var feedbackCmd = &cobra.Command{
 	Use:   "feedback",
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples

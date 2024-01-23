@@ -19,6 +19,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/pingidentity/pingctl/cmd/feedback"
+	"github.com/pingidentity/pingctl/cmd/platform"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -48,6 +50,11 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+
+	rootCmd.AddCommand(
+		platform.PlatformCmd,
+		feedback.FeedbackCmd,
+	)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,

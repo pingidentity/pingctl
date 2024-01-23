@@ -77,10 +77,12 @@ func initConfig() {
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".pingctl" (without extension).
-		viper.AddConfigPath(home)
+		// Search config in $home/.pingctl directory with name "config" (without extension).
+		viper.AddConfigPath(fmt.Sprintf("%s/.pingctl", home))
+		// Optionally search working directory for config file
+		viper.AddConfigPath(".")
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".pingctl")
+		viper.SetConfigName("config")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

@@ -40,13 +40,13 @@ linters:
     # - ginkgolinter
     # - gocheckcompilerdirectives
     # - gochecknoglobals
-    # - gochecknoinits
+    - gochecknoinits
     # - gochecksumtype
     # - gocognit
     # - goconst
     # - gocritic
     # - gocyclo
-    # - godot
+    - godot
     # - godox
     # - goerr113
     # - gofmt

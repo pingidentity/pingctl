@@ -18,6 +18,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/pingidentity/pingctl/cmd/platform"
 	"github.com/spf13/cobra"
@@ -60,7 +61,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.pingctl.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.pingctl/config.yaml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -69,27 +70,31 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
+	if cfgFile == "" {
 		// Find home directory.
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 
-		// Search config in $home/.pingctl directory with name "config" (without extension).
-		viper.AddConfigPath(fmt.Sprintf("%s/.pingctl", home))
-		viper.SetConfigType("yaml")
-		viper.SetConfigName("config")
-		// SafeWriteConfig writes current configuration to file only if the file does not exist.
-		// Use this to create empty configuration file if not present.
-		viper.SafeWriteConfig()
+		// Search config in $home/.pingctl directory with name "config.yaml".
+		cfgFile = fmt.Sprintf("%s/.pingctl/config.yaml", home)
 	}
+	// Use config file from the flag.
+	viper.SetConfigFile(cfgFile)
 
-	viper.AutomaticEnv() // read in environment variables that match
+	// read in environment variables that match
+	viper.AutomaticEnv()
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+	} else {
+		// cfgFile might not exist
+		// create the directory for the config file if needed
+		err := os.MkdirAll(filepath.Dir(cfgFile), os.ModePerm)
+		cobra.CheckErr(err)
+
+		// SafeWriteConfigAs writes current configuration to a given filename if it does not exist.
+		err = viper.SafeWriteConfigAs(cfgFile)
+		cobra.CheckErr(err)
 	}
 }

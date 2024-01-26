@@ -17,7 +17,7 @@ vet:
 test:
 	go test -parallel=4 ./...
 
-devchecknotest: install golangcilint importfmtlint
+devchecknotest: install importfmtlint fmt vet
 
 devcheck: devchecknotest test
 

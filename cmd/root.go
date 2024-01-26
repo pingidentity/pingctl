@@ -79,10 +79,11 @@ func initConfig() {
 
 		// Search config in $home/.pingctl directory with name "config" (without extension).
 		viper.AddConfigPath(fmt.Sprintf("%s/.pingctl", home))
-		// Optionally search working directory for config file
-		viper.AddConfigPath(".")
 		viper.SetConfigType("yaml")
 		viper.SetConfigName("config")
+		// SafeWriteConfig writes current configuration to file only if the file does not exist.
+		// Use this to create empty configuration file if not present.
+		viper.SafeWriteConfig()
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

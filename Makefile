@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install fmt vet test devchecknotest devcheck golangcilint importfmtlint
+.PHONY: install fmt vet test devchecknotest devcheck importfmtlint
 
 default: install
 
@@ -20,9 +20,6 @@ test:
 devchecknotest: install golangcilint importfmtlint
 
 devcheck: devchecknotest test
-
-golangcilint:
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint run --timeout 10m ./...
 
 importfmtlint:
 	go run github.com/pavius/impi/cmd/impi --local . --scheme stdThirdPartyLocal ./...

@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 
 	"github.com/pingidentity/pingctl/cmd/platform"
+	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -43,9 +44,10 @@ to quickly create a Cobra application.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	l := logger.Get()
 	err := rootCmd.Execute()
 	if err != nil {
-		os.Exit(1)
+		l.Fatal().Err(err).Msgf("")
 	}
 }
 
@@ -57,44 +59,50 @@ func init() {
 		feedbackCmd,
 	)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.pingctl/config.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Pingctl's config file location (default is $HOME/.pingctl/config.yaml)")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	l := logger.Get()
 	if cfgFile == "" {
-		// Find home directory.
+		l.Debug().Msgf("No configuration file specified. Determining default configuration file location: $HOME/.pingctl/config.yaml")
 		home, err := os.UserHomeDir()
-		cobra.CheckErr(err)
+		if err != nil {
+			l.Fatal().Err(err).Msgf("Failed to determine user's home directory")
+		}
 
-		// Search config in $home/.pingctl directory with name "config.yaml".
+		// Default the config in $home/.pingctl directory with name "config.yaml".
 		cfgFile = fmt.Sprintf("%s/.pingctl/config.yaml", home)
+		l.Debug().Msgf("Determined default configuration file location: %s", cfgFile)
+
+		// Make sure the default config file exists, and if not, seed a new file
+		if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
+			l.Debug().Msgf("Default configuration file does not exists. Seeding a new file at location: %s", cfgFile)
+
+			// MkdirAll does nothing if directories already exist. Create needed directories for config file location.
+			err := os.MkdirAll(filepath.Dir(cfgFile), os.ModePerm)
+			l.Fatal().Err(err).Msgf("Failed to make directories needed for filepath: %s", cfgFile)
+
+			// SafeWriteConfigAs writes current configuration to a given filename if it does not exist.
+			err = viper.SafeWriteConfigAs(cfgFile)
+			l.Fatal().Err(err).Msgf("Failed to create configuration file at: %s", cfgFile)
+		}
 	}
+
 	// Use config file from the flag.
 	viper.SetConfigFile(cfgFile)
 
-	// read in environment variables that match
+	//Only use environment variabes with the "PINGCTL" prefix
+	viper.SetEnvPrefix("PINGCTL")
+
+	// Read in environment variables that match
 	viper.AutomaticEnv()
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+	if err := viper.ReadInConfig(); err != nil {
+		l.Fatal().Err(err).Msgf("Failed to read configuration from file: %s", cfgFile)
 	} else {
-		// cfgFile might not exist
-		// create the directory for the config file if needed
-		err := os.MkdirAll(filepath.Dir(cfgFile), os.ModePerm)
-		cobra.CheckErr(err)
-
-		// SafeWriteConfigAs writes current configuration to a given filename if it does not exist.
-		err = viper.SafeWriteConfigAs(cfgFile)
-		cobra.CheckErr(err)
+		l.Info().Msgf("Using configuration file: %s", viper.ConfigFileUsed())
 	}
 }

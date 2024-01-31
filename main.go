@@ -15,8 +15,15 @@ limitations under the License.
 */
 package main
 
-import "github.com/pingidentity/pingctl/cmd"
+import (
+	"github.com/pingidentity/pingctl/cmd"
+	"github.com/pingidentity/pingctl/internal/logger"
+)
 
 func main() {
+	l := logger.Get()
+
+	l.Debug().Msg("Starting pingctl")
+
 	cmd.Execute()
 }

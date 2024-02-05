@@ -26,7 +26,28 @@ import (
 	"github.com/spf13/viper"
 )
 
-var cfgFile string
+const (
+	configParamName      = "config"
+	configParamConfigKey = "config"
+
+	outputParamName      = "output"
+	outputParamConfigKey = "output"
+
+	colorParamName      = "color"
+	colorParamConfigKey = "color"
+)
+
+var (
+	cfgFile        string
+	outputFormat   string
+	colorizeOutput bool
+
+	rootConfigurationParamMapping = map[string]string{
+		configParamName: configParamConfigKey,
+		outputParamName: outputParamConfigKey,
+		colorParamName:  colorParamConfigKey,
+	}
+)
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -52,6 +73,8 @@ func Execute() {
 }
 
 func init() {
+	l := logger.Get()
+
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.AddCommand(
@@ -59,7 +82,13 @@ func init() {
 		feedbackCmd,
 	)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Pingctl's config file location (default is $HOME/.pingctl/config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, configParamName, "", "Configuration file location\nDefault: $HOME/.pingctl/config.yaml")
+	rootCmd.PersistentFlags().StringVar(&outputFormat, outputParamName, "text", "Specifies output format\nValid output options: 'text', 'json'\nDefault: 'text'")
+	rootCmd.PersistentFlags().BoolVar(&colorizeOutput, colorParamName, true, "Use colorized output\nDefault: true")
+
+	if err := bindPersistentFlags(rootConfigurationParamMapping, rootCmd); err != nil {
+		l.Error().Err(err).Msgf("Error binding flag parameters. Flag values may not be recognized.")
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -105,4 +134,15 @@ func initConfig() {
 	} else {
 		l.Info().Msgf("Using configuration file: %s", viper.ConfigFileUsed())
 	}
+}
+
+func bindPersistentFlags(paramlist map[string]string, command *cobra.Command) error {
+	for k, v := range paramlist {
+		err := viper.BindPFlag(v, command.PersistentFlags().Lookup(k))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

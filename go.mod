@@ -3,6 +3,7 @@ module github.com/pingidentity/pingctl
 go 1.21.6
 
 require (
+	github.com/fatih/color v1.14.1
 	github.com/pavius/impi v0.0.3
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/cobra v1.8.0

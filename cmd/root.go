@@ -53,7 +53,8 @@ var (
 var rootCmd = &cobra.Command{
 	Use:     "pingctl",
 	Version: "v0.0.1",
-	Short:   "A brief description of your application",
+	//TODO add command short and long description
+	Short: "A brief description of your application",
 	Long: `A longer description that spans multiple lines and likely contains
 examples and usage of using your application. For example:
 
@@ -62,7 +63,6 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	l := logger.Get()
@@ -72,6 +72,7 @@ func Execute() {
 	}
 }
 
+// init adds all child commands to the root command and sets flags appropriately.
 func init() {
 	l := logger.Get()
 
@@ -83,8 +84,8 @@ func init() {
 	)
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, configParamName, "", "Configuration file location\nDefault: $HOME/.pingctl/config.yaml")
-	rootCmd.PersistentFlags().StringVar(&outputFormat, outputParamName, "text", "Specifies output format\nValid output options: 'text', 'json'\nDefault: 'text'")
-	rootCmd.PersistentFlags().BoolVar(&colorizeOutput, colorParamName, true, "Use colorized output\nDefault: true")
+	rootCmd.PersistentFlags().StringVar(&outputFormat, outputParamName, "text", "Specifies output format\nValid output options: 'text', 'json'")
+	rootCmd.PersistentFlags().BoolVar(&colorizeOutput, colorParamName, true, "Use colorized output")
 
 	if err := bindPersistentFlags(rootConfigurationParamMapping, rootCmd); err != nil {
 		l.Error().Err(err).Msgf("Error binding flag parameters. Flag values may not be recognized.")
@@ -111,11 +112,15 @@ func initConfig() {
 
 			// MkdirAll does nothing if directories already exist. Create needed directories for config file location.
 			err := os.MkdirAll(filepath.Dir(cfgFile), os.ModePerm)
-			l.Fatal().Err(err).Msgf("Failed to make directories needed for filepath: %s", cfgFile)
+			if err != nil {
+				l.Fatal().Err(err).Msgf("Failed to make directories needed for filepath: %s", cfgFile)
+			}
 
 			// SafeWriteConfigAs writes current configuration to a given filename if it does not exist.
 			err = viper.SafeWriteConfigAs(cfgFile)
-			l.Fatal().Err(err).Msgf("Failed to create configuration file at: %s", cfgFile)
+			if err != nil {
+				l.Fatal().Err(err).Msgf("Failed to create configuration file at: %s", cfgFile)
+			}
 		}
 	}
 

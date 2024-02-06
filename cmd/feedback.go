@@ -21,7 +21,8 @@ import (
 
 // feedbackCmd represents the feedback command
 var feedbackCmd = &cobra.Command{
-	Use:   "feedback",
+	Use: "feedback",
+	//TODO add command short and long description
 	Short: "A brief description of your command",
 	Long: `A longer description that spans multiple lines and likely contains examples
 and usage of using your command. For example:

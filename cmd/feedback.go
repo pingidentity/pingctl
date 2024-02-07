@@ -43,10 +43,9 @@ to the tool:
 	https://github.com/pingidentity/pingctl/issues/new
 
 `
-			output.Format(output.CommandOutput{
+			output.Format(cmd, output.CommandOutput{
 				Message: feedbackMessage,
 				Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
-				Command: cmd,
 			})
 
 			return nil

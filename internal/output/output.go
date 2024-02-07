@@ -20,7 +20,6 @@ var (
 type CommandOutputResult string
 
 type CommandOutput struct {
-	Command *cobra.Command
 	Fields  map[string]interface{}
 	Message string
 	Result  CommandOutputResult
@@ -34,11 +33,11 @@ const (
 	ENUMCOMMANDOUTPUTRESULT_FAILURE       CommandOutputResult = "Failure"
 )
 
-func Format(cmdOut CommandOutput) {
+func Format(cmd *cobra.Command, output CommandOutput) {
 	l := logger.Get()
 
-	if cmdOut.Command == nil {
-		l.Fatal().Msgf("Failed to output. Expected Command Field to be set.")
+	if cmd == nil {
+		l.Fatal().Msgf("Failed to output. Expected cmd to be set.")
 	}
 
 	colorizeOutput := viper.GetBool("color")
@@ -51,48 +50,48 @@ func Format(cmdOut CommandOutput) {
 
 	switch outputFormat {
 	case "text":
-		formatText(cmdOut)
+		formatText(cmd, output)
 	case "json":
-		formatJson(cmdOut)
+		formatJson(cmd, output)
 	default:
 		l.Error().Msgf("Output format %q is not a recognized option. Defaulting to text output", outputFormat)
-		formatText(cmdOut)
+		formatText(cmd, output)
 	}
 }
 
-func formatText(cmdOut CommandOutput) {
-	switch cmdOut.Result {
+func formatText(cmd *cobra.Command, output CommandOutput) {
+	switch output.Result {
 	case ENUMCOMMANDOUTPUTRESULT_SUCCESS:
-		cmdOut.Command.Println(green("%s - %s", cmdOut.Message, cmdOut.Result))
+		cmd.Println(green("%s - %s", output.Message, output.Result))
 	case ENUMCOMMANDOUTPUTRESULT_NOACTION_OK:
-		cmdOut.Command.Println(green("%s - %s", cmdOut.Message, cmdOut.Result))
+		cmd.Println(green("%s - %s", output.Message, output.Result))
 	case ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN:
-		cmdOut.Command.Println(yellow("%s - %s", cmdOut.Message, cmdOut.Result))
+		cmd.Println(yellow("%s - %s", output.Message, output.Result))
 	case ENUMCOMMANDOUTPUTRESULT_FAILURE:
-		cmdOut.Command.Println(red("%s - %s", cmdOut.Message, cmdOut.Result))
+		cmd.Println(red("%s - %s", output.Message, output.Result))
 	case ENUMCOMMANDOUTPUTRESULT_NIL:
-		cmdOut.Command.Println(white("%s", cmdOut.Message))
+		cmd.Println(white("%s", output.Message))
 	default:
-		cmdOut.Command.Println(white("%s", cmdOut.Message))
+		cmd.Println(white("%s", output.Message))
 	}
 
-	if cmdOut.Fields != nil {
-		cmdOut.Command.Println(cyan("Additional Information:"))
-		for k, v := range cmdOut.Fields {
-			cmdOut.Command.Println(cyan("%s: %s", k, v))
+	if output.Fields != nil {
+		cmd.Println(cyan("Additional Information:"))
+		for k, v := range output.Fields {
+			cmd.Println(cyan("%s: %s", k, v))
 		}
 	}
 
 }
 
-func formatJson(cmdOut CommandOutput) {
+func formatJson(cmd *cobra.Command, output CommandOutput) {
 	l := logger.Get()
 
-	jsonOut, err := json.Marshal(cmdOut)
+	jsonOut, err := json.Marshal(output)
 
 	if err != nil {
 		l.Error().Err(err).Msgf("Failed to serialize output as JSON")
 	}
 
-	cmdOut.Command.Println(string(jsonOut))
+	cmd.Println(string(jsonOut))
 }

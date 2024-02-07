@@ -11,9 +11,10 @@ import (
 
 var (
 	green = color.New(color.FgGreen).PrintfFunc()
+	white = color.New(color.FgWhite).PrintfFunc()
 )
 
-func Format(fields map[string]interface{}) {
+func Format(message string, fields map[string]interface{}) {
 	l := logger.Get()
 
 	colorizeOutput := viper.GetBool("color")
@@ -26,25 +27,33 @@ func Format(fields map[string]interface{}) {
 
 	switch outputFormat {
 	case "text":
-		formatText(fields)
+		formatText(message, fields)
 	case "json":
-		formatJson(fields)
+		formatJson(message, fields)
 	default:
 		l.Error().Msgf("Output format %q is not a recognized option. Defaulting to text output", outputFormat)
-		formatText(fields)
+		formatText(message, fields)
 	}
 }
 
-func formatText(fields map[string]interface{}) {
+func formatText(message string, fields map[string]interface{}) {
+	white(message)
+
 	for k, v := range fields {
 		green("%s: %s\n", k, v)
 	}
 }
 
-func formatJson(fields map[string]interface{}) {
+func formatJson(message string, fields map[string]interface{}) {
 	l := logger.Get()
 
-	l.Info().Msg("Yep")
+	if fields != nil {
+		fields["message"] = message
+	} else {
+		fields = map[string]interface{}{
+			"message": message,
+		}
+	}
 
 	enc := json.NewEncoder(os.Stdout)
 

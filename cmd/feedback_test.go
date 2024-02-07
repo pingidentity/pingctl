@@ -13,20 +13,28 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package main
+package cmd_test
 
 import (
+	"bytes"
+	"testing"
+
 	"github.com/pingidentity/pingctl/cmd"
-	"github.com/pingidentity/pingctl/internal/logger"
 )
 
-func main() {
-	l := logger.Get()
+// Test Root Command Executes without issue
+func TestFeedbackCmd_Execute(t *testing.T) {
+	// Create the root command
+	feedbackCmd := cmd.NewFeedbackCommand()
 
-	rootCmd := cmd.NewRootCommand()
+	// Redirect stdout to a buffer to capture the output
+	var stdout bytes.Buffer
+	feedbackCmd.SetOut(&stdout)
+	feedbackCmd.SetErr(&stdout)
 
-	err := rootCmd.Execute()
+	// Execute the root command
+	err := feedbackCmd.Execute()
 	if err != nil {
-		l.Fatal().Err(err).Msgf("")
+		t.Fatal(err)
 	}
 }

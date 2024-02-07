@@ -21,19 +21,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// feedbackCmd represents the feedback command
-var feedbackCmd = &cobra.Command{
-	Use:   "feedback",
-	Short: "Information on tool feedback",
-	Long: `A command to provide the user information
-	on how to give feedback or get help with the tool
-	through the use of the GitHub repository's issue tracker.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		l := logger.Get()
+func NewFeedbackCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "feedback",
+		Short: "Information on tool feedback",
+		Long: `A command to provide the user information
+			on how to give feedback or get help with the tool
+			through the use of the GitHub repository's issue tracker.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			l := logger.Get()
 
-		l.Debug().Msgf("Feedback command called.")
+			l.Debug().Msgf("Feedback command called.")
 
-		feedbackMessage := `Thank you for participating in early adoption of the refreshed Ping Identity universal CLI.
+			feedbackMessage := `Thank you for participating in early adoption of the refreshed Ping Identity universal CLI.
 
 We appreciate your feedback and information regarding your expirience with the CLI.
 
@@ -43,7 +43,15 @@ to the tool:
 	https://github.com/pingidentity/pingctl/issues/new
 
 `
+			output.Format(output.CommandOutput{
+				Message: feedbackMessage,
+				Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
+				Command: cmd,
+			})
 
-		output.Format(feedbackMessage, nil)
-	},
+			return nil
+		},
+	}
+
+	return cmd
 }

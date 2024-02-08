@@ -7,6 +7,7 @@ import (
 
 	"github.com/pingidentity/pingctl/cmd/platform"
 	"github.com/pingidentity/pingctl/internal/logger"
+	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -36,8 +37,6 @@ var (
 
 // rootCmd represents the base command when called without any subcommands
 func NewRootCommand() *cobra.Command {
-	l := logger.Get()
-
 	cmd := &cobra.Command{
 		Use:     "pingctl",
 		Version: "v0.0.1",
@@ -56,7 +55,10 @@ func NewRootCommand() *cobra.Command {
 	cmd.PersistentFlags().BoolVar(&colorizeOutput, colorParamName, true, "Use colorized output")
 
 	if err := bindPersistentFlags(rootConfigurationParamMapping, cmd); err != nil {
-		l.Error().Err(err).Msgf("Error binding flag parameters. Flag values may not be recognized.")
+		output.Format(cmd, output.CommandOutput{
+			Message: "Error binding flag parameters. Flag values may not be recognized.",
+			Error:   err,
+		})
 	}
 
 	return cmd

@@ -60,25 +60,39 @@ func Format(cmd *cobra.Command, output CommandOutput) {
 }
 
 func formatText(cmd *cobra.Command, output CommandOutput) {
+	l := logger.Get()
+
+	var resultFormat string
+	var resultColor func(format string, a ...interface{}) string
 	switch output.Result {
 	case ENUMCOMMANDOUTPUTRESULT_SUCCESS:
-		cmd.Println(green("%s - %s", output.Message, output.Result))
+		resultFormat = "%s - %s"
+		resultColor = green
 	case ENUMCOMMANDOUTPUTRESULT_NOACTION_OK:
-		cmd.Println(green("%s - %s", output.Message, output.Result))
+		resultFormat = "%s - %s"
+		resultColor = green
 	case ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN:
-		cmd.Println(yellow("%s - %s", output.Message, output.Result))
+		resultFormat = "%s - %s"
+		resultColor = yellow
 	case ENUMCOMMANDOUTPUTRESULT_FAILURE:
-		cmd.Println(red("%s - %s", output.Message, output.Result))
+		resultFormat = "%s - %s"
+		resultColor = red
 	case ENUMCOMMANDOUTPUTRESULT_NIL:
-		cmd.Println(white("%s", output.Message))
+		resultFormat = "%s%s"
+		resultColor = white
 	default:
-		cmd.Println(white("%s", output.Message))
+		resultFormat = "%s%s"
+		resultColor = white
 	}
+
+	cmd.Println(resultColor(resultFormat, output.Message, output.Result))
+	l.Info().Msgf("%s", resultColor(resultFormat, output.Message, output.Result))
 
 	if output.Fields != nil {
 		cmd.Println(cyan("Additional Information:"))
 		for k, v := range output.Fields {
 			cmd.Println(cyan("%s: %s", k, v))
+			l.Info().Msgf("%s", cyan("%s: %s", k, v))
 		}
 	}
 
@@ -94,4 +108,5 @@ func formatJson(cmd *cobra.Command, output CommandOutput) {
 	}
 
 	cmd.Println(string(jsonOut))
+	l.Info().Msgf("%s", string(jsonOut))
 }

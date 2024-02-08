@@ -43,7 +43,7 @@ func Get() zerolog.Logger {
 		case "NOLEVEL":
 			logLevel = zerolog.NoLevel
 		default:
-			logLevel = zerolog.ErrorLevel
+			logLevel = zerolog.Disabled
 		}
 
 		var output io.Writer

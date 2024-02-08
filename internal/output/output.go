@@ -111,19 +111,19 @@ func formatText(cmd *cobra.Command, output CommandOutput) {
 	// Inform the user of a warning and log the warning
 	if output.Warn != "" {
 		cmd.Println(yellow("Warn: %s", output.Warn))
-		l.Warn().Msgf("%s", yellow(output.Warn))
+		l.Warn().Msgf(output.Warn)
 	}
 
 	// Inform the user of an error and log the error
 	if output.Error != nil {
 		cmd.Println(red("Error: %s", output.Error.Error()))
-		l.Error().Msgf(red(output.Error.Error()))
+		l.Error().Msgf(output.Error.Error())
 	}
 
 	// Inform the user of a fatal error and log the fatal error. This exits the program.
 	if output.Fatal != nil {
 		cmd.Println(boldRed("Fatal: %s", output.Fatal.Error()))
-		l.Fatal().Msgf(boldRed(output.Fatal.Error()))
+		l.Fatal().Msgf(output.Fatal.Error())
 	}
 
 }
@@ -141,20 +141,20 @@ func formatJson(cmd *cobra.Command, output CommandOutput) {
 	cmd.Println(string(jsonOut))
 
 	// Log the serialized JSON as info.
-	l.Info().Msgf(white(string(jsonOut)))
+	l.Info().Msgf(string(jsonOut))
 
 	// Log the warning if exists
 	if output.Warn != "" {
-		l.Warn().Msgf(yellow(output.Warn))
+		l.Warn().Msgf(output.Warn)
 	}
 
 	// Log the error if exists
 	if output.Error != nil {
-		l.Error().Msgf(red(output.Error.Error()))
+		l.Error().Msgf(output.Error.Error())
 	}
 
 	// Log the fatal error if exists. This exits the program.
 	if output.Fatal != nil {
-		l.Fatal().Msgf(boldRed(output.Fatal.Error()))
+		l.Fatal().Msgf(output.Fatal.Error())
 	}
 }

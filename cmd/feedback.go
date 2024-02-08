@@ -6,6 +6,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var FeedbackMessage = `
+Thank you for participating in early adoption of the refreshed Ping Identity universal CLI.
+
+We appreciate your feedback and information regarding your expirience with the CLI.
+
+Please visit the following URL in your browser and let us know of any feedback or issues related
+to the tool:
+
+	https://github.com/pingidentity/pingctl/issues/new
+`
+
 func NewFeedbackCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "feedback",
@@ -18,18 +29,8 @@ func NewFeedbackCommand() *cobra.Command {
 
 			l.Debug().Msgf("Feedback command called.")
 
-			feedbackMessage := `Thank you for participating in early adoption of the refreshed Ping Identity universal CLI.
-
-We appreciate your feedback and information regarding your expirience with the CLI.
-
-Please visit the following URL in your browser and let us know of any feedback or issues related
-to the tool:
-
-	https://github.com/pingidentity/pingctl/issues/new
-
-`
 			output.Format(cmd, output.CommandOutput{
-				Message: feedbackMessage,
+				Message: FeedbackMessage,
 				Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
 			})
 

@@ -6,17 +6,24 @@ import (
 	"testing"
 
 	"github.com/pingidentity/pingctl/cmd"
+	"github.com/spf13/cobra"
 )
+
+func CaptureStdout(cmd *cobra.Command) *bytes.Buffer {
+	// Redirect stdout to a buffer to capture the output
+	var stdout bytes.Buffer
+	cmd.SetOut(&stdout)
+	cmd.SetErr(&stdout)
+
+	return &stdout
+}
 
 // Test Feedback Command Executes without issue
 func TestFeedbackCmd_Execute(t *testing.T) {
 	// Create the feedback command
 	feedbackCmd := cmd.NewFeedbackCommand()
 
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	feedbackCmd.SetOut(&stdout)
-	feedbackCmd.SetErr(&stdout)
+	stdout := CaptureStdout(feedbackCmd)
 
 	// Execute the feedback command
 	err := feedbackCmd.Execute()
@@ -29,10 +36,7 @@ func TestFeedbackCmd_Message(t *testing.T) {
 	// Create the feedback command
 	feedbackCmd := cmd.NewFeedbackCommand()
 
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	feedbackCmd.SetOut(&stdout)
-	feedbackCmd.SetErr(&stdout)
+	stdout := CaptureStdout(feedbackCmd)
 
 	// Execute the feedback command
 	err := feedbackCmd.Execute()
@@ -42,7 +46,7 @@ func TestFeedbackCmd_Message(t *testing.T) {
 
 	// Make sure output matches expected message
 	if stdout.String() != (cmd.FeedbackMessage + "\n") {
-		t.Errorf("Expected Feedback message output to equal %q\n Actual Output: %q", cmd.FeedbackMessage, stdout.String())
+		t.Errorf("Expected Feedback message output to equal %q\n Actual Output: %q", (cmd.FeedbackMessage + "\n"), stdout.String())
 	}
 }
 
@@ -50,10 +54,7 @@ func TestFeedbackCmd_ValidJSON(t *testing.T) {
 	// Create the root command
 	rootCmd := cmd.NewRootCommand()
 
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	rootCmd.SetOut(&stdout)
-	rootCmd.SetErr(&stdout)
+	stdout := CaptureStdout(rootCmd)
 	rootCmd.SetArgs([]string{"--output=json", "feedback"})
 
 	// Execute the root command

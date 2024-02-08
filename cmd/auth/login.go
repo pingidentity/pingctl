@@ -23,6 +23,7 @@ func NewLoginCommand() *cobra.Command {
 				output.Format(cmd, output.CommandOutput{
 					Message: "Login failed.",
 					Fatal:   err,
+					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 				})
 			}
 		},

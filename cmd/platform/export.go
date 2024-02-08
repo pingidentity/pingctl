@@ -29,6 +29,7 @@ func NewExportCommand() *cobra.Command {
 				output.Format(cmd, output.CommandOutput{
 					Message: "Export failed.",
 					Fatal:   err,
+					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 				})
 			}
 		},

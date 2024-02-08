@@ -15,10 +15,11 @@ func NewLogoutCommand() *cobra.Command {
 		Long:  "Logout with Ping",
 		Run: func(cmd *cobra.Command, args []string) {
 			l := logger.Get()
-			var authConnector connector.Authenticatable
 			// Just use the no-op connector for now by default
-			authConnector = noop.Connector()
-			err := authConnector.Logout()
+			authConnectors := []connector.Authenticatable{
+				noop.Connector(),
+			}
+			err := authConnectors[0].Logout()
 			if err != nil {
 				l.Fatal().Err(err).Msg("Logout failed")
 			}

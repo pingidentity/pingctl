@@ -20,11 +20,12 @@ func NewExportCommand() *cobra.Command {
 	to quickly create a Cobra application.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			l := logger.Get()
-			var exportableConnector connector.Exportable
 			// Just use the no-op connector for now by default
-			exportableConnector = noop.Connector()
+			exportableConnectors := []connector.Exportable{
+				noop.Connector(),
+			}
 			//TODO selectable format and output location
-			err := exportableConnector.Export(connector.ENUMEXPORTFORMAT_HCL, "/tmp")
+			err := exportableConnectors[0].Export(connector.ENUMEXPORTFORMAT_HCL, "/tmp")
 			if err != nil {
 				l.Fatal().Err(err).Msg("Export failed")
 			}

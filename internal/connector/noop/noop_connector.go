@@ -24,7 +24,7 @@ func (c *NoopConnector) Export(format, outputDir string) error {
 
 func (c *NoopConnector) Login() error {
 	//no-op
-	println("No op logic")
+	println("No op login")
 	return nil
 }
 

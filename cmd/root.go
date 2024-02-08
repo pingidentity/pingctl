@@ -1,18 +1,3 @@
-/*
-Copyright © 2024 Ping Identity Corporation
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
@@ -51,47 +36,36 @@ var (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:     "pingctl",
-	Version: "v0.0.1",
-	//TODO add command short and long description
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-}
-
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
+func NewRootCommand() *cobra.Command {
 	l := logger.Get()
-	err := rootCmd.Execute()
-	if err != nil {
-		l.Fatal().Err(err).Msgf("")
+
+	cmd := &cobra.Command{
+		Use:     "pingctl",
+		Version: "v0.0.1",
+		//TODO add command short and long description
+		Short: "",
+		Long:  ``,
 	}
-}
 
-// init adds all child commands to the root command and sets flags appropriately.
-func init() {
-	l := logger.Get()
-
-	cobra.OnInitialize(initConfig)
-
-	rootCmd.AddCommand(
-		platform.PlatformCmd,
-		feedbackCmd,
+	cmd.AddCommand(
+		platform.NewPlatformCommand(),
+		NewFeedbackCommand(),
 		auth.NewAuthCommand(),
 	)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, configParamName, "", "Configuration file location\nDefault: $HOME/.pingctl/config.yaml")
-	rootCmd.PersistentFlags().StringVar(&outputFormat, outputParamName, "text", "Specifies output format\nValid output options: 'text', 'json'")
-	rootCmd.PersistentFlags().BoolVar(&colorizeOutput, colorParamName, true, "Use colorized output")
+	cmd.PersistentFlags().StringVar(&cfgFile, configParamName, "", "Configuration file location\nDefault: $HOME/.pingctl/config.yaml")
+	cmd.PersistentFlags().StringVar(&outputFormat, outputParamName, "text", "Specifies output format\nValid output options: 'text', 'json'")
+	cmd.PersistentFlags().BoolVar(&colorizeOutput, colorParamName, true, "Use colorized output")
 
-	if err := bindPersistentFlags(rootConfigurationParamMapping, rootCmd); err != nil {
+	if err := bindPersistentFlags(rootConfigurationParamMapping, cmd); err != nil {
 		l.Error().Err(err).Msgf("Error binding flag parameters. Flag values may not be recognized.")
 	}
+
+	return cmd
+}
+
+func init() {
+	cobra.OnInitialize(initConfig)
 }
 
 // initConfig reads in config file and ENV variables if set.

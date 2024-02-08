@@ -1,47 +1,41 @@
-/*
-Copyright © 2024 Ping Identity Corporation
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-	http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
+	"github.com/pingidentity/pingctl/internal/logger"
+	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/spf13/cobra"
 )
 
-// feedbackCmd represents the feedback command
-var feedbackCmd = &cobra.Command{
-	Use: "feedback",
-	//TODO add command short and long description
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+func NewFeedbackCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "feedback",
+		Short: "Information on tool feedback",
+		Long: `A command to provide the user information
+			on how to give feedback or get help with the tool
+			through the use of the GitHub repository's issue tracker.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			l := logger.Get()
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	Run: func(cmd *cobra.Command, args []string) {
-	},
-}
+			l.Debug().Msgf("Feedback command called.")
 
-func init() {
-	// Here you will define your flags and configuration settings.
+			feedbackMessage := `Thank you for participating in early adoption of the refreshed Ping Identity universal CLI.
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// feedbackCmd.PersistentFlags().String("foo", "", "A help for foo")
+We appreciate your feedback and information regarding your expirience with the CLI.
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// feedbackCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+Please visit the following URL in your browser and let us know of any feedback or issues related
+to the tool:
+
+	https://github.com/pingidentity/pingctl/issues/new
+
+`
+			output.Format(cmd, output.CommandOutput{
+				Message: feedbackMessage,
+				Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
+			})
+
+			return nil
+		},
+	}
+
+	return cmd
 }

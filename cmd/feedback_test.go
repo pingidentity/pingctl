@@ -7,7 +7,7 @@ import (
 	"github.com/pingidentity/pingctl/cmd"
 )
 
-// Test Root Command Executes without issue
+// Test Feedback Command Executes without issue
 func TestFeedbackCmd_Execute(t *testing.T) {
 	// Create the root command
 	feedbackCmd := cmd.NewFeedbackCommand()
@@ -20,6 +20,6 @@ func TestFeedbackCmd_Execute(t *testing.T) {
 	// Execute the root command
 	err := feedbackCmd.Execute()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}
 }

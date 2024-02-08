@@ -20,7 +20,7 @@ func TestRootCmd_Execute(t *testing.T) {
 	// Execute the root command
 	err := rootCmd.Execute()
 	if err != nil {
-		t.Fatal(err)
+		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}
 }
 
@@ -61,6 +61,6 @@ func TestRootCmd_JSONOutput(t *testing.T) {
 
 	//expect both outputs to be the same
 	if outputWithJSON != outputWithoutJSON {
-		t.Errorf("Expected no change on output with json specified, got %q VS %q", outputWithoutJSON, outputWithJSON)
+		t.Errorf("Expected no change on output with json specified.\nOutput without JSON: %q\nOutput with JSON %q", outputWithoutJSON, outputWithJSON)
 	}
 }

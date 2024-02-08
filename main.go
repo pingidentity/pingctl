@@ -12,6 +12,6 @@ func main() {
 
 	err := rootCmd.Execute()
 	if err != nil {
-		l.Fatal().Err(err).Msgf("")
+		l.Fatal().Err(err).Msgf("Failed to execute pingctl")
 	}
 }

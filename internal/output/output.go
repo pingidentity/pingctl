@@ -10,11 +10,12 @@ import (
 )
 
 var (
-	cyan   = color.New(color.FgCyan).SprintfFunc()
-	green  = color.New(color.FgGreen).SprintfFunc()
-	red    = color.New(color.FgRed).SprintfFunc()
-	white  = color.New(color.FgWhite).SprintfFunc()
-	yellow = color.New(color.FgYellow).SprintfFunc()
+	boldRed = color.New(color.FgRed).Add(color.Bold).SprintfFunc()
+	cyan    = color.New(color.FgCyan).SprintfFunc()
+	green   = color.New(color.FgGreen).SprintfFunc()
+	red     = color.New(color.FgRed).SprintfFunc()
+	white   = color.New(color.FgWhite).SprintfFunc()
+	yellow  = color.New(color.FgYellow).SprintfFunc()
 )
 
 type CommandOutputResult string
@@ -22,6 +23,9 @@ type CommandOutputResult string
 type CommandOutput struct {
 	Fields  map[string]interface{}
 	Message string
+	Warn    string
+	Error   error
+	Fatal   error
 	Result  CommandOutputResult
 }
 
@@ -54,7 +58,11 @@ func Format(cmd *cobra.Command, output CommandOutput) {
 	case "json":
 		formatJson(cmd, output)
 	default:
-		l.Error().Msgf("Output format %q is not a recognized option. Defaulting to text output", outputFormat)
+		formatText(cmd, CommandOutput{
+			Message: "",
+			Warn:    "Output format is not recognized. Defaulting to \"text\" output",
+			Result:  ENUMCOMMANDOUTPUTRESULT_NIL,
+		})
 		formatText(cmd, output)
 	}
 }
@@ -64,6 +72,8 @@ func formatText(cmd *cobra.Command, output CommandOutput) {
 
 	var resultFormat string
 	var resultColor func(format string, a ...interface{}) string
+
+	// Determine message color and format based on status
 	switch output.Result {
 	case ENUMCOMMANDOUTPUTRESULT_SUCCESS:
 		resultFormat = "%s - %s"
@@ -85,9 +95,11 @@ func formatText(cmd *cobra.Command, output CommandOutput) {
 		resultColor = white
 	}
 
+	// Supply the user a formatted message and a result status if any.
 	cmd.Println(resultColor(resultFormat, output.Message, output.Result))
-	l.Info().Msgf("%s", resultColor(resultFormat, output.Message, output.Result))
+	l.Info().Msgf(resultColor(resultFormat, output.Message, output.Result))
 
+	// Output and log any additional key/value pairs supplied to the user.
 	if output.Fields != nil {
 		cmd.Println(cyan("Additional Information:"))
 		for k, v := range output.Fields {
@@ -96,17 +108,53 @@ func formatText(cmd *cobra.Command, output CommandOutput) {
 		}
 	}
 
+	// Inform the user of a warning and log the warning
+	if output.Warn != "" {
+		cmd.Println(yellow("Warn: %s", output.Warn))
+		l.Warn().Msgf("%s", yellow(output.Warn))
+	}
+
+	// Inform the user of an error and log the error
+	if output.Error != nil {
+		cmd.Println(red("Error: %s", output.Error.Error()))
+		l.Error().Msgf(red(output.Error.Error()))
+	}
+
+	// Inform the user of a fatal error and log the fatal error. This exits the program.
+	if output.Fatal != nil {
+		cmd.Println(boldRed("Fatal: %s", output.Fatal.Error()))
+		l.Fatal().Msgf(boldRed(output.Fatal.Error()))
+	}
+
 }
 
 func formatJson(cmd *cobra.Command, output CommandOutput) {
 	l := logger.Get()
 
+	// Convert the CommandOutput struct to JSON
 	jsonOut, err := json.Marshal(output)
-
 	if err != nil {
 		l.Error().Err(err).Msgf("Failed to serialize output as JSON")
 	}
 
+	// Output the JSON as uncolored string
 	cmd.Println(string(jsonOut))
-	l.Info().Msgf("%s", string(jsonOut))
+
+	// Log the serialized JSON as info.
+	l.Info().Msgf(white(string(jsonOut)))
+
+	// Log the warning if exists
+	if output.Warn != "" {
+		l.Warn().Msgf(yellow(output.Warn))
+	}
+
+	// Log the error if exists
+	if output.Error != nil {
+		l.Error().Msgf(red(output.Error.Error()))
+	}
+
+	// Log the fatal error if exists. This exits the program.
+	if output.Fatal != nil {
+		l.Fatal().Msgf(boldRed(output.Fatal.Error()))
+	}
 }

@@ -104,7 +104,7 @@ func formatText(cmd *cobra.Command, output CommandOutput) {
 		cmd.Println(cyan("Additional Information:"))
 		for k, v := range output.Fields {
 			cmd.Println(cyan("%s: %s", k, v))
-			l.Info().Msgf("%s", cyan("%s: %s", k, v))
+			l.Info().Msgf("%s: %s", k, v)
 		}
 	}
 

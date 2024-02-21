@@ -4,21 +4,23 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/pingidentity/pingctl/cmd/auth"
+	"github.com/pingidentity/pingctl/cmd"
 )
 
 // Test Auth Login Command Executes without issue
 func TestAuthLoginCmd_Execute(t *testing.T) {
 	// Create the command
-	loginCmd := auth.NewLoginCommand()
+	rootCmd := cmd.NewRootCommand()
 
 	// Redirect stdout to a buffer to capture the output
 	var stdout bytes.Buffer
-	loginCmd.SetOut(&stdout)
-	loginCmd.SetErr(&stdout)
+	rootCmd.SetOut(&stdout)
+	rootCmd.SetErr(&stdout)
+
+	rootCmd.SetArgs([]string{"auth", "login"})
 
 	// Execute the command
-	err := loginCmd.Execute()
+	err := rootCmd.Execute()
 	if err != nil {
 		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}
@@ -27,15 +29,17 @@ func TestAuthLoginCmd_Execute(t *testing.T) {
 // Test Auth Logout Command Executes without issue
 func TestAuthLogoutCmd_Execute(t *testing.T) {
 	// Create the command
-	logoutCmd := auth.NewLogoutCommand()
+	rootCmd := cmd.NewRootCommand()
 
 	// Redirect stdout to a buffer to capture the output
 	var stdout bytes.Buffer
-	logoutCmd.SetOut(&stdout)
-	logoutCmd.SetErr(&stdout)
+	rootCmd.SetOut(&stdout)
+	rootCmd.SetErr(&stdout)
+
+	rootCmd.SetArgs([]string{"auth", "logout"})
 
 	// Execute the command
-	err := logoutCmd.Execute()
+	err := rootCmd.Execute()
 	if err != nil {
 		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}

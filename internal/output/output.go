@@ -2,6 +2,7 @@ package output
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/fatih/color"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -60,7 +61,7 @@ func Format(cmd *cobra.Command, output CommandOutput) {
 	default:
 		formatText(cmd, CommandOutput{
 			Message: "",
-			Warn:    "Output format is not recognized. Defaulting to \"text\" output",
+			Warn:    fmt.Sprintf("Output format %q is not recognized. Defaulting to \"text\" output", outputFormat),
 			Result:  ENUMCOMMANDOUTPUTRESULT_NIL,
 		})
 		formatText(cmd, output)

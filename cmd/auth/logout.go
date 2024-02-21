@@ -13,7 +13,7 @@ func NewLogoutCommand() *cobra.Command {
 		//TODO more fleshed-out descriptions
 		Short: "Logout with Ping",
 		Long:  "Logout with Ping",
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			// Just use the no-op connector for now by default
 			authConnectors := []connector.Authenticatable{
 				noop.Connector(),
@@ -22,10 +22,11 @@ func NewLogoutCommand() *cobra.Command {
 			if err != nil {
 				output.Format(cmd, output.CommandOutput{
 					Message: "Logout failed.",
-					Fatal:   err,
 					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 				})
+				return err
 			}
+			return nil
 		},
 	}
 

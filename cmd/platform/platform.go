@@ -1,6 +1,7 @@
 package platform
 
 import (
+	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -8,16 +9,17 @@ func NewPlatformCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "platform",
 		//TODO add command short and long description
-		Short: "A brief description of your command",
-		Long: `A longer description that spans multiple lines and likely contains examples
-	and usage of using your command. For example:
-	
-	Cobra is a CLI library for Go that empowers applications.
-	This application is a tool to generate the needed files
-	to quickly create a Cobra application.`,
+		Short: "",
+		Long:  ``,
 	}
 
 	cmd.AddCommand(NewExportCommand())
 
 	return cmd
+}
+
+func init() {
+	l := logger.Get()
+
+	l.Debug().Msgf("Initializing Platform Subcommand...")
 }

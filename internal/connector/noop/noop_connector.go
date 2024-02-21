@@ -1,6 +1,12 @@
 package noop
 
-import "github.com/pingidentity/pingctl/internal/connector"
+import (
+	"github.com/pingidentity/pingctl/internal/connector"
+)
+
+const (
+	ServiceName = "noop"
+)
 
 // Verify that the connector satisfies the expected interfaces
 var (
@@ -16,10 +22,14 @@ func Connector() *NoopConnector {
 	return &NoopConnector{}
 }
 
-func (c *NoopConnector) Export(format, outputDir string) error {
+func (c *NoopConnector) Export(format, outputDir string, overwriteExport bool) error {
 	//no-op
 	println("No op export")
 	return nil
+}
+
+func (c *NoopConnector) ConnectorServiceName() string {
+	return ServiceName
 }
 
 func (c *NoopConnector) Login() error {

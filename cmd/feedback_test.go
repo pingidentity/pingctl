@@ -9,16 +9,18 @@ import (
 
 // Test Feedback Command Executes without issue
 func TestFeedbackCmd_Execute(t *testing.T) {
-	// Create the root command
-	feedbackCmd := cmd.NewFeedbackCommand()
+	// Create the command
+	rootCmd := cmd.NewRootCommand()
 
 	// Redirect stdout to a buffer to capture the output
 	var stdout bytes.Buffer
-	feedbackCmd.SetOut(&stdout)
-	feedbackCmd.SetErr(&stdout)
+	rootCmd.SetOut(&stdout)
+	rootCmd.SetErr(&stdout)
+
+	rootCmd.SetArgs([]string{"feedback"})
 
 	// Execute the root command
-	err := feedbackCmd.Execute()
+	err := rootCmd.Execute()
 	if err != nil {
 		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}

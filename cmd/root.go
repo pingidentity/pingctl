@@ -59,6 +59,7 @@ func NewRootCommand() *cobra.Command {
 	if err := bindPersistentFlags(rootConfigurationParamMapping, cmd); err != nil {
 		output.Format(cmd, output.CommandOutput{
 			Message: "Error binding flag parameters. Flag values may not be recognized.",
+			Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 			Error:   err,
 		})
 	}
@@ -67,6 +68,10 @@ func NewRootCommand() *cobra.Command {
 }
 
 func init() {
+	l := logger.Get()
+
+	l.Debug().Msgf("Initializing Root command...")
+
 	cobra.OnInitialize(initConfig)
 }
 

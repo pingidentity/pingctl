@@ -5,6 +5,7 @@ go 1.21.6
 require (
 	github.com/fatih/color v1.15.0
 	github.com/golangci/golangci-lint v1.55.2
+	github.com/patrickcping/pingone-go-sdk-v2 v0.11.5
 	github.com/pavius/impi v0.0.3
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/cobra v1.8.0
@@ -120,6 +121,13 @@ require (
 	github.com/nishanths/predeclared v0.2.2 // indirect
 	github.com/nunnatsa/ginkgolinter v0.14.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/agreementmanagement v0.3.1 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/authorize v0.4.1 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/credentials v0.6.2 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/management v0.36.0 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/mfa v0.18.3 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/risk v0.12.2 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/verify v0.4.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/polyfloyd/go-errorlint v1.4.5 // indirect
@@ -178,10 +186,13 @@ require (
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20230307190834-24139beb5833 // indirect
 	golang.org/x/mod v0.13.0 // indirect
+	golang.org/x/net v0.20.0 // indirect
+	golang.org/x/oauth2 v0.16.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

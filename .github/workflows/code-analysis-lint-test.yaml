@@ -124,7 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: GoTest
-        env:
+      - env:
           PINGONE_CLIENT_ID: ${{ secrets.PINGONE_CLIENT_ID }}
           PINGONE_CLIENT_SECRET: ${{ secrets.PINGONE_CLIENT_SECRET }}
           PINGONE_REGION: ${{ secrets.PINGONE_REGION }}

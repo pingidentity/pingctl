@@ -2,7 +2,6 @@ package auth
 
 import (
 	"github.com/pingidentity/pingctl/internal/connector"
-	"github.com/pingidentity/pingctl/internal/connector/noop"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/spf13/cobra"
 )
@@ -15,9 +14,7 @@ func NewLoginCommand() *cobra.Command {
 		Long:  "Login with Ping",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// Just use the no-op connector for now by default
-			authConnectors := []connector.Authenticatable{
-				noop.Connector(),
-			}
+			authConnectors := []connector.Authenticatable{}
 			err := authConnectors[0].Login()
 			if err != nil {
 				output.Format(cmd, output.CommandOutput{

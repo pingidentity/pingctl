@@ -15,6 +15,5 @@ func main() {
 			Message: "Failed to execute pingctl",
 			Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 		})
-		return
 	}
 }

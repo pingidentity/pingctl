@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
@@ -13,6 +14,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+type MultiService struct {
+	services *[]string
+}
 
 const (
 	pingoneWorkerEnvironmentIdParamName      = "pingone-worker-environment-id"
@@ -26,11 +31,17 @@ const (
 
 	pingoneRegionParamName      = "pingone-region"
 	pingoneRegionParamConfigKey = "pingone.region"
+
+	serviceEnumPlatform = "pingone-platform"
 )
 
 var (
-	exportFormat    string
-	services        []string
+	exportFormat string
+	multiService MultiService = MultiService{
+		services: &[]string{
+			"pingone-platform",
+		},
+	}
 	outputDir       string
 	overwriteExport bool
 	apiClient       *sdk.Client
@@ -65,7 +76,7 @@ func NewExportCommand() *cobra.Command {
 
 			// Using the --service parameter(s) provided by user, build list of connectors to export
 			exportableConnectors := []connector.Exportable{}
-			for _, service := range services {
+			for _, service := range *multiService.services {
 				switch service {
 				case pingone_platform.ServiceName:
 					exportableConnectors = append(exportableConnectors, pingone_platform.Connector(cmd.Context(), apiClient, viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)))
@@ -74,7 +85,7 @@ func NewExportCommand() *cobra.Command {
 						Message: fmt.Sprintf("Provided service not recognized: %s", service),
 						Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 					})
-					return err
+					return fmt.Errorf("provided service not recognized: %s", service)
 				}
 			}
 
@@ -85,10 +96,10 @@ func NewExportCommand() *cobra.Command {
 				connectorExportFormat = connector.ENUMEXPORTFORMAT_HCL
 			default:
 				output.Format(cmd, output.CommandOutput{
-					Message: fmt.Sprintf("Provided export format not recognized: %s. Defaulting to HCL export format.", exportFormat),
-					Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+					Message: fmt.Sprintf("Provided export format not recognized: %s", exportFormat),
+					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 				})
-				connectorExportFormat = connector.ENUMEXPORTFORMAT_HCL
+				return fmt.Errorf("provided export format not recognized: %s", exportFormat)
 			}
 
 			// Loop through user defined exportable connectors and export them
@@ -110,15 +121,15 @@ func NewExportCommand() *cobra.Command {
 
 	// Add flags that are not tracked in the viper configuration file
 	cmd.Flags().StringVar(&exportFormat, "export-format", "HCL", "Specifies export format\nValid options: 'HCL'")
-	cmd.Flags().StringSliceVar(&services, "service", []string{"pingone-platform"}, "Specifies service(s) to export")
+	cmd.Flags().Var(&multiService, "service", `Specifies service(s) to export. Allowed: "pingone-platform"`)
 	cmd.Flags().StringVar(&outputDir, "output-directory", "", "Specifies output directory for export (Default: Present working directory)")
 	cmd.Flags().BoolVar(&overwriteExport, "overwrite", false, "Overwrite existing generated exports if set.")
 
 	// Add flags that are bound to configuration file keys
-	cmd.Flags().String(pingoneWorkerEnvironmentIdParamName, os.Getenv("PINGONE_ENVIRONMENT_ID"), "The ID of the PingOne environment that contains the worker token client used to authenticate.")
-	cmd.Flags().String(pingoneWorkerClientIdParamName, os.Getenv("PINGONE_CLIENT_ID"), "The ID of the worker app (also the client ID) used to authenticate.")
-	cmd.Flags().String(pingoneWorkerClientSecretParamName, os.Getenv("PINGONE_CLIENT_SECRET"), "The client secret of the worker app used to authenticate.")
-	cmd.Flags().String(pingoneRegionParamName, os.Getenv("PINGONE_REGION"), "The region code of the service (NA, EU, AP, CA).")
+	cmd.Flags().String(pingoneWorkerEnvironmentIdParamName, os.Getenv("PINGONE_ENVIRONMENT_ID"), "The ID of the PingOne environment that contains the worker token client used to authenticate.\nAlso configurable via environment variable PINGONE_ENVIRONMENT_ID")
+	cmd.Flags().String(pingoneWorkerClientIdParamName, os.Getenv("PINGONE_CLIENT_ID"), "The ID of the worker app (also the client ID) used to authenticate.\nAlso configurable via environment variable PINGONE_CLIENT_ID")
+	cmd.Flags().String(pingoneWorkerClientSecretParamName, os.Getenv("PINGONE_CLIENT_SECRET"), "The client secret of the worker app used to authenticate.\nAlso configurable via environment variable PINGONE_CLIENT_SECRET")
+	cmd.Flags().String(pingoneRegionParamName, os.Getenv("PINGONE_REGION"), "The region code of the service (NA, EU, AP, CA).\nAlso configurable via environment variable PINGONE_REGION")
 
 	cmd.MarkFlagsRequiredTogether(pingoneWorkerEnvironmentIdParamName, pingoneWorkerClientIdParamName, pingoneWorkerClientSecretParamName, pingoneRegionParamName)
 
@@ -202,4 +213,24 @@ func bindFlags(paramlist map[string]string, command *cobra.Command) error {
 	}
 
 	return nil
+}
+
+// Implement pflag.Value interface for custom type in cobra service parameter
+
+func (s *MultiService) Set(service string) error {
+	switch service {
+	case serviceEnumPlatform:
+		*s.services = append(*s.services, service)
+	default:
+		return fmt.Errorf("unrecognized service %q", service)
+	}
+	return nil
+}
+
+func (s *MultiService) Type() string {
+	return "string"
+}
+
+func (s *MultiService) String() string {
+	return fmt.Sprintf("[ %s ]", strings.Join(*s.services, ", "))
 }

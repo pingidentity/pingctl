@@ -43,15 +43,9 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 
 	l.Debug().Msgf("Exporting all PingOne Platform Resources...")
 
-	hclImportBlockTemplate, err := template.New("HCLImportBlock").Parse(
-		`import {
-	to = {{.ResourceType}}.{{.ResourceName}}
-	id = "{{.ResourceID}}"
-}
-`,
-	)
+	hclImportBlockTemplate, err := template.New("HCLImportBlock").Parse(connector.HCLImportBlockTemplate)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to parse HCL import block template. err: %s", err.Error())
 	}
 
 	exportableResources := []connector.ExportableResource{
@@ -61,7 +55,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 	for _, exportableResource := range exportableResources {
 		importBlocks, err := exportableResource.ExportAll()
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to export resource %s. err: %s", exportableResource.ResourceType(), err.Error())
 		}
 
 		l.Debug().Msgf("Generating import file for %s resource...", exportableResource.ResourceType())
@@ -79,15 +73,16 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 
 		outputFile, err := os.Create(outputFilePath)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to create export file %q. err: %s", outputFilePath, err.Error())
 		}
+		defer outputFile.Close()
 
 		for _, importBlock := range *importBlocks {
 			switch format {
 			case connector.ENUMEXPORTFORMAT_HCL:
 				err := hclImportBlockTemplate.Execute(outputFile, importBlock)
 				if err != nil {
-					return err
+					return fmt.Errorf("failed to write import block template to file %q. err: %s", outputFilePath, err.Error())
 				}
 				// default:
 				// Note that this default case is already handled in export.go, and should never be called.

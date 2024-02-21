@@ -122,13 +122,12 @@ jobs:
     name: go test
     needs: [build]
     runs-on: ubuntu-latest
+    env:
+      PINGONE_CLIENT_ID: ${{ secrets.PINGONE_CLIENT_ID }}
+      PINGONE_CLIENT_SECRET: ${{ secrets.PINGONE_CLIENT_SECRET }}
+      PINGONE_REGION: ${{ secrets.PINGONE_REGION }}
+      PINGONE_ENVIRONMENT_ID: ${{ secrets.PINGONE_ENVIRONMENT_ID }}
     steps:
-      - name: GoTest
-      - env:
-          PINGONE_CLIENT_ID: ${{ secrets.PINGONE_CLIENT_ID }}
-          PINGONE_CLIENT_SECRET: ${{ secrets.PINGONE_CLIENT_SECRET }}
-          PINGONE_REGION: ${{ secrets.PINGONE_REGION }}
-          PINGONE_ENVIRONMENT_ID: ${{ secrets.PINGONE_ENVIRONMENT_ID }}
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:

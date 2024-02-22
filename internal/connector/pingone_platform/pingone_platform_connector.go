@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	ServiceName = "pingone-platform"
+	serviceName = "pingone-platform"
 )
 
 // Verify that the connector satisfies the expected interfaces
@@ -94,7 +94,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 }
 
 func (c *PingonePlatformConnector) ConnectorServiceName() string {
-	return ServiceName
+	return serviceName
 }
 
 func (c *PingonePlatformConnector) Login() error {

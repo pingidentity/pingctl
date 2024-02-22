@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pingidentity/pingctl/internal/connector"
+	"github.com/spf13/pflag"
 )
 
 const (
@@ -16,6 +17,12 @@ type MultiService struct {
 }
 
 type ExportFormat string
+
+// Verify that the custom type satisfies the pflag.Value interface
+var (
+	_ pflag.Value = (*MultiService)(nil)
+	_ pflag.Value = (*ExportFormat)(nil)
+)
 
 // Implement pflag.Value interface for custom type in cobra service parameter
 

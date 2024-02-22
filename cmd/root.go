@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pingidentity/pingctl/cmd/auth"
 	"github.com/pingidentity/pingctl/cmd/platform"
@@ -59,6 +60,7 @@ func NewRootCommand() *cobra.Command {
 	if err := bindPersistentFlags(rootConfigurationParamMapping, cmd); err != nil {
 		output.Format(cmd, output.CommandOutput{
 			Message: "Error binding flag parameters. Flag values may not be recognized.",
+			Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 			Error:   err,
 		})
 	}
@@ -67,6 +69,10 @@ func NewRootCommand() *cobra.Command {
 }
 
 func init() {
+	l := logger.Get()
+
+	l.Debug().Msgf("Initializing Root command...")
+
 	cobra.OnInitialize(initConfig)
 }
 
@@ -107,6 +113,10 @@ func initConfig() {
 
 	//Only use environment variabes with the "PINGCTL" prefix
 	viper.SetEnvPrefix("PINGCTL")
+
+	//Use viper env string replacer for dashes and dots in var name
+	replacer := strings.NewReplacer("-", "_", ".", "_")
+	viper.SetEnvKeyReplacer(replacer)
 
 	// Read in environment variables that match
 	viper.AutomaticEnv()

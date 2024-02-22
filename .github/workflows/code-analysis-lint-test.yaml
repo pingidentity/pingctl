@@ -122,6 +122,11 @@ jobs:
     name: go test
     needs: [build]
     runs-on: ubuntu-latest
+    env:
+      PINGCTL_PINGONE_WORKER_CLIENT_ID: ${{ secrets.PINGCTL_PINGONE_WORKER_CLIENT_ID }}
+      PINGCTL_PINGONE_WORKER_CLIENT_SECRET: ${{ secrets.PINGCTL_PINGONE_WORKER_CLIENT_SECRET }}
+      PINGCTL_PINGONE_REGION: ${{ secrets.PINGCTL_PINGONE_REGION }}
+      PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID: ${{ secrets.PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

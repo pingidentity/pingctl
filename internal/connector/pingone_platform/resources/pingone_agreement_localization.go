@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
@@ -33,22 +34,45 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 
 	l.Debug().Msgf("Fetching all pingone_agreement_localization resources...")
 
-	entityArray, response, err := r.apiClient.ManagementAPIClient.LanguagesApi.ReadLanguages(r.context, r.environmentID).Execute()
+	agreementEntityArray, response, err := r.apiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.context, r.environmentID).Execute()
 	defer response.Body.Close()
 	if err != nil {
-		l.Error().Err(err).Msgf("ReadLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+		l.Error().Err(err).Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
 		return nil, err
 	}
 
-	l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_localization resources...")
+	importBlocks := []connector.ImportBlock{}
 
-	var importBlocks []connector.ImportBlock
-	for _, language := range entityArray.Embedded.Languages {
-		importBlocks = append(importBlocks, connector.ImportBlock{
-			ResourceType: r.ResourceType(),
-			ResourceName: language.AgreementLanguage.Locale,
-			ResourceID:   *language.AgreementLanguage.Id,
-		})
+	if agreementEntityArray != nil && agreementEntityArray.Embedded != nil && agreementEntityArray.Embedded.Agreements != nil {
+		l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_localization resources...")
+		for _, agreement := range agreementEntityArray.Embedded.Agreements {
+			if agreement.Id != nil && agreement.Name != "" && agreement.Environment != nil && agreement.Environment.Id != nil {
+				agreementLanguageEntityArray, response, err := r.apiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.context, r.environmentID, *agreement.Id).Execute()
+				defer response.Body.Close()
+				if err != nil {
+					l.Error().Err(err).Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+					return nil, err
+				}
+
+				if agreementLanguageEntityArray != nil && agreementLanguageEntityArray.Embedded != nil &&
+					agreementLanguageEntityArray.Embedded.Languages != nil {
+
+					for _, languageWrapper := range agreementLanguageEntityArray.Embedded.Languages {
+						if languageWrapper.AgreementLanguage != nil {
+							agreementLanguage := languageWrapper.AgreementLanguage
+
+							if agreementLanguage.Locale != "" && agreementLanguage.Id != nil {
+								importBlocks = append(importBlocks, connector.ImportBlock{
+									ResourceType: r.ResourceType(),
+									ResourceName: fmt.Sprintf("%s_%s", agreement.Name, agreementLanguage.Locale),
+									ResourceID:   fmt.Sprintf("%s/%s/%s", *agreement.Environment.Id, *agreement.Id, *agreementLanguage.Id),
+								})
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	return &importBlocks, nil

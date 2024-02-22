@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
@@ -40,15 +41,19 @@ func (r *PingoneAgreementResource) ExportAll() (*[]connector.ImportBlock, error)
 		return nil, err
 	}
 
-	l.Debug().Msgf("Generating Import Blocks for all pingone_agreement resources...")
+	importBlocks := []connector.ImportBlock{}
 
-	var importBlocks []connector.ImportBlock
-	for _, agreement := range entityArray.Embedded.Agreements {
-		importBlocks = append(importBlocks, connector.ImportBlock{
-			ResourceType: r.ResourceType(),
-			ResourceName: agreement.Name,
-			ResourceID:   *agreement.Id,
-		})
+	if entityArray != nil && entityArray.Embedded != nil && entityArray.Embedded.Agreements != nil {
+		l.Debug().Msgf("Generating Import Blocks for all pingone_agreement resources...")
+		for _, agreement := range entityArray.Embedded.Agreements {
+			if agreement.Id != nil && agreement.Name != "" && agreement.Environment != nil && agreement.Environment.Id != nil {
+				importBlocks = append(importBlocks, connector.ImportBlock{
+					ResourceType: r.ResourceType(),
+					ResourceName: agreement.Name,
+					ResourceID:   fmt.Sprintf("%s/%s", *agreement.Environment.Id, *agreement.Id),
+				})
+			}
+		}
 	}
 
 	return &importBlocks, nil

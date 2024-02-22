@@ -29,6 +29,9 @@ var (
 func (s *MultiService) Set(service string) error {
 	switch service {
 	case serviceEnumPlatform:
+		if *s.services == nil {
+			s.services = &[]string{}
+		}
 		*s.services = append(*s.services, service)
 	default:
 		return fmt.Errorf("unrecognized service %q", service)

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
@@ -14,10 +13,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-type MultiService struct {
-	services *[]string
-}
 
 const (
 	pingoneWorkerEnvironmentIdParamName      = "pingone-worker-environment-id"
@@ -31,15 +26,13 @@ const (
 
 	pingoneRegionParamName      = "pingone-region"
 	pingoneRegionParamConfigKey = "pingone.region"
-
-	serviceEnumPlatform = "pingone-platform"
 )
 
 var (
-	exportFormat string
+	exportFormat ExportFormat = connector.ENUMEXPORTFORMAT_HCL
 	multiService MultiService = MultiService{
 		services: &[]string{
-			"pingone-platform",
+			serviceEnumPlatform,
 		},
 	}
 	outputDir       string
@@ -78,35 +71,18 @@ func NewExportCommand() *cobra.Command {
 			exportableConnectors := []connector.Exportable{}
 			for _, service := range *multiService.services {
 				switch service {
-				case pingone_platform.ServiceName:
+				case serviceEnumPlatform:
 					exportableConnectors = append(exportableConnectors, pingone_platform.Connector(cmd.Context(), apiClient, viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)))
-				default:
-					output.Format(cmd, output.CommandOutput{
-						Message: fmt.Sprintf("Provided service not recognized: %s", service),
-						Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
-					})
-					return fmt.Errorf("provided service not recognized: %s", service)
+					// default:
+					// This unrecognized service condition is handled by cobra with the custom type MultiService
 				}
-			}
-
-			// Select export format based on user's --export-format parameter
-			var connectorExportFormat string
-			switch exportFormat {
-			case connector.ENUMEXPORTFORMAT_HCL:
-				connectorExportFormat = connector.ENUMEXPORTFORMAT_HCL
-			default:
-				output.Format(cmd, output.CommandOutput{
-					Message: fmt.Sprintf("Provided export format not recognized: %s", exportFormat),
-					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
-				})
-				return fmt.Errorf("provided export format not recognized: %s", exportFormat)
 			}
 
 			// Loop through user defined exportable connectors and export them
 			for _, connector := range exportableConnectors {
 				l.Debug().Msgf("Exporting %s service...", connector.ConnectorServiceName())
 
-				err := connector.Export(connectorExportFormat, outputDir, overwriteExport)
+				err := connector.Export(string(exportFormat), outputDir, overwriteExport)
 				if err != nil {
 					output.Format(cmd, output.CommandOutput{
 						Message: fmt.Sprintf("Export failed for service: %s.", connector.ConnectorServiceName()),
@@ -120,8 +96,8 @@ func NewExportCommand() *cobra.Command {
 	}
 
 	// Add flags that are not tracked in the viper configuration file
-	cmd.Flags().StringVar(&exportFormat, "export-format", "HCL", "Specifies export format\nValid options: 'HCL'")
-	cmd.Flags().Var(&multiService, "service", `Specifies service(s) to export. Allowed: "pingone-platform"`)
+	cmd.Flags().Var(&exportFormat, "export-format", fmt.Sprintf("Specifies export format\nAllowed: %q", connector.ENUMEXPORTFORMAT_HCL))
+	cmd.Flags().Var(&multiService, "service", fmt.Sprintf("Specifies service(s) to export. Allowed: %q", serviceEnumPlatform))
 	cmd.Flags().StringVar(&outputDir, "output-directory", "", "Specifies output directory for export (Default: Present working directory)")
 	cmd.Flags().BoolVar(&overwriteExport, "overwrite", false, "Overwrite existing generated exports if set.")
 
@@ -213,24 +189,4 @@ func bindFlags(paramlist map[string]string, command *cobra.Command) error {
 	}
 
 	return nil
-}
-
-// Implement pflag.Value interface for custom type in cobra service parameter
-
-func (s *MultiService) Set(service string) error {
-	switch service {
-	case serviceEnumPlatform:
-		*s.services = append(*s.services, service)
-	default:
-		return fmt.Errorf("unrecognized service %q", service)
-	}
-	return nil
-}
-
-func (s *MultiService) Type() string {
-	return "string"
-}
-
-func (s *MultiService) String() string {
-	return fmt.Sprintf("[ %s ]", strings.Join(*s.services, ", "))
 }

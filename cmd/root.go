@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pingidentity/pingctl/cmd/auth"
 	"github.com/pingidentity/pingctl/cmd/platform"
@@ -112,6 +113,10 @@ func initConfig() {
 
 	//Only use environment variabes with the "PINGCTL" prefix
 	viper.SetEnvPrefix("PINGCTL")
+
+	//Use viper env string replacer for dashes and dots in var name
+	replacer := strings.NewReplacer("-", "_", ".", "_")
+	viper.SetEnvKeyReplacer(replacer)
 
 	// Read in environment variables that match
 	viper.AutomaticEnv()

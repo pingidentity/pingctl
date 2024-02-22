@@ -67,6 +67,22 @@ func NewExportCommand() *cobra.Command {
 				return err
 			}
 
+			if outputDir == "" {
+				// Default the outputDir variable to the user's present working directory.
+				pwd, err := os.Getwd()
+				if err != nil {
+					output.Format(cmd, output.CommandOutput{
+						Message: "Failed to determine user's present working directory",
+						Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+					})
+					return err
+				}
+
+				l.Debug().Msgf("Defaulting export command output directory to %q...", pwd)
+
+				outputDir = pwd
+			}
+
 			// Using the --service parameter(s) provided by user, build list of connectors to export
 			exportableConnectors := []connector.Exportable{}
 			for _, service := range *multiService.services {
@@ -80,7 +96,10 @@ func NewExportCommand() *cobra.Command {
 
 			// Loop through user defined exportable connectors and export them
 			for _, connector := range exportableConnectors {
-				l.Debug().Msgf("Exporting %s service...", connector.ConnectorServiceName())
+				output.Format(cmd, output.CommandOutput{
+					Message: fmt.Sprintf("Exporting %s service...", connector.ConnectorServiceName()),
+					Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
+				})
 
 				err := connector.Export(string(exportFormat), outputDir, overwriteExport)
 				if err != nil {
@@ -91,6 +110,11 @@ func NewExportCommand() *cobra.Command {
 					return err
 				}
 			}
+
+			output.Format(cmd, output.CommandOutput{
+				Message: fmt.Sprintf("Export to directory %q complete.", outputDir),
+				Result:  output.ENUMCOMMANDOUTPUTRESULT_SUCCESS,
+			})
 			return nil
 		},
 	}
@@ -102,10 +126,10 @@ func NewExportCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&overwriteExport, "overwrite", false, "Overwrite existing generated exports if set.")
 
 	// Add flags that are bound to configuration file keys
-	cmd.Flags().String(pingoneWorkerEnvironmentIdParamName, os.Getenv("PINGONE_ENVIRONMENT_ID"), "The ID of the PingOne environment that contains the worker token client used to authenticate.\nAlso configurable via environment variable PINGONE_ENVIRONMENT_ID")
-	cmd.Flags().String(pingoneWorkerClientIdParamName, os.Getenv("PINGONE_CLIENT_ID"), "The ID of the worker app (also the client ID) used to authenticate.\nAlso configurable via environment variable PINGONE_CLIENT_ID")
-	cmd.Flags().String(pingoneWorkerClientSecretParamName, os.Getenv("PINGONE_CLIENT_SECRET"), "The client secret of the worker app used to authenticate.\nAlso configurable via environment variable PINGONE_CLIENT_SECRET")
-	cmd.Flags().String(pingoneRegionParamName, os.Getenv("PINGONE_REGION"), "The region code of the service (NA, EU, AP, CA).\nAlso configurable via environment variable PINGONE_REGION")
+	cmd.Flags().String(pingoneWorkerEnvironmentIdParamName, "", "The ID of the PingOne environment that contains the worker token client used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+	cmd.Flags().String(pingoneWorkerClientIdParamName, "", "The ID of the worker app (also the client ID) used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_ID")
+	cmd.Flags().String(pingoneWorkerClientSecretParamName, "", "The client secret of the worker app used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_SECRET")
+	cmd.Flags().String(pingoneRegionParamName, "", "The region code of the service (NA, EU, AP, CA).\nAlso configurable via environment variable PINGCTL_PINGONE_REGION")
 
 	cmd.MarkFlagsRequiredTogether(pingoneWorkerEnvironmentIdParamName, pingoneWorkerClientIdParamName, pingoneWorkerClientSecretParamName, pingoneRegionParamName)
 
@@ -125,16 +149,6 @@ func init() {
 	l := logger.Get()
 
 	l.Debug().Msgf("Initializing Export Subcommand...")
-
-	if outputDir == "" {
-		// Default the outputDir variable to the user's present working directory.
-		pwd, err := os.Getwd()
-		if err != nil {
-			l.Fatal().Err(err).Msgf("Failed to determine user's present working directory")
-		}
-
-		outputDir = pwd
-	}
 }
 
 func initApiClient(ctx context.Context, cmd *cobra.Command) (*sdk.Client, error) {
@@ -145,6 +159,13 @@ func initApiClient(ctx context.Context, cmd *cobra.Command) (*sdk.Client, error)
 	}
 
 	l.Debug().Msgf("Initialising API client..")
+
+	if !viper.IsSet(pingoneWorkerClientIdParamConfigKey) || !viper.IsSet(pingoneWorkerClientSecretParamConfigKey) ||
+		!viper.IsSet(pingoneWorkerEnvironmentIdParamConfigKey) || !viper.IsSet(pingoneRegionParamConfigKey) {
+		return nil, fmt.Errorf(`unable to initialize PingOne API client.
+		One of environment ID, client ID, client secret, and region is not set.
+		Configure these properties via parameter flags, environment variables, or configuration file`)
+	}
 
 	clientID := viper.GetString(pingoneWorkerClientIdParamConfigKey)
 	clientSecret := viper.GetString(pingoneWorkerClientSecretParamConfigKey)

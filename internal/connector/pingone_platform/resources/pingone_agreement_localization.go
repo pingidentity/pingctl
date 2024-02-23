@@ -9,7 +9,7 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneAgreementEnableResource{}
+	_ connector.ExportableResource = &PingoneAgreementLocalizationResource{}
 )
 
 type PingoneAgreementLocalizationResource struct {

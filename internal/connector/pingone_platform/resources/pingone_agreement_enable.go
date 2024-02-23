@@ -1,10 +1,8 @@
 package resources
 
 import (
-	"context"
 	"fmt"
 
-	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
@@ -15,17 +13,13 @@ var (
 )
 
 type PingoneAgreementEnableResource struct {
-	context       context.Context
-	apiClient     *sdk.Client
-	environmentID string
+	clientInfo *connector.SDKClientInfo
 }
 
 // Utility method for creating a PingoneAgreementResource
-func AgreementEnableResource(ctx context.Context, apiClient *sdk.Client, environmentID string) *PingoneAgreementEnableResource {
+func AgreementEnableResource(clientInfo *connector.SDKClientInfo) *PingoneAgreementEnableResource {
 	return &PingoneAgreementEnableResource{
-		context:       ctx,
-		apiClient:     apiClient,
-		environmentID: environmentID,
+		clientInfo: clientInfo,
 	}
 }
 
@@ -34,7 +28,7 @@ func (r *PingoneAgreementEnableResource) ExportAll() (*[]connector.ImportBlock, 
 
 	l.Debug().Msgf("Fetching all pingone_agreement_enable resources...")
 
-	entityArray, response, err := r.apiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.context, r.environmentID).Execute()
+	entityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.EnvironmentID).Execute()
 	defer response.Body.Close()
 	if err != nil {
 		l.Error().Err(err).Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)

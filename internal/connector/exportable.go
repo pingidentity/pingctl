@@ -1,6 +1,8 @@
 package connector
 
-import _ "embed"
+import (
+	_ "embed"
+)
 
 const (
 	ENUMEXPORTFORMAT_HCL = "HCL"

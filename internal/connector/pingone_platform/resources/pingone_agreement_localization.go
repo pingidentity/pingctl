@@ -1,10 +1,8 @@
 package resources
 
 import (
-	"context"
 	"fmt"
 
-	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
@@ -15,17 +13,13 @@ var (
 )
 
 type PingoneAgreementLocalizationResource struct {
-	context       context.Context
-	apiClient     *sdk.Client
-	environmentID string
+	clientInfo *connector.SDKClientInfo
 }
 
 // Utility method for creating a PingoneAgreementResource
-func AgreementLocalizationResource(ctx context.Context, apiClient *sdk.Client, environmentID string) *PingoneAgreementLocalizationResource {
+func AgreementLocalizationResource(clientInfo *connector.SDKClientInfo) *PingoneAgreementLocalizationResource {
 	return &PingoneAgreementLocalizationResource{
-		context:       ctx,
-		apiClient:     apiClient,
-		environmentID: environmentID,
+		clientInfo: clientInfo,
 	}
 }
 
@@ -34,7 +28,7 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 
 	l.Debug().Msgf("Fetching all pingone_agreement_localization resources...")
 
-	agreementEntityArray, response, err := r.apiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.context, r.environmentID).Execute()
+	agreementEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.EnvironmentID).Execute()
 	defer response.Body.Close()
 	if err != nil {
 		l.Error().Err(err).Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
@@ -71,7 +65,7 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 			}
 
 			if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
-				agreementLanguageEntityArray, response, err := r.apiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.context, r.environmentID, *agreement.Id).Execute()
+				agreementLanguageEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.clientInfo.Context, r.clientInfo.EnvironmentID, *agreement.Id).Execute()
 				defer response.Body.Close()
 				if err != nil {
 					l.Error().Err(err).Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)

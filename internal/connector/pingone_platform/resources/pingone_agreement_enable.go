@@ -1,10 +1,8 @@
 package resources
 
 import (
-	"context"
 	"fmt"
 
-	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
@@ -15,17 +13,13 @@ var (
 )
 
 type PingoneAgreementEnableResource struct {
-	context       context.Context
-	apiClient     *sdk.Client
-	environmentID string
+	clientInfo *connector.SDKClientInfo
 }
 
 // Utility method for creating a PingoneAgreementResource
-func AgreementEnableResource(ctx context.Context, apiClient *sdk.Client, environmentID string) *PingoneAgreementEnableResource {
+func AgreementEnableResource(clientInfo *connector.SDKClientInfo) *PingoneAgreementEnableResource {
 	return &PingoneAgreementEnableResource{
-		context:       ctx,
-		apiClient:     apiClient,
-		environmentID: environmentID,
+		clientInfo: clientInfo,
 	}
 }
 
@@ -34,22 +28,50 @@ func (r *PingoneAgreementEnableResource) ExportAll() (*[]connector.ImportBlock, 
 
 	l.Debug().Msgf("Fetching all pingone_agreement_enable resources...")
 
-	entityArray, response, err := r.apiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.context, r.environmentID).Execute()
+	entityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.EnvironmentID).Execute()
 	defer response.Body.Close()
 	if err != nil {
 		l.Error().Err(err).Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
 		return nil, err
 	}
 
-	l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_enable resources...")
+	if entityArray == nil {
+		l.Error().Msgf("Returned ReadAllAgreements() entityArray is nil.")
+		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+		return nil, fmt.Errorf("failed to fetch pingone_agreement_enable resources via ReadAllAgreements()")
+	}
 
-	var importBlocks []connector.ImportBlock
-	for _, agreement := range entityArray.Embedded.Agreements {
-		importBlocks = append(importBlocks, connector.ImportBlock{
-			ResourceType: r.ResourceType(),
-			ResourceName: fmt.Sprintf("%s_enable", agreement.Name),
-			ResourceID:   *agreement.Id,
-		})
+	embedded, embeddedOk := entityArray.GetEmbeddedOk()
+	if !embeddedOk {
+		l.Error().Msgf("Returned ReadAllAgreements() embedded data is nil.")
+		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+		return nil, fmt.Errorf("failed to fetch pingone_agreement_enable resources via ReadAllAgreements()")
+	}
+
+	importBlocks := []connector.ImportBlock{}
+
+	agreements, agreementsOk := embedded.GetAgreementsOk()
+
+	if agreementsOk {
+		l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_enable resources...")
+		for _, agreement := range agreements {
+			agreementId, agreementIdOk := agreement.GetIdOk()
+			agreementName, agreementNameOk := agreement.GetNameOk()
+			agreementEnvironment, agreementEnvironmentOk := agreement.GetEnvironmentOk()
+			var agreementEnvironmentId *string
+			var agreementEnvironmentIdOk = false
+			if agreementEnvironmentOk {
+				agreementEnvironmentId, agreementEnvironmentIdOk = agreementEnvironment.GetIdOk()
+			}
+
+			if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
+				importBlocks = append(importBlocks, connector.ImportBlock{
+					ResourceType: r.ResourceType(),
+					ResourceName: fmt.Sprintf("%s_enable", *agreementName),
+					ResourceID:   fmt.Sprintf("%s/%s", *agreementEnvironmentId, *agreementId),
+				})
+			}
+		}
 	}
 
 	return &importBlocks, nil

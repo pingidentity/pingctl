@@ -24,17 +24,17 @@ var (
 )
 
 type PingonePlatformConnector struct {
-	context       context.Context
-	apiClient     *sdk.Client
-	environmentID string
+	clientInfo connector.SDKClientInfo
 }
 
 // Utility method for creating a PingonePlatformConnector
 func Connector(ctx context.Context, apiClient *sdk.Client, environmentID string) *PingonePlatformConnector {
 	return &PingonePlatformConnector{
-		context:       ctx,
-		apiClient:     apiClient,
-		environmentID: environmentID,
+		clientInfo: connector.SDKClientInfo{
+			Context:       ctx,
+			ApiClient:     apiClient,
+			EnvironmentID: environmentID,
+		},
 	}
 }
 
@@ -49,8 +49,9 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 	}
 
 	exportableResources := []connector.ExportableResource{
-		resources.AgreementResource(c.context, c.apiClient, c.environmentID),
-		resources.AgreementEnableResource(c.context, c.apiClient, c.environmentID),
+		resources.AgreementResource(&c.clientInfo),
+		resources.AgreementEnableResource(&c.clientInfo),
+		resources.AgreementLocalizationResource(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {

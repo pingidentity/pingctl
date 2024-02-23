@@ -41,12 +41,36 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 		return nil, err
 	}
 
+	if agreementEntityArray == nil {
+		l.Error().Msgf("Returned ReadAllAgreements() entityArray is nil.")
+		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+		return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreements()")
+	}
+
+	agreementEmbedded, agreementEmbeddedOk := agreementEntityArray.GetEmbeddedOk()
+	if !agreementEmbeddedOk {
+		l.Error().Msgf("Returned ReadAllAgreements() embedded data is nil.")
+		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+		return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreements()")
+	}
+
 	importBlocks := []connector.ImportBlock{}
 
-	if agreementEntityArray != nil && agreementEntityArray.Embedded != nil && agreementEntityArray.Embedded.Agreements != nil {
+	agreements, agreementsOk := agreementEmbedded.GetAgreementsOk()
+
+	if agreementsOk {
 		l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_localization resources...")
-		for _, agreement := range agreementEntityArray.Embedded.Agreements {
-			if agreement.Id != nil && agreement.Name != "" && agreement.Environment != nil && agreement.Environment.Id != nil {
+		for _, agreement := range agreements {
+			agreementId, agreementIdOk := agreement.GetIdOk()
+			agreementName, agreementNameOk := agreement.GetNameOk()
+			agreementEnvironment, agreementEnvironmentOk := agreement.GetEnvironmentOk()
+			var agreementEnvironmentId *string
+			var agreementEnvironmentIdOk = false
+			if agreementEnvironmentOk {
+				agreementEnvironmentId, agreementEnvironmentIdOk = agreementEnvironment.GetIdOk()
+			}
+
+			if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
 				agreementLanguageEntityArray, response, err := r.apiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.context, r.environmentID, *agreement.Id).Execute()
 				defer response.Body.Close()
 				if err != nil {
@@ -54,18 +78,34 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 					return nil, err
 				}
 
-				if agreementLanguageEntityArray != nil && agreementLanguageEntityArray.Embedded != nil &&
-					agreementLanguageEntityArray.Embedded.Languages != nil {
+				if agreementLanguageEntityArray == nil {
+					l.Error().Msgf("Returned ReadAllAgreementLanguages() entityArray is nil.")
+					l.Error().Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+					return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreementLanguages()")
+				}
 
-					for _, languageWrapper := range agreementLanguageEntityArray.Embedded.Languages {
+				agreementLanguageEmbedded, agreementLanguageEmbeddedOk := agreementLanguageEntityArray.GetEmbeddedOk()
+				if !agreementLanguageEmbeddedOk {
+					l.Error().Msgf("Returned ReadAllAgreementLanguages() embedded data is nil.")
+					l.Error().Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+					return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreementLanguages()")
+				}
+
+				languages, languagesOk := agreementLanguageEmbedded.GetLanguagesOk()
+
+				if languagesOk {
+					for _, languageWrapper := range languages {
 						if languageWrapper.AgreementLanguage != nil {
 							agreementLanguage := languageWrapper.AgreementLanguage
 
-							if agreementLanguage.Locale != "" && agreementLanguage.Id != nil {
+							agreementLanguageLocale, agreementLanguageLocaleOk := agreementLanguage.GetLocaleOk()
+							agreementLanguageId, agreementLanguageIdOk := agreementLanguage.GetIdOk()
+
+							if agreementLanguageLocaleOk && agreementLanguageIdOk {
 								importBlocks = append(importBlocks, connector.ImportBlock{
 									ResourceType: r.ResourceType(),
-									ResourceName: fmt.Sprintf("%s_%s", agreement.Name, agreementLanguage.Locale),
-									ResourceID:   fmt.Sprintf("%s/%s/%s", *agreement.Environment.Id, *agreement.Id, *agreementLanguage.Id),
+									ResourceName: fmt.Sprintf("%s_%s", *agreementName, *agreementLanguageLocale),
+									ResourceID:   fmt.Sprintf("%s/%s/%s", *agreementEnvironmentId, *agreementId, *agreementLanguageId),
 								})
 							}
 						}

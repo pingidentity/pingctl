@@ -41,16 +41,40 @@ func (r *PingoneAgreementEnableResource) ExportAll() (*[]connector.ImportBlock, 
 		return nil, err
 	}
 
+	if entityArray == nil {
+		l.Error().Msgf("Returned ReadAllAgreements() entityArray is nil.")
+		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+		return nil, fmt.Errorf("failed to fetch pingone_agreement_enable resources via ReadAllAgreements()")
+	}
+
+	embedded, embeddedOk := entityArray.GetEmbeddedOk()
+	if !embeddedOk {
+		l.Error().Msgf("Returned ReadAllAgreements() embedded data is nil.")
+		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+		return nil, fmt.Errorf("failed to fetch pingone_agreement_enable resources via ReadAllAgreements()")
+	}
+
 	importBlocks := []connector.ImportBlock{}
 
-	if entityArray != nil && entityArray.Embedded != nil && entityArray.Embedded.Agreements != nil {
+	agreements, agreementsOk := embedded.GetAgreementsOk()
+
+	if agreementsOk {
 		l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_enable resources...")
-		for _, agreement := range entityArray.Embedded.Agreements {
-			if agreement.Id != nil && agreement.Name != "" && agreement.Environment != nil && agreement.Environment.Id != nil {
+		for _, agreement := range agreements {
+			agreementId, agreementIdOk := agreement.GetIdOk()
+			agreementName, agreementNameOk := agreement.GetNameOk()
+			agreementEnvironment, agreementEnvironmentOk := agreement.GetEnvironmentOk()
+			var agreementEnvironmentId *string
+			var agreementEnvironmentIdOk = false
+			if agreementEnvironmentOk {
+				agreementEnvironmentId, agreementEnvironmentIdOk = agreementEnvironment.GetIdOk()
+			}
+
+			if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
 				importBlocks = append(importBlocks, connector.ImportBlock{
 					ResourceType: r.ResourceType(),
-					ResourceName: fmt.Sprintf("%s_enable", agreement.Name),
-					ResourceID:   fmt.Sprintf("%s/%s", *agreement.Environment.Id, *agreement.Id),
+					ResourceName: fmt.Sprintf("%s_enable", *agreementName),
+					ResourceID:   fmt.Sprintf("%s/%s", *agreementEnvironmentId, *agreementId),
 				})
 			}
 		}

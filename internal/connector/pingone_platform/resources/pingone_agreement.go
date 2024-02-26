@@ -28,7 +28,7 @@ func (r *PingoneAgreementResource) ExportAll() (*[]connector.ImportBlock, error)
 
 	l.Debug().Msgf("Fetching all pingone_agreement resources...")
 
-	entityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.EnvironmentID).Execute()
+	entityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
 	defer response.Body.Close()
 	if err != nil {
 		l.Error().Err(err).Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
@@ -54,18 +54,12 @@ func (r *PingoneAgreementResource) ExportAll() (*[]connector.ImportBlock, error)
 	for _, agreement := range embedded.GetAgreements() {
 		agreementId, agreementIdOk := agreement.GetIdOk()
 		agreementName, agreementNameOk := agreement.GetNameOk()
-		agreementEnvironment, agreementEnvironmentOk := agreement.GetEnvironmentOk()
-		var agreementEnvironmentId *string
-		var agreementEnvironmentIdOk = false
-		if agreementEnvironmentOk {
-			agreementEnvironmentId, agreementEnvironmentIdOk = agreementEnvironment.GetIdOk()
-		}
 
-		if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
+		if agreementIdOk && agreementNameOk {
 			importBlocks = append(importBlocks, connector.ImportBlock{
 				ResourceType: r.ResourceType(),
 				ResourceName: *agreementName,
-				ResourceID:   fmt.Sprintf("%s/%s", *agreementEnvironmentId, *agreementId),
+				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *agreementId),
 			})
 		}
 	}

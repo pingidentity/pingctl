@@ -28,7 +28,7 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 
 	l.Debug().Msgf("Fetching all pingone_agreement_localization resources...")
 
-	agreementEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.EnvironmentID).Execute()
+	agreementEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
 	defer response.Body.Close()
 	if err != nil {
 		l.Error().Err(err).Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
@@ -54,15 +54,9 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 	for _, agreement := range agreementEmbedded.GetAgreements() {
 		agreementId, agreementIdOk := agreement.GetIdOk()
 		agreementName, agreementNameOk := agreement.GetNameOk()
-		agreementEnvironment, agreementEnvironmentOk := agreement.GetEnvironmentOk()
-		var agreementEnvironmentId *string
-		var agreementEnvironmentIdOk = false
-		if agreementEnvironmentOk {
-			agreementEnvironmentId, agreementEnvironmentIdOk = agreementEnvironment.GetIdOk()
-		}
 
-		if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
-			agreementLanguageEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.clientInfo.Context, r.clientInfo.EnvironmentID, *agreement.Id).Execute()
+		if agreementIdOk && agreementNameOk {
+			agreementLanguageEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *agreement.Id).Execute()
 			defer response.Body.Close()
 			if err != nil {
 				l.Error().Err(err).Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
@@ -93,7 +87,7 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 						importBlocks = append(importBlocks, connector.ImportBlock{
 							ResourceType: r.ResourceType(),
 							ResourceName: fmt.Sprintf("%s_%s", *agreementName, *agreementLanguageLocale),
-							ResourceID:   fmt.Sprintf("%s/%s/%s", *agreementEnvironmentId, *agreementId, *agreementLanguageId),
+							ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *agreementId, *agreementLanguageId),
 						})
 					}
 				}

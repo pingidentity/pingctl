@@ -13,9 +13,9 @@ type ImportBlock struct {
 }
 
 type SDKClientInfo struct {
-	Context       context.Context
-	ApiClient     *sdk.Client
-	EnvironmentID string
+	Context             context.Context
+	ApiClient           *sdk.Client
+	ExportEnvironmentID string
 }
 
 // A connector that allows exporting configuration

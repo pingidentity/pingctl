@@ -15,6 +15,9 @@ import (
 )
 
 const (
+	pingoneExportEnvironmentIdParamName      = "pingone-export-environment-id"
+	pingoneExportEnvironmentIdParamConfigKey = "pingone.export-environment-id"
+
 	pingoneWorkerEnvironmentIdParamName      = "pingone-worker-environment-id"
 	pingoneWorkerEnvironmentIdParamConfigKey = "pingone.worker-environment-id"
 
@@ -35,6 +38,7 @@ var (
 			serviceEnumPlatform,
 		},
 	}
+	pingoneRegion   PingOneRegion
 	outputDir       string
 	overwriteExport bool
 	apiClient       *sdk.Client
@@ -83,12 +87,20 @@ func NewExportCommand() *cobra.Command {
 				outputDir = pwd
 			}
 
+			// Find the env ID to export. Default to worker env id if not provided by user.
+			var exportEnvID string
+			if viper.IsSet(pingoneExportEnvironmentIdParamConfigKey) {
+				exportEnvID = viper.GetString(pingoneExportEnvironmentIdParamConfigKey)
+			} else {
+				exportEnvID = viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)
+			}
+
 			// Using the --service parameter(s) provided by user, build list of connectors to export
 			exportableConnectors := []connector.Exportable{}
 			for _, service := range *multiService.services {
 				switch service {
 				case serviceEnumPlatform:
-					exportableConnectors = append(exportableConnectors, pingone_platform.Connector(cmd.Context(), apiClient, viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)))
+					exportableConnectors = append(exportableConnectors, pingone_platform.Connector(cmd.Context(), apiClient, exportEnvID))
 					// default:
 					// This unrecognized service condition is handled by cobra with the custom type MultiService
 				}
@@ -127,9 +139,10 @@ func NewExportCommand() *cobra.Command {
 
 	// Add flags that are bound to configuration file keys
 	cmd.Flags().String(pingoneWorkerEnvironmentIdParamName, "", "The ID of the PingOne environment that contains the worker token client used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+	cmd.Flags().String(pingoneExportEnvironmentIdParamName, "", "The ID of the PingOne environment to export. (Default: The PingOne worker environment ID)")
 	cmd.Flags().String(pingoneWorkerClientIdParamName, "", "The ID of the worker app (also the client ID) used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_ID")
 	cmd.Flags().String(pingoneWorkerClientSecretParamName, "", "The client secret of the worker app used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_SECRET")
-	cmd.Flags().String(pingoneRegionParamName, "", "The region code of the service (NA, EU, AP, CA).\nAlso configurable via environment variable PINGCTL_PINGONE_REGION")
+	cmd.Flags().Var(&pingoneRegion, pingoneRegionParamName, fmt.Sprintf("The region of the service. Allowed: %q, %q, %q, %q\nAlso configurable via environment variable PINGCTL_PINGONE_REGION", connector.ENUMREGION_AP, connector.ENUMREGION_CA, connector.ENUMREGION_EU, connector.ENUMREGION_NA))
 
 	cmd.MarkFlagsRequiredTogether(pingoneWorkerEnvironmentIdParamName, pingoneWorkerClientIdParamName, pingoneWorkerClientSecretParamName, pingoneRegionParamName)
 
@@ -170,19 +183,13 @@ func initApiClient(ctx context.Context, cmd *cobra.Command) (*sdk.Client, error)
 	clientID := viper.GetString(pingoneWorkerClientIdParamConfigKey)
 	clientSecret := viper.GetString(pingoneWorkerClientSecretParamConfigKey)
 	environmentID := viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)
+	region := viper.GetString(pingoneRegionParamConfigKey)
 
-	var region string
-	switch viper.GetString(pingoneRegionParamConfigKey) {
-	case "NA":
-		region = "NorthAmerica"
-	case "EU":
-		region = "Europe"
-	case "AP":
-		region = "AsiaPacific"
-	case "CA":
-		region = "Canada"
+	switch region {
+	case connector.ENUMREGION_AP, connector.ENUMREGION_CA, connector.ENUMREGION_EU, connector.ENUMREGION_NA:
+		l.Debug().Msgf("PingOne region %q validated.", region)
 	default:
-		return nil, fmt.Errorf("provided pingone region code not recognized: %s", viper.GetString(pingoneRegionParamConfigKey))
+		return nil, fmt.Errorf("unrecognized PingOne Region: %q. Must be one of: %q, %q, %q, %q", region, connector.ENUMREGION_AP, connector.ENUMREGION_CA, connector.ENUMREGION_EU, connector.ENUMREGION_NA)
 	}
 
 	apiConfig := &sdk.Config{

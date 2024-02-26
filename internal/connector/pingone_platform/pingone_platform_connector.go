@@ -28,18 +28,33 @@ type PingonePlatformConnector struct {
 }
 
 // Utility method for creating a PingonePlatformConnector
-func Connector(ctx context.Context, apiClient *sdk.Client, environmentID string) *PingonePlatformConnector {
+func Connector(ctx context.Context, apiClient *sdk.Client, exportEnvironmentID string) *PingonePlatformConnector {
 	return &PingonePlatformConnector{
 		clientInfo: connector.SDKClientInfo{
-			Context:       ctx,
-			ApiClient:     apiClient,
-			EnvironmentID: environmentID,
+			Context:             ctx,
+			ApiClient:           apiClient,
+			ExportEnvironmentID: exportEnvironmentID,
 		},
 	}
 }
 
 func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExport bool) error {
 	l := logger.Get()
+
+	l.Debug().Msgf("Validating export environment ID...")
+
+	environment, response, err := c.clientInfo.ApiClient.ManagementAPIClient.EnvironmentsApi.ReadOneEnvironment(c.clientInfo.Context, c.clientInfo.ExportEnvironmentID).Execute()
+	defer response.Body.Close()
+	if err != nil {
+		l.Error().Err(err).Msgf("ReadOneEnvironment Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+		return err
+	}
+
+	if environment == nil {
+		l.Error().Msgf("Returned ReadOneEnvironment() environment is nil.")
+		l.Error().Msgf("ReadOneEnvironment Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+		return fmt.Errorf("failed to fetch environment %q via ReadOneEnvironment()", c.clientInfo.ExportEnvironmentID)
+	}
 
 	l.Debug().Msgf("Exporting all PingOne Platform Resources...")
 

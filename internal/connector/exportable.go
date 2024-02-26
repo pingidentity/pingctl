@@ -6,6 +6,11 @@ import (
 
 const (
 	ENUMEXPORTFORMAT_HCL = "HCL"
+
+	ENUMREGION_AP = "AsiaPacific"
+	ENUMREGION_CA = "Canada"
+	ENUMREGION_EU = "Europe"
+	ENUMREGION_NA = "NorthAmerica"
 )
 
 // Embed import block template needed for export generation

@@ -53,7 +53,11 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 	if environment == nil {
 		l.Error().Msgf("Returned ReadOneEnvironment() environment is nil.")
 		l.Error().Msgf("ReadOneEnvironment Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return fmt.Errorf("failed to fetch environment %q via ReadOneEnvironment()", c.clientInfo.ExportEnvironmentID)
+		if response.StatusCode == 404 {
+			return fmt.Errorf("failed to fetch environment. the provided environment id %q does not exist", c.clientInfo.ExportEnvironmentID)
+		} else {
+			return fmt.Errorf("failed to fetch environment %q via ReadOneEnvironment()", c.clientInfo.ExportEnvironmentID)
+		}
 	}
 
 	l.Debug().Msgf("Exporting all PingOne Platform Resources...")

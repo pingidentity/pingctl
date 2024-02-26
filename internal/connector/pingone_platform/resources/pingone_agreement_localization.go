@@ -50,59 +50,51 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 
 	importBlocks := []connector.ImportBlock{}
 
-	agreements, agreementsOk := agreementEmbedded.GetAgreementsOk()
+	l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_localization resources...")
+	for _, agreement := range agreementEmbedded.GetAgreements() {
+		agreementId, agreementIdOk := agreement.GetIdOk()
+		agreementName, agreementNameOk := agreement.GetNameOk()
+		agreementEnvironment, agreementEnvironmentOk := agreement.GetEnvironmentOk()
+		var agreementEnvironmentId *string
+		var agreementEnvironmentIdOk = false
+		if agreementEnvironmentOk {
+			agreementEnvironmentId, agreementEnvironmentIdOk = agreementEnvironment.GetIdOk()
+		}
 
-	if agreementsOk {
-		l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_localization resources...")
-		for _, agreement := range agreements {
-			agreementId, agreementIdOk := agreement.GetIdOk()
-			agreementName, agreementNameOk := agreement.GetNameOk()
-			agreementEnvironment, agreementEnvironmentOk := agreement.GetEnvironmentOk()
-			var agreementEnvironmentId *string
-			var agreementEnvironmentIdOk = false
-			if agreementEnvironmentOk {
-				agreementEnvironmentId, agreementEnvironmentIdOk = agreementEnvironment.GetIdOk()
+		if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
+			agreementLanguageEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.clientInfo.Context, r.clientInfo.EnvironmentID, *agreement.Id).Execute()
+			defer response.Body.Close()
+			if err != nil {
+				l.Error().Err(err).Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+				return nil, err
 			}
 
-			if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
-				agreementLanguageEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.clientInfo.Context, r.clientInfo.EnvironmentID, *agreement.Id).Execute()
-				defer response.Body.Close()
-				if err != nil {
-					l.Error().Err(err).Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-					return nil, err
-				}
+			if agreementLanguageEntityArray == nil {
+				l.Error().Msgf("Returned ReadAllAgreementLanguages() entityArray is nil.")
+				l.Error().Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+				return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreementLanguages()")
+			}
 
-				if agreementLanguageEntityArray == nil {
-					l.Error().Msgf("Returned ReadAllAgreementLanguages() entityArray is nil.")
-					l.Error().Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-					return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreementLanguages()")
-				}
+			agreementLanguageEmbedded, agreementLanguageEmbeddedOk := agreementLanguageEntityArray.GetEmbeddedOk()
+			if !agreementLanguageEmbeddedOk {
+				l.Error().Msgf("Returned ReadAllAgreementLanguages() embedded data is nil.")
+				l.Error().Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+				return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreementLanguages()")
+			}
 
-				agreementLanguageEmbedded, agreementLanguageEmbeddedOk := agreementLanguageEntityArray.GetEmbeddedOk()
-				if !agreementLanguageEmbeddedOk {
-					l.Error().Msgf("Returned ReadAllAgreementLanguages() embedded data is nil.")
-					l.Error().Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-					return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreementLanguages()")
-				}
+			for _, languageWrapper := range agreementLanguageEmbedded.GetLanguages() {
+				if languageWrapper.AgreementLanguage != nil {
+					agreementLanguage := languageWrapper.AgreementLanguage
 
-				languages, languagesOk := agreementLanguageEmbedded.GetLanguagesOk()
+					agreementLanguageLocale, agreementLanguageLocaleOk := agreementLanguage.GetLocaleOk()
+					agreementLanguageId, agreementLanguageIdOk := agreementLanguage.GetIdOk()
 
-				if languagesOk {
-					for _, languageWrapper := range languages {
-						if languageWrapper.AgreementLanguage != nil {
-							agreementLanguage := languageWrapper.AgreementLanguage
-
-							agreementLanguageLocale, agreementLanguageLocaleOk := agreementLanguage.GetLocaleOk()
-							agreementLanguageId, agreementLanguageIdOk := agreementLanguage.GetIdOk()
-
-							if agreementLanguageLocaleOk && agreementLanguageIdOk {
-								importBlocks = append(importBlocks, connector.ImportBlock{
-									ResourceType: r.ResourceType(),
-									ResourceName: fmt.Sprintf("%s_%s", *agreementName, *agreementLanguageLocale),
-									ResourceID:   fmt.Sprintf("%s/%s/%s", *agreementEnvironmentId, *agreementId, *agreementLanguageId),
-								})
-							}
-						}
+					if agreementLanguageLocaleOk && agreementLanguageIdOk {
+						importBlocks = append(importBlocks, connector.ImportBlock{
+							ResourceType: r.ResourceType(),
+							ResourceName: fmt.Sprintf("%s_%s", *agreementName, *agreementLanguageLocale),
+							ResourceID:   fmt.Sprintf("%s/%s/%s", *agreementEnvironmentId, *agreementId, *agreementLanguageId),
+						})
 					}
 				}
 			}

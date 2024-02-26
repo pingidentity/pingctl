@@ -16,7 +16,7 @@ type PingoneAgreementLocalizationResource struct {
 	clientInfo *connector.SDKClientInfo
 }
 
-// Utility method for creating a PingoneAgreementResource
+// Utility method for creating a PingoneAgreementLocalizationResource
 func AgreementLocalizationResource(clientInfo *connector.SDKClientInfo) *PingoneAgreementLocalizationResource {
 	return &PingoneAgreementLocalizationResource{
 		clientInfo: clientInfo,

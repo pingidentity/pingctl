@@ -50,27 +50,23 @@ func (r *PingoneAgreementResource) ExportAll() (*[]connector.ImportBlock, error)
 
 	importBlocks := []connector.ImportBlock{}
 
-	agreements, agreementsOk := embedded.GetAgreementsOk()
+	l.Debug().Msgf("Generating Import Blocks for all pingone_agreement resources...")
+	for _, agreement := range embedded.GetAgreements() {
+		agreementId, agreementIdOk := agreement.GetIdOk()
+		agreementName, agreementNameOk := agreement.GetNameOk()
+		agreementEnvironment, agreementEnvironmentOk := agreement.GetEnvironmentOk()
+		var agreementEnvironmentId *string
+		var agreementEnvironmentIdOk = false
+		if agreementEnvironmentOk {
+			agreementEnvironmentId, agreementEnvironmentIdOk = agreementEnvironment.GetIdOk()
+		}
 
-	if agreementsOk {
-		l.Debug().Msgf("Generating Import Blocks for all pingone_agreement resources...")
-		for _, agreement := range agreements {
-			agreementId, agreementIdOk := agreement.GetIdOk()
-			agreementName, agreementNameOk := agreement.GetNameOk()
-			agreementEnvironment, agreementEnvironmentOk := agreement.GetEnvironmentOk()
-			var agreementEnvironmentId *string
-			var agreementEnvironmentIdOk = false
-			if agreementEnvironmentOk {
-				agreementEnvironmentId, agreementEnvironmentIdOk = agreementEnvironment.GetIdOk()
-			}
-
-			if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
-				importBlocks = append(importBlocks, connector.ImportBlock{
-					ResourceType: r.ResourceType(),
-					ResourceName: *agreementName,
-					ResourceID:   fmt.Sprintf("%s/%s", *agreementEnvironmentId, *agreementId),
-				})
-			}
+		if agreementIdOk && agreementNameOk && agreementEnvironmentOk && agreementEnvironmentIdOk {
+			importBlocks = append(importBlocks, connector.ImportBlock{
+				ResourceType: r.ResourceType(),
+				ResourceName: *agreementName,
+				ResourceID:   fmt.Sprintf("%s/%s", *agreementEnvironmentId, *agreementId),
+			})
 		}
 	}
 

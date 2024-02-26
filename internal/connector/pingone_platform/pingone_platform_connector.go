@@ -54,6 +54,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.AgreementLocalizationResource(&c.clientInfo),
 		resources.AgreementLocalizationEnableResource(&c.clientInfo),
 		resources.AgreementLocalizationRevisionResource(&c.clientInfo),
+		resources.BrandingSettingsResource(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {

@@ -19,6 +19,7 @@ func TestPlatformExportCmd_Execute(t *testing.T) {
 	rootCmd.SetErr(&stdout)
 
 	rootCmd.SetArgs([]string{"platform", "export", "--output-directory", os.Getenv("TMPDIR"), "--overwrite"})
+	os.Setenv("PINGCTL_LOG_LEVEL", "DEBUG")
 
 	// Execute the command
 	err := rootCmd.Execute()

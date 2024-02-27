@@ -17,7 +17,7 @@ type PingoneCertificateResource struct {
 }
 
 // Utility method for creating a PingoneCertificateResource
-func CertificateResource(clientInfo *connector.SDKClientInfo) *PingoneCertificateResource {
+func Certificate(clientInfo *connector.SDKClientInfo) *PingoneCertificateResource {
 	return &PingoneCertificateResource{
 		clientInfo: clientInfo,
 	}

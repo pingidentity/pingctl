@@ -17,7 +17,7 @@ type PingoneAgreementLocalizationEnableResource struct {
 }
 
 // Utility method for creating a PingoneAgreementLocalizationEnableResource
-func AgreementLocalizationEnableResource(clientInfo *connector.SDKClientInfo) *PingoneAgreementLocalizationEnableResource {
+func AgreementLocalizationEnable(clientInfo *connector.SDKClientInfo) *PingoneAgreementLocalizationEnableResource {
 	return &PingoneAgreementLocalizationEnableResource{
 		clientInfo: clientInfo,
 	}
@@ -28,7 +28,7 @@ func (r *PingoneAgreementLocalizationEnableResource) ExportAll() (*[]connector.I
 
 	l.Debug().Msgf("Fetching all pingone_agreement_localization_enable resources...")
 
-	localizationImportBlocks, err := AgreementLocalizationResource(r.clientInfo).ExportAll()
+	localizationImportBlocks, err := AgreementLocalization(r.clientInfo).ExportAll()
 	if err != nil {
 		return nil, err
 	}

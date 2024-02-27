@@ -15,7 +15,7 @@ type PingoneBrandingThemeDefaultResource struct {
 }
 
 // Utility method for creating a PingoneBrandingThemeDefaultResource
-func BrandingThemeDefaultResource(clientInfo *connector.SDKClientInfo) *PingoneBrandingThemeDefaultResource {
+func BrandingThemeDefault(clientInfo *connector.SDKClientInfo) *PingoneBrandingThemeDefaultResource {
 	return &PingoneBrandingThemeDefaultResource{
 		clientInfo: clientInfo,
 	}

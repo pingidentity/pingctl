@@ -17,7 +17,7 @@ type PingoneAgreementEnableResource struct {
 }
 
 // Utility method for creating a PingoneAgreementEnableResource
-func AgreementEnableResource(clientInfo *connector.SDKClientInfo) *PingoneAgreementEnableResource {
+func AgreementEnable(clientInfo *connector.SDKClientInfo) *PingoneAgreementEnableResource {
 	return &PingoneAgreementEnableResource{
 		clientInfo: clientInfo,
 	}
@@ -28,7 +28,7 @@ func (r *PingoneAgreementEnableResource) ExportAll() (*[]connector.ImportBlock, 
 
 	l.Debug().Msgf("Fetching all pingone_agreement_enable resources...")
 
-	agreementImportBlocks, err := AgreementResource(r.clientInfo).ExportAll()
+	agreementImportBlocks, err := Agreement(r.clientInfo).ExportAll()
 	if err != nil {
 		return nil, err
 	}

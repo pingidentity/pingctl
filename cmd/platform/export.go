@@ -45,6 +45,7 @@ var (
 
 	exportConfigurationParamMapping = map[string]string{
 		pingoneWorkerEnvironmentIdParamName: pingoneWorkerEnvironmentIdParamConfigKey,
+		pingoneExportEnvironmentIdParamName: pingoneExportEnvironmentIdParamConfigKey,
 		pingoneWorkerClientIdParamName:      pingoneWorkerClientIdParamConfigKey,
 		pingoneWorkerClientSecretParamName:  pingoneWorkerClientSecretParamConfigKey,
 		pingoneRegionParamName:              pingoneRegionParamConfigKey,
@@ -62,7 +63,7 @@ func NewExportCommand() *cobra.Command {
 
 			l.Debug().Msgf("Export Subcommand Called.")
 
-			apiClient, err := initApiClient(cmd.Context(), cmd)
+			apiClient, err := initApiClient(cmd.Context())
 			if err != nil {
 				output.Format(cmd, output.CommandOutput{
 					Message: "Unable to initialize PingOne SDK client",
@@ -139,7 +140,7 @@ func NewExportCommand() *cobra.Command {
 
 	// Add flags that are bound to configuration file keys
 	cmd.Flags().String(pingoneWorkerEnvironmentIdParamName, "", "The ID of the PingOne environment that contains the worker token client used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
-	cmd.Flags().String(pingoneExportEnvironmentIdParamName, "", "The ID of the PingOne environment to export. (Default: The PingOne worker environment ID)")
+	cmd.Flags().String(pingoneExportEnvironmentIdParamName, "", "The ID of the PingOne environment to export. (Default: The PingOne worker environment ID)\nAlso configurable via environment variable PINGCTL_PINGONE_EXPORT_ENVIRONMENT_ID")
 	cmd.Flags().String(pingoneWorkerClientIdParamName, "", "The ID of the worker app (also the client ID) used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_ID")
 	cmd.Flags().String(pingoneWorkerClientSecretParamName, "", "The client secret of the worker app used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_SECRET")
 	cmd.Flags().Var(&pingoneRegion, pingoneRegionParamName, fmt.Sprintf("The region of the service. Allowed: %q, %q, %q, %q\nAlso configurable via environment variable PINGCTL_PINGONE_REGION", connector.ENUMREGION_AP, connector.ENUMREGION_CA, connector.ENUMREGION_EU, connector.ENUMREGION_NA))
@@ -164,7 +165,7 @@ func init() {
 	l.Debug().Msgf("Initializing Export Subcommand...")
 }
 
-func initApiClient(ctx context.Context, cmd *cobra.Command) (*sdk.Client, error) {
+func initApiClient(ctx context.Context) (*sdk.Client, error) {
 	l := logger.Get()
 
 	if apiClient != nil {

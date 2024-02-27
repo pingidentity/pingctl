@@ -76,6 +76,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.BrandingSettingsResource(&c.clientInfo),
 		resources.BrandingThemeResource(&c.clientInfo),
 		resources.BrandingThemeDefaultResource(&c.clientInfo),
+		resources.CertificateResource(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {

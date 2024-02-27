@@ -21,12 +21,12 @@ func TestPlatformExportCmd_Execute(t *testing.T) {
 	rootCmd.SetArgs([]string{"platform", "export", "--output-directory", os.Getenv("TMPDIR"), "--overwrite"})
 
 	// Execute the command
-	err := rootCmd.Execute()
-	if err != nil {
+	executeErr := rootCmd.Execute()
+	if executeErr != nil {
 		logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
 		if err == nil {
 			t.Logf("Captured Logs: %q", string(logContent[:]))
 		}
-		t.Fatalf("Export Command failed. Make sure to have PingOne env variables set if test is failing.\nErr: %q, Captured StdOut: %q", err, stdout.String())
+		t.Fatalf("Export Command failed. Make sure to have PingOne env variables set if test is failing.\nErr: %q, Captured StdOut: %q", executeErr, stdout.String())
 	}
 }

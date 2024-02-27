@@ -96,6 +96,14 @@ func NewExportCommand() *cobra.Command {
 				exportEnvID = viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)
 			}
 
+			if exportEnvID == "" {
+				output.Format(cmd, output.CommandOutput{
+					Message: "Failed to determine export environment ID",
+					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+				})
+				return fmt.Errorf("failed to determine export environment ID")
+			}
+
 			// Using the --service parameter(s) provided by user, build list of connectors to export
 			exportableConnectors := []connector.Exportable{}
 			for _, service := range *multiService.services {

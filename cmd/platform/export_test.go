@@ -3,7 +3,6 @@ package platform_test
 import (
 	"bytes"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/pingidentity/pingctl/cmd"
@@ -20,8 +19,6 @@ func TestPlatformExportCmd_Execute(t *testing.T) {
 	rootCmd.SetErr(&stdout)
 
 	rootCmd.SetArgs([]string{"platform", "export", "--output-directory", os.TempDir(), "--overwrite"})
-
-	t.Logf("Environ: %s", strings.Join(os.Environ(), "\n"))
 
 	// Execute the command
 	executeErr := rootCmd.Execute()

@@ -2,6 +2,7 @@ package cmd_test
 
 import (
 	"bytes"
+	"os"
 	"testing"
 
 	"github.com/pingidentity/pingctl/cmd"
@@ -37,6 +38,10 @@ func TestRootCmd_JSONOutput(t *testing.T) {
 	// Execute the root command
 	err := rootCmd.Execute()
 	if err != nil {
+		logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
+		if err == nil {
+			t.Logf("Captured Logs: %s", string(logContent[:]))
+		}
 		t.Fatal(err)
 	}
 
@@ -54,6 +59,10 @@ func TestRootCmd_JSONOutput(t *testing.T) {
 	// Execute the root command
 	err = rootCmd.Execute()
 	if err != nil {
+		logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
+		if err == nil {
+			t.Logf("Captured Logs: %s", string(logContent[:]))
+		}
 		t.Fatal(err)
 	}
 

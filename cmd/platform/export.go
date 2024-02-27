@@ -89,21 +89,18 @@ func NewExportCommand() *cobra.Command {
 			}
 
 			// Find the env ID to export. Default to worker env id if not provided by user.
-			var exportEnvID string
-			if viper.IsSet(pingoneExportEnvironmentIdParamConfigKey) {
-				l.Debug().Msgf("Using %s as export environment ID.", pingoneExportEnvironmentIdParamConfigKey)
-				exportEnvID = viper.GetString(pingoneExportEnvironmentIdParamConfigKey)
-			} else {
-				l.Debug().Msgf("Using %s as export environment ID.", pingoneWorkerEnvironmentIdParamConfigKey)
-				exportEnvID = viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)
-			}
-
+			exportEnvID := viper.GetString(pingoneExportEnvironmentIdParamConfigKey)
 			if exportEnvID == "" {
-				output.Format(cmd, output.CommandOutput{
-					Message: "Failed to determine export environment ID",
-					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
-				})
-				return fmt.Errorf("failed to determine export environment ID")
+				exportEnvID = viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)
+
+				// if the exportEnvID is still empty, this is a problem. Return error.
+				if exportEnvID == "" {
+					output.Format(cmd, output.CommandOutput{
+						Message: "Failed to determine export environment ID",
+						Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+					})
+					return fmt.Errorf("failed to determine export environment ID")
+				}
 			}
 
 			// Using the --service parameter(s) provided by user, build list of connectors to export

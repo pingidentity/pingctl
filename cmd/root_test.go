@@ -2,10 +2,10 @@ package cmd_test
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"github.com/pingidentity/pingctl/cmd"
+	"github.com/pingidentity/pingctl/internal/testutils"
 )
 
 // Test Root Command Executes without issue
@@ -21,6 +21,7 @@ func TestRootCmd_Execute(t *testing.T) {
 	// Execute the root command
 	err := rootCmd.Execute()
 	if err != nil {
+		testutils.PrintLogs(t)
 		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}
 }
@@ -36,13 +37,10 @@ func TestRootCmd_JSONOutput(t *testing.T) {
 	rootCmd.SetErr(&stdout)
 
 	// Execute the root command
-	executeErr := rootCmd.Execute()
-	if executeErr != nil {
-		logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
-		if err == nil {
-			t.Logf("Captured Logs: %s", string(logContent[:]))
-		}
-		t.Fatal(executeErr)
+	err := rootCmd.Execute()
+	if err != nil {
+		testutils.PrintLogs(t)
+		t.Fatal(err)
 	}
 
 	outputWithoutJSON := stdout.String()
@@ -57,13 +55,10 @@ func TestRootCmd_JSONOutput(t *testing.T) {
 	rootCmd.SetArgs([]string{"--output=json"})
 
 	// Execute the root command
-	executeErr = rootCmd.Execute()
-	if executeErr != nil {
-		logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
-		if err == nil {
-			t.Logf("Captured Logs: %s", string(logContent[:]))
-		}
-		t.Fatal(executeErr)
+	err = rootCmd.Execute()
+	if err != nil {
+		testutils.PrintLogs(t)
+		t.Fatal(err)
 	}
 
 	outputWithJSON := stdout.String()

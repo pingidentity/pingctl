@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/pingidentity/pingctl/cmd"
+	"github.com/pingidentity/pingctl/internal/testutils"
 )
 
 // Test Platform Export Command Executes without issue
@@ -21,12 +22,9 @@ func TestPlatformExportCmd_Execute(t *testing.T) {
 	rootCmd.SetArgs([]string{"platform", "export", "--output-directory", os.TempDir(), "--overwrite"})
 
 	// Execute the command
-	executeErr := rootCmd.Execute()
-	if executeErr != nil {
-		logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
-		if err == nil {
-			t.Logf("Captured Logs: %s", string(logContent[:]))
-		}
-		t.Fatalf("Export Command failed. Make sure to have PingOne env variables set if test is failing.\nErr: %q, Captured StdOut: %s", executeErr, stdout.String())
+	err := rootCmd.Execute()
+	if err != nil {
+		testutils.PrintLogs(t)
+		t.Fatalf("Export Command failed. Make sure to have PingOne env variables set if test is failing.\nErr: %q, Captured StdOut: %s", err, stdout.String())
 	}
 }

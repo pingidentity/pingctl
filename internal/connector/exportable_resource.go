@@ -27,15 +27,10 @@ type ExportableResource interface {
 }
 
 func (b *ImportBlock) Sanitize() {
-
 	// Replace spaces with underscores
 	b.ResourceName = strings.ReplaceAll(b.ResourceName, " ", "_")
-	b.ResourceType = strings.ReplaceAll(b.ResourceType, " ", "_")
 	// Remove all non-Alphanumeric characters/non-underscores
-	re := regexp.MustCompile(`[^a-zA-Z0-9_]+`)
-	b.ResourceName = re.ReplaceAllString(b.ResourceName, "")
-	b.ResourceType = re.ReplaceAllString(b.ResourceType, "")
+	b.ResourceName = regexp.MustCompile(`[^a-zA-Z0-9_]+`).ReplaceAllString(b.ResourceName, "")
 	// Make everything lowercase
 	b.ResourceName = strings.ToLower(b.ResourceName)
-	b.ResourceType = strings.ToLower(b.ResourceType)
 }

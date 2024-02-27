@@ -2,10 +2,10 @@ package cmd_test
 
 import (
 	"bytes"
-	"os"
 	"testing"
 
 	"github.com/pingidentity/pingctl/cmd"
+	"github.com/pingidentity/pingctl/internal/testutils"
 )
 
 // Test Feedback Command Executes without issue
@@ -21,12 +21,9 @@ func TestFeedbackCmd_Execute(t *testing.T) {
 	rootCmd.SetArgs([]string{"feedback"})
 
 	// Execute the root command
-	executeErr := rootCmd.Execute()
-	if executeErr != nil {
-		logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
-		if err == nil {
-			t.Logf("Captured Logs: %s", string(logContent[:]))
-		}
-		t.Fatalf("Err: %q, Captured StdOut: %q", executeErr, stdout.String())
+	err := rootCmd.Execute()
+	if err != nil {
+		testutils.PrintLogs(t)
+		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}
 }

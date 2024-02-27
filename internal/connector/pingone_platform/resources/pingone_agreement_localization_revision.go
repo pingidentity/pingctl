@@ -17,7 +17,7 @@ type PingoneAgreementLocalizationRevisionResource struct {
 }
 
 // Utility method for creating a PingoneAgreementLocalizationRevisionResource
-func AgreementLocalizationRevisionResource(clientInfo *connector.SDKClientInfo) *PingoneAgreementLocalizationRevisionResource {
+func AgreementLocalizationRevision(clientInfo *connector.SDKClientInfo) *PingoneAgreementLocalizationRevisionResource {
 	return &PingoneAgreementLocalizationRevisionResource{
 		clientInfo: clientInfo,
 	}

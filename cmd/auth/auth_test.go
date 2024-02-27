@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/pingidentity/pingctl/cmd"
+	"github.com/pingidentity/pingctl/internal/testutils"
 )
 
 // Test Auth Login Command Executes without issue
@@ -22,6 +23,7 @@ func TestAuthLoginCmd_Execute(t *testing.T) {
 	// Execute the command
 	err := rootCmd.Execute()
 	if err != nil {
+		testutils.PrintLogs(t)
 		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}
 }
@@ -41,6 +43,7 @@ func TestAuthLogoutCmd_Execute(t *testing.T) {
 	// Execute the command
 	err := rootCmd.Execute()
 	if err != nil {
+		testutils.PrintLogs(t)
 		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}
 }

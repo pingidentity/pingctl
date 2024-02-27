@@ -68,21 +68,28 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 	}
 
 	exportableResources := []connector.ExportableResource{
-		resources.AgreementResource(&c.clientInfo),
-		resources.AgreementEnableResource(&c.clientInfo),
-		resources.AgreementLocalizationResource(&c.clientInfo),
-		resources.AgreementLocalizationEnableResource(&c.clientInfo),
-		resources.AgreementLocalizationRevisionResource(&c.clientInfo),
-		resources.BrandingSettingsResource(&c.clientInfo),
-		resources.BrandingThemeResource(&c.clientInfo),
-		resources.BrandingThemeDefaultResource(&c.clientInfo),
-		resources.CertificateResource(&c.clientInfo),
+		resources.Agreement(&c.clientInfo),
+		resources.AgreementEnable(&c.clientInfo),
+		resources.AgreementLocalization(&c.clientInfo),
+		resources.AgreementLocalizationEnable(&c.clientInfo),
+		resources.AgreementLocalizationRevision(&c.clientInfo),
+		resources.BrandingSettings(&c.clientInfo),
+		resources.BrandingTheme(&c.clientInfo),
+		resources.BrandingThemeDefault(&c.clientInfo),
+		resources.Certificate(&c.clientInfo),
+		resources.CustomDomain(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {
 		importBlocks, err := exportableResource.ExportAll()
 		if err != nil {
 			return fmt.Errorf("failed to export resource %s. err: %s", exportableResource.ResourceType(), err.Error())
+		}
+
+		if len(*importBlocks) == 0 {
+			// No resources exported. Avoid creating an empty import.tf file
+			l.Debug().Msgf("Nothing exported for resource %s. Skipping import file generation...", exportableResource.ResourceType())
+			continue
 		}
 
 		l.Debug().Msgf("Generating import file for %s resource...", exportableResource.ResourceType())
@@ -105,6 +112,9 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		defer outputFile.Close()
 
 		for _, importBlock := range *importBlocks {
+			// Sanitize import block "to". Make lowercase, remove special chars, convert space to underscore
+			importBlock.Sanitize()
+
 			switch format {
 			case connector.ENUMEXPORTFORMAT_HCL:
 				err := hclImportBlockTemplate.Execute(outputFile, importBlock)

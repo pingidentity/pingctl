@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/pingidentity/pingctl/cmd"
+	"github.com/pingidentity/pingctl/internal/testutils"
 )
 
 // Test Root Command Executes without issue
@@ -20,6 +21,7 @@ func TestRootCmd_Execute(t *testing.T) {
 	// Execute the root command
 	err := rootCmd.Execute()
 	if err != nil {
+		testutils.PrintLogs(t)
 		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
 	}
 }
@@ -37,6 +39,7 @@ func TestRootCmd_JSONOutput(t *testing.T) {
 	// Execute the root command
 	err := rootCmd.Execute()
 	if err != nil {
+		testutils.PrintLogs(t)
 		t.Fatal(err)
 	}
 
@@ -54,6 +57,7 @@ func TestRootCmd_JSONOutput(t *testing.T) {
 	// Execute the root command
 	err = rootCmd.Execute()
 	if err != nil {
+		testutils.PrintLogs(t)
 		t.Fatal(err)
 	}
 

@@ -127,6 +127,8 @@ jobs:
       PINGCTL_PINGONE_WORKER_CLIENT_SECRET: ${{ secrets.PINGCTL_PINGONE_WORKER_CLIENT_SECRET }}
       PINGCTL_PINGONE_REGION: ${{ secrets.PINGCTL_PINGONE_REGION }}
       PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID: ${{ secrets.PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID }}
+      PINGCTL_LOG_LEVEL: ${{ secrets.PINGCTL_LOG_LEVEL }}
+      PINGCTL_LOG_PATH: ${{ secrets.PINGCTL_LOG_PATH }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

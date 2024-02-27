@@ -36,13 +36,13 @@ func TestRootCmd_JSONOutput(t *testing.T) {
 	rootCmd.SetErr(&stdout)
 
 	// Execute the root command
-	err := rootCmd.Execute()
-	if err != nil {
+	executeErr := rootCmd.Execute()
+	if executeErr != nil {
 		logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
 		if err == nil {
 			t.Logf("Captured Logs: %s", string(logContent[:]))
 		}
-		t.Fatal(err)
+		t.Fatal(executeErr)
 	}
 
 	outputWithoutJSON := stdout.String()
@@ -57,13 +57,13 @@ func TestRootCmd_JSONOutput(t *testing.T) {
 	rootCmd.SetArgs([]string{"--output=json"})
 
 	// Execute the root command
-	err = rootCmd.Execute()
-	if err != nil {
+	executeErr = rootCmd.Execute()
+	if executeErr != nil {
 		logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
 		if err == nil {
 			t.Logf("Captured Logs: %s", string(logContent[:]))
 		}
-		t.Fatal(err)
+		t.Fatal(executeErr)
 	}
 
 	outputWithJSON := stdout.String()

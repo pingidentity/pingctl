@@ -91,8 +91,10 @@ func NewExportCommand() *cobra.Command {
 			// Find the env ID to export. Default to worker env id if not provided by user.
 			var exportEnvID string
 			if viper.IsSet(pingoneExportEnvironmentIdParamConfigKey) {
+				l.Debug().Msgf("Using %s as export environment ID.", pingoneExportEnvironmentIdParamConfigKey)
 				exportEnvID = viper.GetString(pingoneExportEnvironmentIdParamConfigKey)
 			} else {
+				l.Debug().Msgf("Using %s as export environment ID.", pingoneWorkerEnvironmentIdParamConfigKey)
 				exportEnvID = viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)
 			}
 

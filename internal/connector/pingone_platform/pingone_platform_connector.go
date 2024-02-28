@@ -82,6 +82,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.Form(&c.clientInfo),
 		resources.FormRecaptchaV2(&c.clientInfo),
 		resources.Gateway(&c.clientInfo),
+		resources.GatewayCredential(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {

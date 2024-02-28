@@ -79,6 +79,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.Certificate(&c.clientInfo),
 		resources.CustomDomain(&c.clientInfo),
 		resources.Environment(&c.clientInfo),
+		resources.Form(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {

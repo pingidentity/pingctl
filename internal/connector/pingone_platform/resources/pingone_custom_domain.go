@@ -26,29 +26,19 @@ func CustomDomain(clientInfo *connector.SDKClientInfo) *PingoneCustomDomainResou
 func (r *PingoneCustomDomainResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
-	l.Debug().Msgf("Fetching all pingone_custom_domain resources...")
+	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	entityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.CustomDomainsApi.ReadAllDomains(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
-	defer response.Body.Close()
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.CustomDomainsApi.ReadAllDomains(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadAllDomains"
+
+	embedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
-		l.Error().Err(err).Msgf("ReadAllDomains Response Code: %s\nResponse Body: %s", response.Status, response.Body)
 		return nil, err
 	}
 
-	if entityArray == nil {
-		l.Error().Msgf("Returned ReadAllDomains() entity array is nil.")
-		l.Error().Msgf("ReadAllDomains Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_custom_domain resources via ReadAllDomains()")
-	}
-
-	embedded, embeddedOk := entityArray.GetEmbeddedOk()
-	if !embeddedOk {
-		l.Error().Msgf("Returned ReadAllDomains() embedded data is nil.")
-		l.Error().Msgf("ReadAllDomains Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_custom_domain resources via ReadAllDomains()")
-	}
-
 	importBlocks := []connector.ImportBlock{}
+
+	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
 	for _, customDomain := range embedded.GetCustomDomains() {
 		customDomainName, customDomainNameOk := customDomain.GetDomainNameOk()

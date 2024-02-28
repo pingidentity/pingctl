@@ -26,54 +26,31 @@ func AgreementLocalization(clientInfo *connector.SDKClientInfo) *PingoneAgreemen
 func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
-	l.Debug().Msgf("Fetching all pingone_agreement_localization resources...")
+	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	agreementEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
-	defer response.Body.Close()
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadAllAgreements"
+
+	agreementEmbedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
-		l.Error().Err(err).Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
 		return nil, err
-	}
-
-	if agreementEntityArray == nil {
-		l.Error().Msgf("Returned ReadAllAgreements() entityArray is nil.")
-		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreements()")
-	}
-
-	agreementEmbedded, agreementEmbeddedOk := agreementEntityArray.GetEmbeddedOk()
-	if !agreementEmbeddedOk {
-		l.Error().Msgf("Returned ReadAllAgreements() embedded data is nil.")
-		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreements()")
 	}
 
 	importBlocks := []connector.ImportBlock{}
 
-	l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_localization resources...")
+	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
+
 	for _, agreement := range agreementEmbedded.GetAgreements() {
 		agreementId, agreementIdOk := agreement.GetIdOk()
 		agreementName, agreementNameOk := agreement.GetNameOk()
 
 		if agreementIdOk && agreementNameOk {
-			agreementLanguageEntityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *agreement.Id).Execute()
-			defer response.Body.Close()
+			apiExecuteFunc = r.clientInfo.ApiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *agreement.Id).Execute
+			apiFunctionName = "ReadAllAgreementLanguages"
+
+			agreementLanguageEmbedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 			if err != nil {
-				l.Error().Err(err).Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
 				return nil, err
-			}
-
-			if agreementLanguageEntityArray == nil {
-				l.Error().Msgf("Returned ReadAllAgreementLanguages() entityArray is nil.")
-				l.Error().Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-				return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreementLanguages()")
-			}
-
-			agreementLanguageEmbedded, agreementLanguageEmbeddedOk := agreementLanguageEntityArray.GetEmbeddedOk()
-			if !agreementLanguageEmbeddedOk {
-				l.Error().Msgf("Returned ReadAllAgreementLanguages() embedded data is nil.")
-				l.Error().Msgf("ReadAllAgreementLanguages Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-				return nil, fmt.Errorf("failed to fetch pingone_agreement_localization resources via ReadAllAgreementLanguages()")
 			}
 
 			for _, languageWrapper := range agreementLanguageEmbedded.GetLanguages() {

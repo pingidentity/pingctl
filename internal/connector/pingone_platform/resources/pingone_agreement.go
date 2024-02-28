@@ -26,31 +26,19 @@ func Agreement(clientInfo *connector.SDKClientInfo) *PingoneAgreementResource {
 func (r *PingoneAgreementResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
-	l.Debug().Msgf("Fetching all pingone_agreement resources...")
+	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	entityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
-	defer response.Body.Close()
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadAllAgreements"
+
+	embedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
-		l.Error().Err(err).Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
 		return nil, err
-	}
-
-	if entityArray == nil {
-		l.Error().Msgf("Returned ReadAllAgreements() entityArray is nil.")
-		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_agreement resources via ReadAllAgreements()")
-	}
-
-	embedded, embeddedOk := entityArray.GetEmbeddedOk()
-	if !embeddedOk {
-		l.Error().Msgf("Returned ReadAllAgreements() embedded data is nil.")
-		l.Error().Msgf("ReadAllAgreements Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_agreement resources via ReadAllAgreements()")
 	}
 
 	importBlocks := []connector.ImportBlock{}
 
-	l.Debug().Msgf("Generating Import Blocks for all pingone_agreement resources...")
+	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 	for _, agreement := range embedded.GetAgreements() {
 		agreementId, agreementIdOk := agreement.GetIdOk()
 		agreementName, agreementNameOk := agreement.GetNameOk()

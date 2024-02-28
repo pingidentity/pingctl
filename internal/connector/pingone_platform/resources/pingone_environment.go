@@ -24,9 +24,11 @@ func Environment(clientInfo *connector.SDKClientInfo) *PingoneEnvironmentResourc
 func (r *PingoneEnvironmentResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
-	l.Debug().Msgf("Fetching all pingone_environment resources...")
+	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
 	importBlocks := []connector.ImportBlock{}
+
+	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType: r.ResourceType(),

@@ -26,29 +26,19 @@ func Certificate(clientInfo *connector.SDKClientInfo) *PingoneCertificateResourc
 func (r *PingoneCertificateResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
-	l.Debug().Msgf("Fetching all pingone_certificate resources...")
+	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	entityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.CertificateManagementApi.GetCertificates(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
-	defer response.Body.Close()
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.CertificateManagementApi.GetCertificates(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "GetCertificates"
+
+	embedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
-		l.Error().Err(err).Msgf("GetCertificates Response Code: %s\nResponse Body: %s", response.Status, response.Body)
 		return nil, err
 	}
 
-	if entityArray == nil {
-		l.Error().Msgf("Returned GetCertificates() entity array is nil.")
-		l.Error().Msgf("GetCertificates Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_certificate resources via GetCertificates()")
-	}
-
-	embedded, embeddedOk := entityArray.GetEmbeddedOk()
-	if !embeddedOk {
-		l.Error().Msgf("Returned GetCertificates() embedded data is nil.")
-		l.Error().Msgf("GetCertificates Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_certificate resources via GetCertificates()")
-	}
-
 	importBlocks := []connector.ImportBlock{}
+
+	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
 	for _, certificate := range embedded.GetCertificates() {
 		certificateName, certificateNameOk := certificate.GetNameOk()

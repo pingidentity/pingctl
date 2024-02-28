@@ -24,9 +24,11 @@ func BrandingThemeDefault(clientInfo *connector.SDKClientInfo) *PingoneBrandingT
 func (r *PingoneBrandingThemeDefaultResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
-	l.Debug().Msgf("Fetching all pingone_branding_theme_default resources...")
+	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
 	importBlocks := []connector.ImportBlock{}
+
+	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType: r.ResourceType(),

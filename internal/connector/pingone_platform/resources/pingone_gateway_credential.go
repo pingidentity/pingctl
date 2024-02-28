@@ -41,8 +41,26 @@ func (r *PingoneGatewayCredentialResource) ExportAll() (*[]connector.ImportBlock
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
 	for _, gatewayInner := range gatewaysEmbedded.GetGateways() {
-		gatewayId, gatewayIdOk := gatewayInner.Gateway.GetIdOk()
-		gatewayName, gatewayNameOk := gatewayInner.Gateway.GetNameOk()
+		var (
+			gatewayId     *string
+			gatewayName   *string
+			gatewayIdOk   bool
+			gatewayNameOk bool
+		)
+
+		switch {
+		case gatewayInner.Gateway != nil:
+			gatewayId, gatewayIdOk = gatewayInner.Gateway.GetIdOk()
+			gatewayName, gatewayNameOk = gatewayInner.Gateway.GetNameOk()
+		case gatewayInner.GatewayTypeLDAP != nil:
+			gatewayId, gatewayIdOk = gatewayInner.GatewayTypeLDAP.GetIdOk()
+			gatewayName, gatewayNameOk = gatewayInner.GatewayTypeLDAP.GetNameOk()
+		case gatewayInner.GatewayTypeRADIUS != nil:
+			gatewayId, gatewayIdOk = gatewayInner.GatewayTypeRADIUS.GetIdOk()
+			gatewayName, gatewayNameOk = gatewayInner.GatewayTypeRADIUS.GetNameOk()
+		default:
+			continue
+		}
 
 		if gatewayIdOk && gatewayNameOk {
 			apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.GatewayCredentialsApi.ReadAllGatewayCredentials(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *gatewayId).Execute

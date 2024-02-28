@@ -26,29 +26,19 @@ func BrandingTheme(clientInfo *connector.SDKClientInfo) *PingoneBrandingThemeRes
 func (r *PingoneBrandingThemeResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
-	l.Debug().Msgf("Fetching all pingone_branding_theme resources...")
+	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	entityArray, response, err := r.clientInfo.ApiClient.ManagementAPIClient.BrandingThemesApi.ReadBrandingThemes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
-	defer response.Body.Close()
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.BrandingThemesApi.ReadBrandingThemes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadBrandingThemes"
+
+	embedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
-		l.Error().Err(err).Msgf("ReadBrandingSettings Response Code: %s\nResponse Body: %s", response.Status, response.Body)
 		return nil, err
 	}
 
-	if entityArray == nil {
-		l.Error().Msgf("Returned ReadBrandingThemes() entity array is nil.")
-		l.Error().Msgf("ReadBrandingThemes Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_branding_theme resources via ReadBrandingThemes()")
-	}
-
-	embedded, embeddedOk := entityArray.GetEmbeddedOk()
-	if !embeddedOk {
-		l.Error().Msgf("Returned ReadBrandingThemes() embedded data is nil.")
-		l.Error().Msgf("ReadBrandingThemes Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch pingone_branding_theme resources via ReadBrandingThemes()")
-	}
-
 	importBlocks := []connector.ImportBlock{}
+
+	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
 	for _, theme := range embedded.GetThemes() {
 		themeId, themeIdOk := theme.GetIdOk()

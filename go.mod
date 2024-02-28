@@ -6,6 +6,7 @@ require (
 	github.com/fatih/color v1.15.0
 	github.com/golangci/golangci-lint v1.55.2
 	github.com/patrickcping/pingone-go-sdk-v2 v0.11.5
+	github.com/patrickcping/pingone-go-sdk-v2/management v0.36.0
 	github.com/pavius/impi v0.0.3
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/cobra v1.8.0
@@ -125,7 +126,6 @@ require (
 	github.com/patrickcping/pingone-go-sdk-v2/agreementmanagement v0.3.1 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/authorize v0.4.1 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/credentials v0.6.2 // indirect
-	github.com/patrickcping/pingone-go-sdk-v2/management v0.36.0 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/mfa v0.18.3 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/risk v0.12.2 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/verify v0.4.1 // indirect

@@ -45,7 +45,7 @@ func (r *PingoneGatewayRoleAssignmentResource) ExportAll() (*[]connector.ImportB
 		// Only PingFederate Connections have role assignments
 		if gatewayInner.Gateway != nil {
 			gatewayType, gatewayTypeOk := gatewayInner.Gateway.GetTypeOk()
-			if gatewayTypeOk && *gatewayType == (*management.ENUMGATEWAYTYPE_PING_FEDERATE.Ptr()) {
+			if gatewayTypeOk && *gatewayType == management.ENUMGATEWAYTYPE_PING_FEDERATE {
 				gatewayId, gatewayIdOk := gatewayInner.Gateway.GetIdOk()
 				gatewayName, gatewayNameOk := gatewayInner.Gateway.GetNameOk()
 

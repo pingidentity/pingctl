@@ -88,6 +88,8 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.Key(&c.clientInfo),
 		resources.KeyRotationPolicy(&c.clientInfo),
 		resources.Language(&c.clientInfo),
+		resources.NotificationPolicy(&c.clientInfo),
+		resources.NotificationSettings(&c.clientInfo),
 		resources.PhoneDeliverySettings(&c.clientInfo),
 	}
 

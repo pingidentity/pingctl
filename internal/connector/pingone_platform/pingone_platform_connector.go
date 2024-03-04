@@ -89,6 +89,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.KeyRotationPolicy(&c.clientInfo),
 		resources.Language(&c.clientInfo),
 		resources.NotificationPolicy(&c.clientInfo),
+		resources.NotificationSettings(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {

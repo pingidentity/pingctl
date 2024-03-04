@@ -32,7 +32,7 @@ func (r *PingoneBrandingSettingsResource) ExportAll() (*[]connector.ImportBlock,
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType: r.ResourceType(),
-		ResourceName: "branding",
+		ResourceName: "branding_settings",
 		ResourceID:   r.clientInfo.ExportEnvironmentID,
 	})
 

@@ -32,7 +32,7 @@ func (r *PingoneNotificationSettingsResource) ExportAll() (*[]connector.ImportBl
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType: r.ResourceType(),
-		ResourceName: "notification",
+		ResourceName: "notification_settings",
 		ResourceID:   r.clientInfo.ExportEnvironmentID,
 	})
 

@@ -26,23 +26,31 @@ func NotificationPolicy(clientInfo *connector.SDKClientInfo) *PingoneNotificatio
 func (r *PingoneNotificationPolicyResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
-	l.Debug().Msgf("Fetching all pingone_agreement_enable resources...")
+	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	agreementImportBlocks, err := Agreement(r.clientInfo).ExportAll()
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.NotificationsPoliciesApi.ReadAllNotificationsPolicies(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadAllNotificationsPolicies"
+
+	embedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}
 
 	importBlocks := []connector.ImportBlock{}
 
-	l.Debug().Msgf("Generating Import Blocks for all pingone_agreement_enable resources...")
+	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	for _, importBlock := range *agreementImportBlocks {
-		importBlocks = append(importBlocks, connector.ImportBlock{
-			ResourceType: r.ResourceType(),
-			ResourceName: fmt.Sprintf("%s_enable", importBlock.ResourceName),
-			ResourceID:   importBlock.ResourceID,
-		})
+	for _, notificationPolicy := range embedded.GetNotificationsPolicies() {
+		notificationPolicyId, notificationPolicyIdOk := notificationPolicy.GetIdOk()
+		notificationPolicyName, notificationPolicyNameOk := notificationPolicy.GetNameOk()
+
+		if notificationPolicyIdOk && notificationPolicyNameOk {
+			importBlocks = append(importBlocks, connector.ImportBlock{
+				ResourceType: r.ResourceType(),
+				ResourceName: *notificationPolicyName,
+				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *notificationPolicyId),
+			})
+		}
 	}
 
 	return &importBlocks, nil

@@ -9,7 +9,7 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneFormResource{}
+	_ connector.ExportableResource = &PingoneKeyResource{}
 )
 
 type PingoneKeyResource struct {
@@ -29,7 +29,7 @@ func (r *PingoneKeyResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
 	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.CertificateManagementApi.GetKeys(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
-	apiFunctionName := "ReadAllKeys"
+	apiFunctionName := "GetKeys"
 
 	embedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {

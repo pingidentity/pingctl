@@ -86,6 +86,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.GatewayRoleAssignment(&c.clientInfo),
 		resources.IdentityPropagationPlan(&c.clientInfo),
 		resources.Key(&c.clientInfo),
+		resources.KeyRotationPolicy(&c.clientInfo),
 		resources.Language(&c.clientInfo),
 	}
 

@@ -85,6 +85,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.GatewayCredential(&c.clientInfo),
 		resources.GatewayRoleAssignment(&c.clientInfo),
 		resources.IdentityPropagationPlan(&c.clientInfo),
+		resources.Key(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {

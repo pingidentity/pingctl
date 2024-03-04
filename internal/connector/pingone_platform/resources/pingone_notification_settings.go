@@ -7,21 +7,21 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneBrandingSettingsResource{}
+	_ connector.ExportableResource = &PingoneNotificationSettingsResource{}
 )
 
-type PingoneBrandingSettingsResource struct {
+type PingoneNotificationSettingsResource struct {
 	clientInfo *connector.SDKClientInfo
 }
 
-// Utility method for creating a PingoneBrandingSettingsResource
-func BrandingSettings(clientInfo *connector.SDKClientInfo) *PingoneBrandingSettingsResource {
-	return &PingoneBrandingSettingsResource{
+// Utility method for creating a PingoneNotificationSettingsResource
+func NotificationSettings(clientInfo *connector.SDKClientInfo) *PingoneNotificationSettingsResource {
+	return &PingoneNotificationSettingsResource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingoneBrandingSettingsResource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingoneNotificationSettingsResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
@@ -32,13 +32,13 @@ func (r *PingoneBrandingSettingsResource) ExportAll() (*[]connector.ImportBlock,
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType: r.ResourceType(),
-		ResourceName: "branding_settings",
+		ResourceName: "notification_settings",
 		ResourceID:   r.clientInfo.ExportEnvironmentID,
 	})
 
 	return &importBlocks, nil
 }
 
-func (r *PingoneBrandingSettingsResource) ResourceType() string {
-	return "pingone_branding_settings"
+func (r *PingoneNotificationSettingsResource) ResourceType() string {
+	return "pingone_notification_settings"
 }

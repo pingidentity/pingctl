@@ -9,7 +9,7 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneGatewayRoleAssignmentResource{}
+	_ connector.ExportableResource = &PingoneIdentityPropagationPlanResource{}
 )
 
 type PingoneIdentityPropagationPlanResource struct {

@@ -40,15 +40,15 @@ func (r *PingoneTrustedEmailDomainResource) ExportAll() (*[]connector.ImportBloc
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	for _, key := range embedded.() {
-		keyId, keyIdOk := key.GetIdOk()
-		keyName, keyNameOk := key.GetNameOk()
+	for _, emailDomain := range embedded.GetEmailDomains() {
+		emailDomainId, emailDomainIdOk := emailDomain.GetIdOk()
+		emailDomainName, emailDomainNameOk := emailDomain.GetDomainNameOk()
 
-		if keyIdOk && keyNameOk {
+		if emailDomainIdOk && emailDomainNameOk {
 			importBlocks = append(importBlocks, connector.ImportBlock{
 				ResourceType: r.ResourceType(),
-				ResourceName: *keyName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *keyId),
+				ResourceName: *emailDomainName,
+				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *emailDomainId),
 			})
 		}
 	}
@@ -57,5 +57,5 @@ func (r *PingoneTrustedEmailDomainResource) ExportAll() (*[]connector.ImportBloc
 }
 
 func (r *PingoneTrustedEmailDomainResource) ResourceType() string {
-	return "domain_name"
+	return "pingone_trusted_email_domain"
 }

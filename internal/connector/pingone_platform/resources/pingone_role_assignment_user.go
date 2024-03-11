@@ -30,7 +30,6 @@ func (r *PingoneRoleAssignmentUserResource) ExportAll() (*[]connector.ImportBloc
 
 	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.UsersApi.ReadAllUsers(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
 	apiFunctionName := "ReadAllUsers"
-	//UserRoleAssignmentsApi.ReadUserRoleAssignments()
 
 	usersEmbedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {

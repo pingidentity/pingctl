@@ -1,6 +1,8 @@
 package resources
 
 import (
+	"fmt"
+
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
@@ -26,15 +28,30 @@ func (r *PingoneNotificationSettingsTemplateContentResource) ExportAll() (*[]con
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.NotificationsTemplatesApi.ReadAllTemplates(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadAllTemplates"
+
+	embedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+	if err != nil {
+		return nil, err
+	}
+
 	importBlocks := []connector.ImportBlock{}
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	importBlocks = append(importBlocks, connector.ImportBlock{
-		ResourceType: r.ResourceType(),
-		ResourceName: "notification_settings_template_content",
-		ResourceID:   r.clientInfo.ExportEnvironmentID,
-	})
+	for _, template := range embedded.GetTemplates() {
+		templateId, templateIdOk := template.GetIdOk()
+		templateDisplayName, templateDisplayNameOk := template.GetDisplayNameOk()
+
+		if templateIdOk && templateDisplayNameOk {
+			importBlocks = append(importBlocks, connector.ImportBlock{
+				ResourceType: r.ResourceType(),
+				ResourceName: *templateDisplayName,
+				ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *templateDisplayName, *templateId),
+			})
+		}
+	}
 
 	return &importBlocks, nil
 }

@@ -28,10 +28,10 @@ func (r *PingoneTrustedEmailAddressResource) ExportAll() (*[]connector.ImportBlo
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.TrustedEmailAddressesApi.ReadAllTrustedEmailAddresses(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
-	apiFunctionName := "ReadAllTrustedEmailAddresses"
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.TrustedEmailDomainsApi.ReadAllTrustedEmailDomains(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadAllTrustedEmailDomains"
 
-	embedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+	emailDomainEmbedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}
@@ -40,16 +40,34 @@ func (r *PingoneTrustedEmailAddressResource) ExportAll() (*[]connector.ImportBlo
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	for _, key := range embedded.GetKeys() {
-		keyId, keyIdOk := key.GetIdOk()
-		keyName, keyNameOk := key.GetNameOk()
+	for _, trustedEmailDomain := range emailDomainEmbedded.GetEmailDomains() {
+		trustedEmailDomainId, trustedEmailDomainIdOk := trustedEmailDomain.GetIdOk()
+		trustedEmailDomainName, trustedEmailDomainNameOk := trustedEmailDomain.GetDomainNameOk()
 
-		if keyIdOk && keyNameOk {
-			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *keyName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *keyId),
-			})
+		if trustedEmailDomainIdOk && trustedEmailDomainNameOk {
+			apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.TrustedEmailAddressesApi.ReadAllTrustedEmailAddresses(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *trustedEmailDomainId).Execute
+			apiFunctionName := "ReadAllTrustedEmailAddresses"
+
+			trustedEmailAddressEmbedded, err := GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+			if err != nil {
+				return nil, err
+			}
+
+			for _, trustedEmailAddress := range trustedEmailAddressEmbedded.GetTrustedEmails() {
+				if trustedEmailAddress.EmailAddress != "" {
+					trustedEmailAddressId, trustedEmailAddressIdOk := trustedEmailAddress.GetIdOk()
+
+					trustedEmailAddressDomainId, trustedEmailAddressDomainIdOk := trustedEmailAddress.GetDomainIdOk()
+
+					if trustedEmailAddressIdOk && trustedEmailAddressDomainIdOk {
+						importBlocks = append(importBlocks, connector.ImportBlock{
+							ResourceType: r.ResourceType(),
+							ResourceName: fmt.Sprintf("%s/%s", *trustedEmailDomainName, trustedEmailAddress.EmailAddress),
+							ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *trustedEmailAddressDomainId, *trustedEmailAddressId),
+						})
+					}
+				}
+			}
 		}
 	}
 
@@ -57,5 +75,5 @@ func (r *PingoneTrustedEmailAddressResource) ExportAll() (*[]connector.ImportBlo
 }
 
 func (r *PingoneTrustedEmailAddressResource) ResourceType() string {
-	return "pingone_key"
+	return "pingone_trusted_email_address"
 }

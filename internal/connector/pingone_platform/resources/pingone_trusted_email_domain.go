@@ -16,7 +16,7 @@ type PingoneTrustedEmailDomainResource struct {
 	clientInfo *connector.SDKClientInfo
 }
 
-// Utility method for creating a PingoneTrustedEmailDomainResource
+// Utility method for creating a Pingone Trusted Email Domain Resource
 func TrustedEmailDomain(clientInfo *connector.SDKClientInfo) *PingoneTrustedEmailDomainResource {
 	return &PingoneTrustedEmailDomainResource{
 		clientInfo: clientInfo,

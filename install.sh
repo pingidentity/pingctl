@@ -15,7 +15,7 @@ if [ -f "$INSTALL_DIR/pingctl" ]; then
   exit 1
 fi
 
-TMP_DIR=$(mktemp -git pud)
+TMP_DIR=$(mktemp -d)
 if [ ! "$TMP_DIR" ] || [ ! -d "$TMP_DIR" ]; then
   echo "Could not create temp dir."
   exit 1

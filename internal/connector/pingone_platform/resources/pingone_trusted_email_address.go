@@ -62,7 +62,7 @@ func (r *PingoneTrustedEmailAddressResource) ExportAll() (*[]connector.ImportBlo
 					if trustedEmailAddressIdOk && trustedEmailAddressDomainIdOk {
 						importBlocks = append(importBlocks, connector.ImportBlock{
 							ResourceType: r.ResourceType(),
-							ResourceName: fmt.Sprintf("%s/%s", *trustedEmailDomainName, trustedEmailAddress.EmailAddress),
+							ResourceName: fmt.Sprintf("%s_%s", *trustedEmailDomainName, trustedEmailAddress.EmailAddress),
 							ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *trustedEmailAddressDomainId, *trustedEmailAddressId),
 						})
 					}

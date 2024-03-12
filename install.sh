@@ -15,7 +15,7 @@ if [ -f "$INSTALL_DIR/pingctl" ]; then
   exit 1
 fi
 
-TMP_DIR=$(mktemp -d)
+TMP_DIR=$(mktemp -git pud)
 if [ ! "$TMP_DIR" ] || [ ! -d "$TMP_DIR" ]; then
   echo "Could not create temp dir."
   exit 1
@@ -27,7 +27,7 @@ cleanup() {
 
 trap cleanup EXIT
 
-cd "$TMP_DIR" >/dev/null 2>&1 || echo "Unable to chanage to temporary directory" || exit 1
+cd "$TMP_DIR" >/dev/null 2>&1 || echo "Unable to change to temporary directory" || exit 1
 
 curl -s https://raw.githubusercontent.com/pingidentity/homebrew-tap/master/Formula/pingctl.rb |\
   grep url |\
@@ -36,7 +36,7 @@ curl -s https://raw.githubusercontent.com/pingidentity/homebrew-tap/master/Formu
 
 tar xzf ./*.tar.gz
 
-cd pingctl-* || echo "Unable to chanage to pingctl-*" || exit 1
+cd pingctl-* || echo "Unable to change to pingctl-*" || exit 1
 
 cp pingctl                  "$INSTALL_DIR/."
 

@@ -91,8 +91,12 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.NotificationPolicy(&c.clientInfo),
 		resources.NotificationSettings(&c.clientInfo),
 		resources.NotificationSettingsEmail(&c.clientInfo),
+		resources.NotificationSettingsTemplateContent(&c.clientInfo),
 		resources.PhoneDeliverySettings(&c.clientInfo),
+		resources.RoleAssignmentUser(&c.clientInfo),
 		resources.SystemApplication(&c.clientInfo),
+		resources.TrustedEmailAddress(&c.clientInfo),
+		resources.TrustedEmailDomain(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {

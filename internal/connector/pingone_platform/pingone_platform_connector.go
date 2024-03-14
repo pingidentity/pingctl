@@ -96,6 +96,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.RoleAssignmentUser(&c.clientInfo),
 		resources.TrustedEmailAddress(&c.clientInfo),
 		resources.TrustedEmailDomain(&c.clientInfo),
+		resources.Webhook(&c.clientInfo),
 	}
 
 	for _, exportableResource := range exportableResources {

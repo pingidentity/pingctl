@@ -52,10 +52,11 @@ func (r *PingoneSystemApplicationResource) ExportAll() (*[]connector.ImportBlock
 		case app.ApplicationPingOnePortal != nil:
 			appId, appIdOk = app.ApplicationPingOnePortal.GetIdOk()
 			appName, appNameOk = app.ApplicationPingOnePortal.GetNameOk()
-			// case app.
 		case app.ApplicationPingOneSelfService != nil:
 			appId, appIdOk = app.ApplicationPingOneSelfService.GetIdOk()
 			appName, appNameOk = app.ApplicationPingOneSelfService.GetNameOk()
+		default:
+			continue
 		}
 
 		if appIdOk && appNameOk {

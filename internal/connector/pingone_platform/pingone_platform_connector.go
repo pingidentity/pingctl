@@ -94,6 +94,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.NotificationSettingsTemplateContent(&c.clientInfo),
 		resources.PhoneDeliverySettings(&c.clientInfo),
 		resources.RoleAssignmentUser(&c.clientInfo),
+		resources.SystemApplication(&c.clientInfo),
 		resources.TrustedEmailAddress(&c.clientInfo),
 		resources.TrustedEmailDomain(&c.clientInfo),
 		resources.Webhook(&c.clientInfo),

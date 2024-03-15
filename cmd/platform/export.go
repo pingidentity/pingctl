@@ -6,8 +6,9 @@ import (
 	"os"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
+
 	"github.com/pingidentity/pingctl/internal/connector"
-	"github.com/pingidentity/pingctl/internal/connector/pingone_platform"
+	pingoneplatformconnector "github.com/pingidentity/pingctl/internal/connector/pingone"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/spf13/cobra"
@@ -108,7 +109,7 @@ func NewExportCommand() *cobra.Command {
 			for _, service := range *multiService.services {
 				switch service {
 				case serviceEnumPlatform:
-					exportableConnectors = append(exportableConnectors, pingone_platform.Connector(cmd.Context(), apiClient, exportEnvID))
+					exportableConnectors = append(exportableConnectors, pingoneplatformconnector.Connector(cmd.Context(), apiClient, exportEnvID))
 					// default:
 					// This unrecognized service condition is handled by cobra with the custom type MultiService
 				}

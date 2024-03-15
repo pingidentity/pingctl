@@ -1,4 +1,4 @@
-package pingoneplatformresources
+package platform
 
 import (
 	"github.com/pingidentity/pingctl/internal/connector"

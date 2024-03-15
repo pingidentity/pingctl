@@ -1,10 +1,10 @@
-package pingoneplatformresources
+package platform
 
 import (
 	"fmt"
 
 	"github.com/pingidentity/pingctl/internal/connector"
-	pingoneresourcescommon "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -32,7 +32,7 @@ func (r *PingoneAgreementResource) ExportAll() (*[]connector.ImportBlock, error)
 	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
 	apiFunctionName := "ReadAllAgreements"
 
-	embedded, err := pingoneresourcescommon.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+	embedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}

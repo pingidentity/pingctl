@@ -1,4 +1,4 @@
-package pingoneconnectorresourcescommon
+package common
 
 import (
 	"fmt"

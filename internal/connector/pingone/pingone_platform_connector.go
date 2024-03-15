@@ -8,6 +8,7 @@ import (
 	"github.com/pingidentity/pingctl/internal/connector"
 	connectorcommon "github.com/pingidentity/pingctl/internal/connector/common"
 	platformresources "github.com/pingidentity/pingctl/internal/connector/pingone/resources/pingoneplatform"
+	ssoresources "github.com/pingidentity/pingctl/internal/connector/pingone/resources/pingonesso"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -91,6 +92,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		platformresources.TrustedEmailAddress(&c.clientInfo),
 		platformresources.TrustedEmailDomain(&c.clientInfo),
 		platformresources.Webhook(&c.clientInfo),
+		ssoresources.ApplicationFlowPolicyAssignment(&c.clientInfo),
 	}
 
 	return connectorcommon.WriteFiles(exportableResources, l, format, outputDir, overwriteExport)

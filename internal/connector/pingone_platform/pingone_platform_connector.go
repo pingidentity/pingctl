@@ -73,6 +73,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.AgreementLocalization(&c.clientInfo),
 		resources.AgreementLocalizationEnable(&c.clientInfo),
 		resources.AgreementLocalizationRevision(&c.clientInfo),
+		resources.Application(&c.clientInfo),
 		resources.BrandingSettings(&c.clientInfo),
 		resources.BrandingTheme(&c.clientInfo),
 		resources.BrandingThemeDefault(&c.clientInfo),

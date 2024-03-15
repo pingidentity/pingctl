@@ -6,7 +6,6 @@ import (
 	"os"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
-
 	"github.com/pingidentity/pingctl/internal/connector"
 	pingoneplatformconnector "github.com/pingidentity/pingctl/internal/connector/pingone"
 	"github.com/pingidentity/pingctl/internal/logger"

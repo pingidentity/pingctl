@@ -77,7 +77,7 @@ func (r *PingoneApplicationFlowPolicyAssignmentResource) ExportAll() (*[]connect
 				if policyIdOk {
 					importBlocks = append(importBlocks, connector.ImportBlock{
 						ResourceType: r.ResourceType(),
-						ResourceName: *appName,
+						ResourceName: fmt.Sprintf("%s_%s", *appName, *policyId),
 						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *policyId),
 					})
 				}

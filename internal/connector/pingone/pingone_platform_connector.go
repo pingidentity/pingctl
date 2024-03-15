@@ -7,7 +7,6 @@ import (
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	connectorcommon "github.com/pingidentity/pingctl/internal/connector/common"
-
 	platformresources "github.com/pingidentity/pingctl/internal/connector/pingone/resources/pingoneplatform"
 	"github.com/pingidentity/pingctl/internal/logger"
 )

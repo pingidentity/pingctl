@@ -94,6 +94,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		platformresources.Webhook(&c.clientInfo),
 		ssoresources.Application(&c.clientInfo),
 		ssoresources.ApplicationFlowPolicyAssignment(&c.clientInfo),
+		ssoresources.ApplicationRoleAssignment(&c.clientInfo),
 		ssoresources.Group(&c.clientInfo),
 		ssoresources.Population(&c.clientInfo),
 	}

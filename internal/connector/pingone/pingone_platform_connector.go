@@ -97,6 +97,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		ssoresources.ApplicationResourceGrant(&c.clientInfo),
 		ssoresources.Group(&c.clientInfo),
 		ssoresources.IdentityProvider(&c.clientInfo),
+		ssoresources.IdentityProviderAttribute(&c.clientInfo),
 		ssoresources.Population(&c.clientInfo),
 		ssoresources.User(&c.clientInfo),
 	}

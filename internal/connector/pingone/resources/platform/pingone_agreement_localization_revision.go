@@ -5,7 +5,6 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
-	pingoneresources "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -65,7 +64,7 @@ func (r *PingoneAgreementLocalizationRevisionResource) ExportAll() (*[]connector
 						apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.AgreementRevisionsResourcesApi.ReadAllAgreementLanguageRevisions(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *agreementId, *agreementLanguageId).Execute
 						apiFunctionName := "ReadAllAgreementLanguageRevisions"
 
-						agreementLanguageRevisionEmbedded, err := pingoneresources.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+						agreementLanguageRevisionEmbedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 						if err != nil {
 							return nil, err
 						}

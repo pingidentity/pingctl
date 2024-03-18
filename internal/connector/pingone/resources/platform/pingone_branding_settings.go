@@ -1,4 +1,4 @@
-package pingoneplatformresources
+package platform
 
 import (
 	"github.com/pingidentity/pingctl/internal/connector"
@@ -7,21 +7,21 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneBrandingThemeDefaultResource{}
+	_ connector.ExportableResource = &PingoneBrandingSettingsResource{}
 )
 
-type PingoneBrandingThemeDefaultResource struct {
+type PingoneBrandingSettingsResource struct {
 	clientInfo *connector.SDKClientInfo
 }
 
-// Utility method for creating a PingoneBrandingThemeDefaultResource
-func BrandingThemeDefault(clientInfo *connector.SDKClientInfo) *PingoneBrandingThemeDefaultResource {
-	return &PingoneBrandingThemeDefaultResource{
+// Utility method for creating a PingoneBrandingSettingsResource
+func BrandingSettings(clientInfo *connector.SDKClientInfo) *PingoneBrandingSettingsResource {
+	return &PingoneBrandingSettingsResource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingoneBrandingThemeDefaultResource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingoneBrandingSettingsResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
@@ -32,13 +32,13 @@ func (r *PingoneBrandingThemeDefaultResource) ExportAll() (*[]connector.ImportBl
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType: r.ResourceType(),
-		ResourceName: "active_theme",
+		ResourceName: "branding_settings",
 		ResourceID:   r.clientInfo.ExportEnvironmentID,
 	})
 
 	return &importBlocks, nil
 }
 
-func (r *PingoneBrandingThemeDefaultResource) ResourceType() string {
-	return "pingone_branding_theme_default"
+func (r *PingoneBrandingSettingsResource) ResourceType() string {
+	return "pingone_branding_settings"
 }

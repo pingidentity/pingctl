@@ -1,10 +1,10 @@
-package pingoneplatformresources
+package platform
 
 import (
 	"fmt"
 
 	"github.com/pingidentity/pingctl/internal/connector"
-	pingoneresourcescommon "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -32,7 +32,7 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.AgreementsResourcesApi.ReadAllAgreements(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
 	apiFunctionName := "ReadAllAgreements"
 
-	agreementEmbedded, err := pingoneresourcescommon.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+	agreementEmbedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (r *PingoneAgreementLocalizationResource) ExportAll() (*[]connector.ImportB
 			apiExecuteFunc = r.clientInfo.ApiClient.ManagementAPIClient.AgreementLanguagesResourcesApi.ReadAllAgreementLanguages(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *agreement.Id).Execute
 			apiFunctionName = "ReadAllAgreementLanguages"
 
-			agreementLanguageEmbedded, err := pingoneresourcescommon.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+			agreementLanguageEmbedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 			if err != nil {
 				return nil, err
 			}

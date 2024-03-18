@@ -1,4 +1,4 @@
-package pingoneplatformresources
+package platform
 
 import (
 	"fmt"

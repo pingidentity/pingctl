@@ -1,4 +1,4 @@
-package pingoneplatformresources
+package platform
 
 import (
 	"github.com/pingidentity/pingctl/internal/connector"
@@ -7,21 +7,21 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneFormRecaptchaV2Resource{}
+	_ connector.ExportableResource = &PingoneNotificationSettingsEmailResource{}
 )
 
-type PingoneFormRecaptchaV2Resource struct {
+type PingoneNotificationSettingsEmailResource struct {
 	clientInfo *connector.SDKClientInfo
 }
 
-// Utility method for creating a PingoneFormRecaptchaV2Resource
-func FormRecaptchaV2(clientInfo *connector.SDKClientInfo) *PingoneFormRecaptchaV2Resource {
-	return &PingoneFormRecaptchaV2Resource{
+// Utility method for creating a PingoneNotificationSettingsEmailResource
+func NotificationSettingsEmail(clientInfo *connector.SDKClientInfo) *PingoneNotificationSettingsEmailResource {
+	return &PingoneNotificationSettingsEmailResource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingoneFormRecaptchaV2Resource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingoneNotificationSettingsEmailResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
@@ -32,13 +32,13 @@ func (r *PingoneFormRecaptchaV2Resource) ExportAll() (*[]connector.ImportBlock, 
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType: r.ResourceType(),
-		ResourceName: "recaptcha_configuration",
+		ResourceName: "pingone_notification_settings_email",
 		ResourceID:   r.clientInfo.ExportEnvironmentID,
 	})
 
 	return &importBlocks, nil
 }
 
-func (r *PingoneFormRecaptchaV2Resource) ResourceType() string {
-	return "pingone_forms_recaptcha_v2"
+func (r *PingoneNotificationSettingsEmailResource) ResourceType() string {
+	return "pingone_notification_settings_email"
 }

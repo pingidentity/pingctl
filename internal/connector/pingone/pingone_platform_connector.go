@@ -93,6 +93,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		platformresources.TrustedEmailDomain(&c.clientInfo),
 		platformresources.Webhook(&c.clientInfo),
 		ssoresources.ApplicationFlowPolicyAssignment(&c.clientInfo),
+		ssoresources.ApplicationResourceGrant(&c.clientInfo),
 		ssoresources.Group(&c.clientInfo),
 		ssoresources.Population(&c.clientInfo),
 	}

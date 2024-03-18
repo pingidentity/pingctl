@@ -100,6 +100,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		ssoresources.IdentityProviderAttribute(&c.clientInfo),
 		ssoresources.Population(&c.clientInfo),
 		ssoresources.User(&c.clientInfo),
+		ssoresources.UserGroupAssignment(&c.clientInfo),
 	}
 
 	return connectorcommon.WriteFiles(exportableResources, l, format, outputDir, overwriteExport)

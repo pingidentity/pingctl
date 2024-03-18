@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pingidentity/pingctl/internal/connector"
-	pingoneresources "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -32,7 +32,7 @@ func (r *PingoneFormResource) ExportAll() (*[]connector.ImportBlock, error) {
 	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.FormManagementApi.ReadAllForms(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
 	apiFunctionName := "ReadAllForms"
 
-	embedded, err := pingoneresources.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+	embedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}

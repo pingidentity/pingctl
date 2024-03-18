@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pingidentity/pingctl/internal/connector"
-	pingoneresources "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -32,7 +32,7 @@ func (r *PingoneGatewayResource) ExportAll() (*[]connector.ImportBlock, error) {
 	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.GatewaysApi.ReadAllGateways(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
 	apiFunctionName := "ReadAllGateways"
 
-	embedded, err := pingoneresources.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+	embedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}

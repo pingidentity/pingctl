@@ -1,4 +1,4 @@
-package pingonessoresources
+package sso
 
 import (
 	"fmt"

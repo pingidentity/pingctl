@@ -1,10 +1,10 @@
-package resources
+package sso
 
 import (
 	"fmt"
 
 	"github.com/pingidentity/pingctl/internal/connector"
-	pingoneresourcescommon "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -32,7 +32,7 @@ func (r *PingoneApplicationResource) ExportAll() (*[]connector.ImportBlock, erro
 	apiExecuteApplicationsFunc := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationsApi.ReadAllApplications(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
 	apiApplicationFunctionName := "ReadAllApplications"
 
-	embedded, err := pingoneresourcescommon.GetManagementEmbedded(apiExecuteApplicationsFunc, apiApplicationFunctionName, r.ResourceType())
+	embedded, err := common.GetManagementEmbedded(apiExecuteApplicationsFunc, apiApplicationFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}

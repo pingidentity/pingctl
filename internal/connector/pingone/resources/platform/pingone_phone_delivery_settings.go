@@ -5,7 +5,7 @@ import (
 
 	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
-	pingoneresources "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -33,7 +33,7 @@ func (r *PingonePhoneDeliverySettingsResource) ExportAll() (*[]connector.ImportB
 	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.PhoneDeliverySettingsApi.ReadAllPhoneDeliverySettings(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
 	apiFunctionName := "ReadAllPhoneDeliverySettings"
 
-	embedded, err := pingoneresources.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+	embedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}

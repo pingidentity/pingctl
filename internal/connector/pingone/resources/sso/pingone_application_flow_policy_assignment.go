@@ -1,10 +1,10 @@
-package pingonessoresources
+package sso
 
 import (
 	"fmt"
 
 	"github.com/pingidentity/pingctl/internal/connector"
-	pingoneresourcescommon "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -32,7 +32,7 @@ func (r *PingoneApplicationFlowPolicyAssignmentResource) ExportAll() (*[]connect
 	apiExecuteApplicationsFunc := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationsApi.ReadAllApplications(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
 	apiApplicationFunctionName := "ReadAllApplications"
 
-	embedded, err := pingoneresourcescommon.GetManagementEmbedded(apiExecuteApplicationsFunc, apiApplicationFunctionName, r.ResourceType())
+	embedded, err := common.GetManagementEmbedded(apiExecuteApplicationsFunc, apiApplicationFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +67,7 @@ func (r *PingoneApplicationFlowPolicyAssignmentResource) ExportAll() (*[]connect
 			apiExecutePoliciesFunc := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationFlowPolicyAssignmentsApi.ReadAllFlowPolicyAssignments(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *appId).Execute
 			apiPolicyFunctionName := "ReadAllFlowPolicyAssignments"
 
-			policyEmbedded, err := pingoneresourcescommon.GetManagementEmbedded(apiExecutePoliciesFunc, apiPolicyFunctionName, r.ResourceType())
+			policyEmbedded, err := common.GetManagementEmbedded(apiExecutePoliciesFunc, apiPolicyFunctionName, r.ResourceType())
 			if err != nil {
 				return nil, err
 			}

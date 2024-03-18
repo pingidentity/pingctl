@@ -6,7 +6,6 @@ import (
 	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
-	pingoneresources "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -55,7 +54,7 @@ func (r *PingoneGatewayRoleAssignmentResource) ExportAll() (*[]connector.ImportB
 					apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.GatewayRoleAssignmentsApi.ReadGatewayRoleAssignments(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *gatewayId).Execute
 					apiFunctionName := "ReadGatewayRoleAssignments"
 
-					gatewayRoleAssignmentsEmbedded, err := pingoneresources.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+					gatewayRoleAssignmentsEmbedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 					if err != nil {
 						return nil, err
 					}

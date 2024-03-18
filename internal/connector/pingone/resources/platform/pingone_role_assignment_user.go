@@ -5,7 +5,6 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
-	pingoneresources "github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -51,7 +50,7 @@ func (r *PingoneRoleAssignmentUserResource) ExportAll() (*[]connector.ImportBloc
 			apiExecuteFunc = r.clientInfo.ApiClient.ManagementAPIClient.UserRoleAssignmentsApi.ReadUserRoleAssignments(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *userId).Execute
 			apiFunctionName = "ReadUserRoleAssignments"
 
-			userRoleAssignmentsEmbedded, err := pingoneresources.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+			userRoleAssignmentsEmbedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 			if err != nil {
 				return nil, err
 			}

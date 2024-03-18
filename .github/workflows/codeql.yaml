@@ -16,11 +16,9 @@ on:
     branches: ["main", "go-cli"]
   pull_request:
     paths:
-      - ".github/workflows/code-analysis-lint-test.yaml"
       - "**.go"
       - "go.mod"
       - "go.sum"
-      - ".golangci.yml"
   schedule:
     - cron: "44 8 * * 6"
 jobs:

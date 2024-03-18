@@ -1,4 +1,4 @@
-package pingoneplatformresources
+package platform
 
 import (
 	"github.com/pingidentity/pingctl/internal/connector"
@@ -7,21 +7,21 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneNotificationSettingsResource{}
+	_ connector.ExportableResource = &PingoneFormRecaptchaV2Resource{}
 )
 
-type PingoneNotificationSettingsResource struct {
+type PingoneFormRecaptchaV2Resource struct {
 	clientInfo *connector.SDKClientInfo
 }
 
-// Utility method for creating a PingoneNotificationSettingsResource
-func NotificationSettings(clientInfo *connector.SDKClientInfo) *PingoneNotificationSettingsResource {
-	return &PingoneNotificationSettingsResource{
+// Utility method for creating a PingoneFormRecaptchaV2Resource
+func FormRecaptchaV2(clientInfo *connector.SDKClientInfo) *PingoneFormRecaptchaV2Resource {
+	return &PingoneFormRecaptchaV2Resource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingoneNotificationSettingsResource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingoneFormRecaptchaV2Resource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
@@ -32,13 +32,13 @@ func (r *PingoneNotificationSettingsResource) ExportAll() (*[]connector.ImportBl
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType: r.ResourceType(),
-		ResourceName: "notification_settings",
+		ResourceName: "recaptcha_configuration",
 		ResourceID:   r.clientInfo.ExportEnvironmentID,
 	})
 
 	return &importBlocks, nil
 }
 
-func (r *PingoneNotificationSettingsResource) ResourceType() string {
-	return "pingone_notification_settings"
+func (r *PingoneFormRecaptchaV2Resource) ResourceType() string {
+	return "pingone_forms_recaptcha_v2"
 }

@@ -100,6 +100,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		ssoresources.GroupNesting(&c.clientInfo),
 		ssoresources.IdentityProvider(&c.clientInfo),
 		ssoresources.IdentityProviderAttribute(&c.clientInfo),
+		ssoresources.PasswordPolicy(&c.clientInfo),
 		ssoresources.Population(&c.clientInfo),
 		ssoresources.PopulationDefault(&c.clientInfo),
 		ssoresources.User(&c.clientInfo),

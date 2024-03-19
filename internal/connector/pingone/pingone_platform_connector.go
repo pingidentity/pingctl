@@ -104,6 +104,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		ssoresources.Population(&c.clientInfo),
 		ssoresources.PopulationDefault(&c.clientInfo),
 		ssoresources.Resource(&c.clientInfo),
+		ssoresources.ResourceScopeOpenId(&c.clientInfo),
 		ssoresources.User(&c.clientInfo),
 		ssoresources.UserGroupAssignment(&c.clientInfo),
 	}

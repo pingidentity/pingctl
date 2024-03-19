@@ -47,7 +47,7 @@ func (r *PingoneResourceScopeOpenIdResource) ExportAll() (*[]connector.ImportBlo
 
 		if resourceIdOk && resourceNameOk {
 			apiResourceScopeOpenIdsExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.ResourceScopesApi.ReadAllResourceScopes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *resourceId).Execute
-			apiResourceScopeOpenIdsFunctionName := "ReadAllResourceScopeOpenIds"
+			apiResourceScopeOpenIdsFunctionName := "ReadAllResourceScopes"
 
 			embeddedResourceScopeOpenIds, err := common.GetManagementEmbedded(apiResourceScopeOpenIdsExecuteFunc, apiResourceScopeOpenIdsFunctionName, r.ResourceType())
 			if err != nil {
@@ -57,11 +57,12 @@ func (r *PingoneResourceScopeOpenIdResource) ExportAll() (*[]connector.ImportBlo
 			for _, scopeOpenId := range embeddedResourceScopeOpenIds.GetScopes() {
 				scopeOpenIdId, scopeOpenIdIdOk := scopeOpenId.GetIdOk()
 				scopeOpenIdName, scopeOpenIdNameOk := scopeOpenId.GetNameOk()
-				if scopeOpenIdIdOk && scopeOpenIdNameOk {
+				_, mappedClaimsOk := scopeOpenId.GetMappedClaimsOk()
+				if scopeOpenIdIdOk && scopeOpenIdNameOk && mappedClaimsOk {
 					importBlocks = append(importBlocks, connector.ImportBlock{
 						ResourceType: r.ResourceType(),
 						ResourceName: fmt.Sprintf("%s_%s", *resourceName, *scopeOpenIdName),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *resourceId, *scopeOpenIdId),
+						ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *scopeOpenIdId),
 					})
 				}
 			}

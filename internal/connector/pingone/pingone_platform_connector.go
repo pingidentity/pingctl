@@ -103,6 +103,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		ssoresources.PasswordPolicy(&c.clientInfo),
 		ssoresources.Population(&c.clientInfo),
 		ssoresources.PopulationDefault(&c.clientInfo),
+		ssoresources.Resource(&c.clientInfo),
 		ssoresources.User(&c.clientInfo),
 		ssoresources.UserGroupAssignment(&c.clientInfo),
 	}

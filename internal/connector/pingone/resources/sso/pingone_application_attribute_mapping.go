@@ -49,8 +49,6 @@ func (r *PingoneApplicationAttributeMappingResource) ExportAll() (*[]connector.I
 			appNameOk bool
 		)
 
-		app.
-
 		switch {
 		case app.ApplicationOIDC != nil:
 			appId, appIdOk = app.ApplicationOIDC.GetIdOk()

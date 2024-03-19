@@ -96,6 +96,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		ssoresources.ApplicationAttributeMapping(&c.clientInfo),
 		ssoresources.ApplicationFlowPolicyAssignment(&c.clientInfo),
 		ssoresources.ApplicationResourceGrant(&c.clientInfo),
+		ssoresources.ApplicationSignOnPolicyAssignment(&c.clientInfo),
 		ssoresources.Group(&c.clientInfo),
 		ssoresources.GroupNesting(&c.clientInfo),
 		ssoresources.IdentityProvider(&c.clientInfo),
@@ -105,6 +106,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		ssoresources.PopulationDefault(&c.clientInfo),
 		ssoresources.Resource(&c.clientInfo),
 		ssoresources.ResourceScope(&c.clientInfo),
+		ssoresources.SchemaAttribute(&c.clientInfo),
 		ssoresources.User(&c.clientInfo),
 		ssoresources.UserGroupAssignment(&c.clientInfo),
 	}

@@ -2,6 +2,7 @@ package sso
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
@@ -57,8 +58,8 @@ func (r *PingoneResourceScopeOpenIdResource) ExportAll() (*[]connector.ImportBlo
 			for _, scopeOpenId := range embeddedResourceScopeOpenIds.GetScopes() {
 				scopeOpenIdId, scopeOpenIdIdOk := scopeOpenId.GetIdOk()
 				scopeOpenIdName, scopeOpenIdNameOk := scopeOpenId.GetNameOk()
-				_, mappedClaimsOk := scopeOpenId.GetMappedClaimsOk()
-				if scopeOpenIdIdOk && scopeOpenIdNameOk && mappedClaimsOk {
+				isPingOneApiScope := strings.Contains(*scopeOpenIdName, "p1")
+				if scopeOpenIdIdOk && scopeOpenIdNameOk && !isPingOneApiScope {
 					importBlocks = append(importBlocks, connector.ImportBlock{
 						ResourceType: r.ResourceType(),
 						ResourceName: fmt.Sprintf("%s_%s", *resourceName, *scopeOpenIdName),

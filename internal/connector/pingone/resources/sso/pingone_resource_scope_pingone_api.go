@@ -2,7 +2,6 @@ package sso
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
@@ -47,7 +46,7 @@ func (r *PingoneResourceScopePingOneApiResource) ExportAll() (*[]connector.Impor
 		resourceName, resourceNameOk := resource.GetNameOk()
 		resourceType, resourceTypeOk := resource.GetTypeOk()
 
-		if resourceIdOk && resourceNameOk && resourceTypeOk {
+		if resourceIdOk && resourceNameOk && resourceTypeOk && *resourceType == "PINGONE_API" {
 			apiResourceScopePingOneApisExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.ResourceScopesApi.ReadAllResourceScopes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *resourceId).Execute
 			apiResourceScopePingOneApisFunctionName := "ReadAllResourceScopes"
 
@@ -59,8 +58,7 @@ func (r *PingoneResourceScopePingOneApiResource) ExportAll() (*[]connector.Impor
 			for _, scopePingOneApi := range embeddedResourceScopePingOneApis.GetScopes() {
 				scopePingOneApiId, scopePingOneApiIdOk := scopePingOneApi.GetIdOk()
 				scopePingOneApiName, scopePingOneApiNameOk := scopePingOneApi.GetNameOk()
-				isPingOneApiResource := strings.Contains(string(*resourceType), "PINGONE_API")
-				if scopePingOneApiIdOk && scopePingOneApiNameOk && isPingOneApiResource {
+				if scopePingOneApiIdOk && scopePingOneApiNameOk {
 					importBlocks = append(importBlocks, connector.ImportBlock{
 						ResourceType: r.ResourceType(),
 						ResourceName: fmt.Sprintf("%s_%s", *resourceName, *scopePingOneApiName),

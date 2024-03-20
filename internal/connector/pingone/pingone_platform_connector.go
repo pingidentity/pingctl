@@ -96,6 +96,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		ssoresources.ApplicationAttributeMapping(&c.clientInfo),
 		ssoresources.ApplicationFlowPolicyAssignment(&c.clientInfo),
 		ssoresources.ApplicationResourceGrant(&c.clientInfo),
+		ssoresources.ApplicationSecret(&c.clientInfo),
 		ssoresources.ApplicationSignOnPolicyAssignment(&c.clientInfo),
 		ssoresources.Group(&c.clientInfo),
 		ssoresources.GroupNesting(&c.clientInfo),

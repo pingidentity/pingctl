@@ -3,6 +3,7 @@ package sso
 import (
 	"fmt"
 
+	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -47,23 +48,32 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 			appIdOk   bool
 			appName   *string
 			appNameOk bool
+			appRole   *management.ApplicationAccessControlRole
+			appRoleOk bool
 		)
 
 		switch {
 		case app.ApplicationOIDC != nil:
 			appId, appIdOk = app.ApplicationOIDC.GetIdOk()
 			appName, appNameOk = app.ApplicationOIDC.GetNameOk()
+			appRole, appRoleOk = app.ApplicationOIDC.AccessControl.GetRoleOk()
 		case app.ApplicationSAML != nil:
 			appId, appIdOk = app.ApplicationSAML.GetIdOk()
 			appName, appNameOk = app.ApplicationSAML.GetNameOk()
+			appRole, appRoleOk = app.ApplicationSAML.AccessControl.GetRoleOk()
 		case app.ApplicationExternalLink != nil:
 			appId, appIdOk = app.ApplicationExternalLink.GetIdOk()
 			appName, appNameOk = app.ApplicationExternalLink.GetNameOk()
+			appRole, appRoleOk = app.ApplicationExternalLink.AccessControl.GetRoleOk()
+		case app.ApplicationWSFED != nil:
+			appId, appIdOk = app.ApplicationWSFED.GetIdOk()
+			appName, appNameOk = app.ApplicationWSFED.GetNameOk()
+			appRole, appRoleOk = app.ApplicationWSFED.AccessControl.GetRoleOk()
 		default:
 			continue
 		}
 
-		if appIdOk && appNameOk {
+		if appIdOk && appNameOk && appRoleOk {
 			apiExecutePoliciesFunc := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationRoleAssignmentsApi.ReadApplicationRoleAssignments(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *appId).Execute
 			apiApplicationRoleAssignmentsFunctionName := "ReadApplicationRoleAssignments"
 
@@ -77,7 +87,7 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 				if roleAssignmentIdOk {
 					importBlocks = append(importBlocks, connector.ImportBlock{
 						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *appName, *roleAssignmentId),
+						ResourceName: fmt.Sprintf("%s_%s", *appName, *appRole),
 						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *roleAssignmentId),
 					})
 				}

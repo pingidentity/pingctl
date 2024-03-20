@@ -6,30 +6,12 @@ import (
 
 	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/logger"
-	"github.com/rs/zerolog"
 )
 
 // Executes the function apiExecuteFunc for the ManagementAPIClient
 // Handles err and response if Client call failed
 // Returns embedded data if not nil
 // Treats nil embedded data as an error
-
-func ValidateApiResponse(l zerolog.Logger, response *http.Response, apiFunctionName, resourceType string) error {
-	var err error
-	if response.StatusCode == 404 {
-		l.Error().Msgf("%s Request was not successful. Resources %s not found", apiFunctionName, resourceType)
-		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
-		return fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
-	}
-
-	if response.StatusCode >= 300 {
-		l.Error().Msgf("%s Request was not successful", apiFunctionName)
-		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
-		return fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
-	}
-	return nil
-}
-
 func GetManagementEmbedded(apiExecuteFunc func() (*management.EntityArray, *http.Response, error), apiFunctionName string, resourceType string) (*management.EntityArrayEmbedded, error) {
 	l := logger.Get()
 
@@ -42,7 +24,17 @@ func GetManagementEmbedded(apiExecuteFunc func() (*management.EntityArray, *http
 		return nil, err
 	}
 
-	ValidateApiResponse(l, response, apiFunctionName, resourceType)
+	if response.StatusCode == 404 {
+		l.Error().Msgf("%s Request was not successful. Resources %s not found", apiFunctionName, resourceType)
+		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
+		return nil, fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
+	}
+
+	if response.StatusCode >= 300 {
+		l.Error().Msgf("%s Request was not successful", apiFunctionName)
+		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
+		return nil, fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
+	}
 
 	if entityArray == nil {
 		l.Error().Msgf("Returned %s() entityArray is nil.", apiFunctionName)

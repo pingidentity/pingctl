@@ -7,7 +7,8 @@ import (
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
-	"github.com/pingidentity/pingctl/internal/connector/pingone"
+	"github.com/pingidentity/pingctl/internal/connector/pingone_platform"
+	"github.com/pingidentity/pingctl/internal/connector/pingone_sso"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/spf13/cobra"
@@ -32,12 +33,9 @@ const (
 )
 
 var (
-	exportFormat ExportFormat = connector.ENUMEXPORTFORMAT_HCL
-	multiService MultiService = MultiService{
-		services: &[]string{
-			serviceEnumPlatform,
-		},
-	}
+	multiService MultiService = *NewMultiService()
+
+	exportFormat    ExportFormat = connector.ENUMEXPORTFORMAT_HCL
 	pingoneRegion   PingOneRegion
 	outputDir       string
 	overwriteExport bool
@@ -105,10 +103,13 @@ func NewExportCommand() *cobra.Command {
 
 			// Using the --service parameter(s) provided by user, build list of connectors to export
 			exportableConnectors := []connector.Exportable{}
-			for _, service := range *multiService.services {
+
+			for _, service := range *multiService.GetServices() {
 				switch service {
 				case serviceEnumPlatform:
-					exportableConnectors = append(exportableConnectors, pingone.PlatformConnector(cmd.Context(), apiClient, exportEnvID))
+					exportableConnectors = append(exportableConnectors, pingone_platform.PlatformConnector(cmd.Context(), apiClient, exportEnvID))
+				case serviceEnumSSO:
+					exportableConnectors = append(exportableConnectors, pingone_sso.SSOConnector(cmd.Context(), apiClient, exportEnvID))
 					// default:
 					// This unrecognized service condition is handled by cobra with the custom type MultiService
 				}
@@ -141,7 +142,7 @@ func NewExportCommand() *cobra.Command {
 
 	// Add flags that are not tracked in the viper configuration file
 	cmd.Flags().Var(&exportFormat, "export-format", fmt.Sprintf("Specifies export format\nAllowed: %q", connector.ENUMEXPORTFORMAT_HCL))
-	cmd.Flags().Var(&multiService, "service", fmt.Sprintf("Specifies service(s) to export. Allowed: %q", serviceEnumPlatform))
+	cmd.Flags().Var(&multiService, "service", fmt.Sprintf("Specifies service(s) to export. Allowed: %s", multiService.String()))
 	cmd.Flags().StringVar(&outputDir, "output-directory", "", "Specifies output directory for export (Default: Present working directory)")
 	cmd.Flags().BoolVar(&overwriteExport, "overwrite", false, "Overwrite existing generated exports if set.")
 

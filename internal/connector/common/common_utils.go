@@ -1,4 +1,4 @@
-package connectorcommon
+package common
 
 import (
 	"fmt"

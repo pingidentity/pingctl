@@ -67,22 +67,26 @@ func (r *PingoneApplicationSecretResource) ExportAll() (*[]connector.ImportBlock
 			apiExecuteSecretFunc := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationSecretApi.ReadApplicationSecret(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *appId).Execute
 			apiSecretFunctionName := "ReadApplicationSecret"
 
-			applicationEmbedded, err := common.GetManagementEmbedded(apiExecuteSecretFunc, apiSecretFunctionName, r.ResourceType())
+			applicationSecret, response, err := apiExecuteSecretFunc()
+			defer response.Body.Close()
+
 			if err != nil {
+				l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiSecretFunctionName, response.Status, response.Body)
 				return nil, err
 			}
 
-			for _, secret := range applicationEmbedded.GetSecret() {
-				secretId, secretIdOk := secret.GetIdOk()
-				secretName, secretNameOk := secret.GetNameOk()
+			validateApiResponseErr := common.ValidateApiResponse(l, response, apiSecretFunctionName, r.ResourceType())
 
-				if secretIdOk && secretNameOk {
-					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: *secretName,
-						ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *secretId),
-					})
-				}
+			if validateApiResponseErr != nil {
+				return nil, validateApiResponseErr
+			}
+
+			if *applicationSecret.Secret != "" {
+				importBlocks = append(importBlocks, connector.ImportBlock{
+					ResourceType: r.ResourceType(),
+					ResourceName: fmt.Sprintf("%s_secret", *appName),
+					ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *appId),
+				})
 			}
 		}
 	}

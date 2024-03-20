@@ -2,6 +2,7 @@ package sso
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
@@ -59,11 +60,15 @@ func (r *PingoneApplicationFlowPolicyAssignmentResource) ExportAll() (*[]connect
 		case app.ApplicationExternalLink != nil:
 			appId, appIdOk = app.ApplicationExternalLink.GetIdOk()
 			appName, appNameOk = app.ApplicationExternalLink.GetNameOk()
+		case app.ApplicationWSFED != nil:
+			appId, appIdOk = app.ApplicationWSFED.GetIdOk()
+			appName, appNameOk = app.ApplicationWSFED.GetNameOk()
 		default:
 			continue
 		}
-
-		if appIdOk && appNameOk {
+		workerAppId := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID")
+		if appIdOk && (*appId != workerAppId) && appNameOk {
+			fmt.Printf("\n%s %s", *appId, workerAppId)
 			apiExecutePoliciesFunc := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationFlowPolicyAssignmentsApi.ReadAllFlowPolicyAssignments(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *appId).Execute
 			apiPolicyFunctionName := "ReadAllFlowPolicyAssignments"
 

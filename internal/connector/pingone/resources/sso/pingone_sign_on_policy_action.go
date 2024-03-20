@@ -76,8 +76,8 @@ func (r *PingoneSignOnPolicyActionResource) ExportAll() (*[]connector.ImportBloc
 					actionId, actionIdOk = action.SignOnPolicyActionMFA.GetIdOk()
 				case action.SignOnPolicyActionPingIDWinLoginPasswordless != nil:
 					actionId, actionIdOk = action.SignOnPolicyActionPingIDWinLoginPasswordless.GetIdOk()
-				case action.SignOnPolicyActionPingIDWinLoginPasswordless != nil:
-					actionId, actionIdOk = action.SignOnPolicyActionPingIDWinLoginPasswordless.GetIdOk()
+				case action.SignOnPolicyActionProgressiveProfiling != nil:
+					actionId, actionIdOk = action.SignOnPolicyActionProgressiveProfiling.GetIdOk()
 				default:
 					continue
 				}

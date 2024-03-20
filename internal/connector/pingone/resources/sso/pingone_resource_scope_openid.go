@@ -45,8 +45,9 @@ func (r *PingoneResourceScopeOpenIdResource) ExportAll() (*[]connector.ImportBlo
 	for _, resource := range embedded.GetResources() {
 		resourceId, resourceIdOk := resource.GetIdOk()
 		resourceName, resourceNameOk := resource.GetNameOk()
+		resourceType, resourceTypeOk := resource.GetTypeOk()
 
-		if resourceIdOk && resourceNameOk {
+		if resourceIdOk && resourceNameOk && resourceTypeOk {
 			apiResourceScopeOpenIdsExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.ResourceScopesApi.ReadAllResourceScopes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *resourceId).Execute
 			apiResourceScopeOpenIdsFunctionName := "ReadAllResourceScopes"
 
@@ -58,8 +59,8 @@ func (r *PingoneResourceScopeOpenIdResource) ExportAll() (*[]connector.ImportBlo
 			for _, scopeOpenId := range embeddedResourceScopeOpenIds.GetScopes() {
 				scopeOpenIdId, scopeOpenIdIdOk := scopeOpenId.GetIdOk()
 				scopeOpenIdName, scopeOpenIdNameOk := scopeOpenId.GetNameOk()
-				isPingOneApiScope := strings.Contains(*scopeOpenIdName, "p1")
-				if scopeOpenIdIdOk && scopeOpenIdNameOk && !isPingOneApiScope {
+				isOpenIdResource := strings.Contains(string(*resourceType), "OPENID_CONNECT")
+				if scopeOpenIdIdOk && scopeOpenIdNameOk && isOpenIdResource {
 					importBlocks = append(importBlocks, connector.ImportBlock{
 						ResourceType: r.ResourceType(),
 						ResourceName: fmt.Sprintf("%s_%s", *resourceName, *scopeOpenIdName),

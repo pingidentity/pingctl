@@ -2,7 +2,6 @@ package sso
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/resources/common"
@@ -47,7 +46,7 @@ func (r *PingoneResourceScopeOpenIdResource) ExportAll() (*[]connector.ImportBlo
 		resourceName, resourceNameOk := resource.GetNameOk()
 		resourceType, resourceTypeOk := resource.GetTypeOk()
 
-		if resourceIdOk && resourceNameOk && resourceTypeOk {
+		if resourceIdOk && resourceNameOk && resourceTypeOk && *resourceType == "OPENID_CONNECT" {
 			apiResourceScopeOpenIdsExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.ResourceScopesApi.ReadAllResourceScopes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *resourceId).Execute
 			apiResourceScopeOpenIdsFunctionName := "ReadAllResourceScopes"
 
@@ -59,8 +58,7 @@ func (r *PingoneResourceScopeOpenIdResource) ExportAll() (*[]connector.ImportBlo
 			for _, scopeOpenId := range embeddedResourceScopeOpenIds.GetScopes() {
 				scopeOpenIdId, scopeOpenIdIdOk := scopeOpenId.GetIdOk()
 				scopeOpenIdName, scopeOpenIdNameOk := scopeOpenId.GetNameOk()
-				isOpenIdResource := strings.Contains(string(*resourceType), "OPENID_CONNECT")
-				if scopeOpenIdIdOk && scopeOpenIdNameOk && isOpenIdResource {
+				if scopeOpenIdIdOk && scopeOpenIdNameOk {
 					importBlocks = append(importBlocks, connector.ImportBlock{
 						ResourceType: r.ResourceType(),
 						ResourceName: fmt.Sprintf("%s_%s", *resourceName, *scopeOpenIdName),

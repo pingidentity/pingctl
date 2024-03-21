@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 
+	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -47,6 +48,7 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 			appIdOk   bool
 			appName   *string
 			appNameOk bool
+			appRole   *management.ApplicationAccessControlRole
 			appRoleOk bool
 		)
 
@@ -55,25 +57,25 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 			appId, appIdOk = app.ApplicationOIDC.GetIdOk()
 			appName, appNameOk = app.ApplicationOIDC.GetNameOk()
 			if app.ApplicationOIDC.AccessControl != nil {
-				_, appRoleOk = app.ApplicationOIDC.AccessControl.GetRoleOk()
+				appRole, appRoleOk = app.ApplicationOIDC.AccessControl.GetRoleOk()
 			}
 		case app.ApplicationSAML != nil:
 			appId, appIdOk = app.ApplicationSAML.GetIdOk()
 			appName, appNameOk = app.ApplicationSAML.GetNameOk()
 			if app.ApplicationSAML.AccessControl != nil {
-				_, appRoleOk = app.ApplicationSAML.AccessControl.GetRoleOk()
+				appRole, appRoleOk = app.ApplicationSAML.AccessControl.GetRoleOk()
 			}
 		case app.ApplicationExternalLink != nil:
 			appId, appIdOk = app.ApplicationExternalLink.GetIdOk()
 			appName, appNameOk = app.ApplicationExternalLink.GetNameOk()
 			if app.ApplicationExternalLink.AccessControl != nil {
-				_, appRoleOk = app.ApplicationExternalLink.AccessControl.GetRoleOk()
+				appRole, appRoleOk = app.ApplicationExternalLink.AccessControl.GetRoleOk()
 			}
 		case app.ApplicationWSFED != nil:
 			appId, appIdOk = app.ApplicationWSFED.GetIdOk()
 			appName, appNameOk = app.ApplicationWSFED.GetNameOk()
 			if app.ApplicationWSFED.AccessControl != nil {
-				_, appRoleOk = app.ApplicationWSFED.AccessControl.GetRoleOk()
+				appRole, appRoleOk = app.ApplicationWSFED.AccessControl.GetRoleOk()
 			}
 		default:
 			continue
@@ -90,11 +92,10 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 
 			for _, roleAssignment := range appRoleAssignmentsEmbedded.GetRoleAssignments() {
 				roleAssignmentId, roleAssignmentIdOk := roleAssignment.GetIdOk()
-				roleAssignmentRoleName, roleAssignmentRoleOk := roleAssignment.GetRoleOk()
-				if roleAssignmentIdOk && roleAssignmentRoleOk {
+				if roleAssignmentIdOk {
 					importBlocks = append(importBlocks, connector.ImportBlock{
 						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *appName, *roleAssignmentRoleName),
+						ResourceName: fmt.Sprintf("%s_%s", *appName, *appRole),
 						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *roleAssignmentId),
 					})
 				}

@@ -56,6 +56,12 @@ func (r *PingoneApplicationResourceGrantResource) ExportAll() (*[]connector.Impo
 		case app.ApplicationPingOneSelfService != nil:
 			appId, appIdOk = app.ApplicationPingOneSelfService.GetIdOk()
 			appName, appNameOk = app.ApplicationPingOneSelfService.GetNameOk()
+		case app.ApplicationExternalLink != nil:
+			appId, appIdOk = app.ApplicationExternalLink.GetIdOk()
+			appName, appNameOk = app.ApplicationExternalLink.GetNameOk()
+		case app.ApplicationWSFED != nil:
+			appId, appIdOk = app.ApplicationWSFED.GetIdOk()
+			appName, appNameOk = app.ApplicationWSFED.GetNameOk()
 		default:
 			continue
 		}

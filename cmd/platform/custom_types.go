@@ -9,11 +9,13 @@ import (
 )
 
 const (
-	serviceEnumPlatform = "pingone-platform"
+	serviceEnumPlatform string = "pingone-platform"
+	serviceEnumSSO      string = "pingone-sso"
 )
 
 type MultiService struct {
-	services *[]string
+	services          *map[string]bool
+	isDefaultServices bool
 }
 
 type ExportFormat string
@@ -27,17 +29,44 @@ var (
 	_ pflag.Value = (*PingOneRegion)(nil)
 )
 
-// Implement pflag.Value interface for custom type in cobra service parameter
+// Implement pflag.Value interface for custom type in cobra MultiService parameter
+
+func NewMultiService() *MultiService {
+	return &MultiService{
+		services: &map[string]bool{
+			serviceEnumPlatform: true,
+			serviceEnumSSO:      true,
+		},
+		isDefaultServices: true,
+	}
+}
+
+func (s *MultiService) GetServices() *[]string {
+	enabledExportServices := []string{}
+
+	for k, v := range *s.services {
+		if v {
+			enabledExportServices = append(enabledExportServices, k)
+		}
+	}
+
+	return &enabledExportServices
+}
 
 func (s *MultiService) Set(service string) error {
+	// If the user is defining services to export, remove default services from map
+	if s.isDefaultServices {
+		s.services = &map[string]bool{}
+		s.isDefaultServices = false
+	}
+
 	switch service {
 	case serviceEnumPlatform:
-		if *s.services == nil {
-			s.services = &[]string{}
-		}
-		*s.services = append(*s.services, service)
+		(*s.services)[serviceEnumPlatform] = true
+	case serviceEnumSSO:
+		(*s.services)[serviceEnumSSO] = true
 	default:
-		return fmt.Errorf("unrecognized service %q. Must be one of: %q", service, serviceEnumPlatform)
+		return fmt.Errorf("unrecognized service %q. Must be one of: %q, %q", service, serviceEnumPlatform, serviceEnumSSO)
 	}
 	return nil
 }
@@ -47,7 +76,13 @@ func (s *MultiService) Type() string {
 }
 
 func (s *MultiService) String() string {
-	return fmt.Sprintf("[ %s ]", strings.Join(*s.services, ", "))
+	enabledExportServices := *s.GetServices()
+
+	if len(enabledExportServices) == 0 {
+		return "[]"
+	}
+
+	return fmt.Sprintf("[ %s ]", strings.Join(enabledExportServices, ", "))
 }
 
 // Implement pflag.Value interface for custom type in cobra export-format parameter

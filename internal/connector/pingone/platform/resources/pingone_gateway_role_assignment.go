@@ -59,15 +59,28 @@ func (r *PingoneGatewayRoleAssignmentResource) ExportAll() (*[]connector.ImportB
 						return nil, err
 					}
 
-					for roleAssignmentIndex, roleAssignment := range gatewayRoleAssignmentsEmbedded.GetRoleAssignments() {
+					for _, roleAssignment := range gatewayRoleAssignmentsEmbedded.GetRoleAssignments() {
 						roleAssignmentId, roleAssignmentIdOk := roleAssignment.GetIdOk()
-
-						if roleAssignmentIdOk {
-							importBlocks = append(importBlocks, connector.ImportBlock{
-								ResourceType: r.ResourceType(),
-								ResourceName: fmt.Sprintf("%s_role_assignment_%d", *gatewayName, (roleAssignmentIndex + 1)),
-								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *gatewayId, *roleAssignmentId),
-							})
+						roleAssignmentRole, roleAssignmentRoleOk := roleAssignment.GetRoleOk()
+						if roleAssignmentIdOk && roleAssignmentRoleOk {
+							roleAssignmentRoleId, roleAssignmentRoleIdOk := roleAssignmentRole.GetIdOk()
+							if roleAssignmentRoleIdOk {
+								apiRole, resp, err := r.clientInfo.ApiClient.ManagementAPIClient.RolesApi.ReadOneRole(r.clientInfo.Context, *roleAssignmentRoleId).Execute()
+								err = common.HandleClientResponse(resp, err, "ReadOneRole", r.ResourceType())
+								if err != nil {
+									return nil, err
+								}
+								if apiRole != nil {
+									apiRoleName, apiRoleNameOk := apiRole.GetNameOk()
+									if apiRoleNameOk {
+										importBlocks = append(importBlocks, connector.ImportBlock{
+											ResourceType: r.ResourceType(),
+											ResourceName: fmt.Sprintf("%s_%s", *gatewayName, *apiRoleName),
+											ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *gatewayId, *roleAssignmentId),
+										})
+									}
+								}
+							}
 						}
 					}
 				}

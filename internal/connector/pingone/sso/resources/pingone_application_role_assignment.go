@@ -44,42 +44,44 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 
 	for _, app := range embedded.GetApplications() {
 		var (
-			appId     *string
-			appIdOk   bool
-			appName   *string
-			appNameOk bool
-			appRole   *management.ApplicationAccessControlRole
-			appRoleOk bool
+			appId                  *string
+			appIdOk                bool
+			appName                *string
+			appNameOk              bool
+			appAccessControlRole   *management.ApplicationAccessControlRole
+			appAccessControlRoleOk bool
 		)
 
 		switch {
 		case app.ApplicationOIDC != nil:
 			appId, appIdOk = app.ApplicationOIDC.GetIdOk()
 			appName, appNameOk = app.ApplicationOIDC.GetNameOk()
-			appRole, appRoleOk = app.ApplicationOIDC.AccessControl.GetRoleOk()
+			if app.ApplicationOIDC.AccessControl != nil {
+				appAccessControlRole, appAccessControlRoleOk = app.ApplicationOIDC.AccessControl.GetRoleOk()
+			}
 		case app.ApplicationSAML != nil:
 			appId, appIdOk = app.ApplicationSAML.GetIdOk()
 			appName, appNameOk = app.ApplicationSAML.GetNameOk()
 			if app.ApplicationSAML.AccessControl != nil {
-				appRole, appRoleOk = app.ApplicationSAML.AccessControl.GetRoleOk()
+				appAccessControlRole, appAccessControlRoleOk = app.ApplicationSAML.AccessControl.GetRoleOk()
 			}
 		case app.ApplicationExternalLink != nil:
 			appId, appIdOk = app.ApplicationExternalLink.GetIdOk()
 			appName, appNameOk = app.ApplicationExternalLink.GetNameOk()
 			if app.ApplicationExternalLink.AccessControl != nil {
-				appRole, appRoleOk = app.ApplicationExternalLink.AccessControl.GetRoleOk()
+				appAccessControlRole, appAccessControlRoleOk = app.ApplicationExternalLink.AccessControl.GetRoleOk()
 			}
 		case app.ApplicationWSFED != nil:
 			appId, appIdOk = app.ApplicationWSFED.GetIdOk()
 			appName, appNameOk = app.ApplicationWSFED.GetNameOk()
 			if app.ApplicationWSFED.AccessControl != nil {
-				appRole, appRoleOk = app.ApplicationWSFED.AccessControl.GetRoleOk()
+				appAccessControlRole, appAccessControlRoleOk = app.ApplicationWSFED.AccessControl.GetRoleOk()
 			}
 		default:
 			continue
 		}
 
-		if appIdOk && appNameOk && appRoleOk {
+		if appIdOk && appNameOk && appAccessControlRoleOk && appAccessControlRole.GetType() == management.ENUMAPPLICATIONACCESSCONTROLTYPE_ADMIN_USERS_ONLY {
 			apiExecutePoliciesFunc := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationRoleAssignmentsApi.ReadApplicationRoleAssignments(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *appId).Execute
 			apiApplicationRoleAssignmentsFunctionName := "ReadApplicationRoleAssignments"
 
@@ -90,12 +92,26 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 
 			for _, roleAssignment := range appRoleAssignmentsEmbedded.GetRoleAssignments() {
 				roleAssignmentId, roleAssignmentIdOk := roleAssignment.GetIdOk()
-				if roleAssignmentIdOk {
-					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *appName, *appRole),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *roleAssignmentId),
-					})
+				roleAssignmentRole, roleAssignmentRoleOk := roleAssignment.GetRoleOk()
+				if roleAssignmentIdOk && roleAssignmentRoleOk {
+					roleAssignmentRoleId, roleAssignmentRoleIdOk := roleAssignmentRole.GetIdOk()
+					if roleAssignmentRoleIdOk {
+						apiRole, resp, err := r.clientInfo.ApiClient.ManagementAPIClient.RolesApi.ReadOneRole(r.clientInfo.Context, *roleAssignmentRoleId).Execute()
+						err = common.HandleClientResponse(resp, err, "ReadOneRole", r.ResourceType())
+						if err != nil {
+							return nil, err
+						}
+						if apiRole != nil {
+							apiRoleName, apiRoleNameOk := apiRole.GetNameOk()
+							if apiRoleNameOk {
+								importBlocks = append(importBlocks, connector.ImportBlock{
+									ResourceType: r.ResourceType(),
+									ResourceName: fmt.Sprintf("%s_%s", *appName, *apiRoleName),
+									ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *roleAssignmentId),
+								})
+							}
+						}
+					}
 				}
 			}
 		}

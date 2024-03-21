@@ -8,6 +8,29 @@ import (
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
+func HandleClientResponse(response *http.Response, err error, apiFunctionName string, resourceType string) error {
+	l := logger.Get()
+	defer response.Body.Close()
+
+	if err != nil {
+		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
+		return err
+	}
+
+	if response.StatusCode == 404 {
+		l.Error().Msgf("%s Request was not successful. Resources %s not found", apiFunctionName, resourceType)
+		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
+		return fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
+	}
+
+	if response.StatusCode >= 300 {
+		l.Error().Msgf("%s Request was not successful", apiFunctionName)
+		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
+		return fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
+	}
+	return nil
+}
+
 // Executes the function apiExecuteFunc for the ManagementAPIClient
 // Handles err and response if Client call failed
 // Returns embedded data if not nil
@@ -17,23 +40,9 @@ func GetManagementEmbedded(apiExecuteFunc func() (*management.EntityArray, *http
 
 	entityArray, response, err := apiExecuteFunc()
 
-	defer response.Body.Close()
-
+	err = HandleClientResponse(response, err, apiFunctionName, resourceType)
 	if err != nil {
-		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
 		return nil, err
-	}
-
-	if response.StatusCode == 404 {
-		l.Error().Msgf("%s Request was not successful. Resources %s not found", apiFunctionName, resourceType)
-		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
-	}
-
-	if response.StatusCode >= 300 {
-		l.Error().Msgf("%s Request was not successful", apiFunctionName)
-		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
-		return nil, fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
 	}
 
 	if entityArray == nil {

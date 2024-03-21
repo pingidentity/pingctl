@@ -59,13 +59,13 @@ func (r *PingoneGatewayRoleAssignmentResource) ExportAll() (*[]connector.ImportB
 						return nil, err
 					}
 
-					for roleAssignmentIndex, roleAssignment := range gatewayRoleAssignmentsEmbedded.GetRoleAssignments() {
+					for _, roleAssignment := range gatewayRoleAssignmentsEmbedded.GetRoleAssignments() {
 						roleAssignmentId, roleAssignmentIdOk := roleAssignment.GetIdOk()
-
-						if roleAssignmentIdOk {
+						roleAssignmentRoleName, roleAssignmentRoleOk := roleAssignment.GetRoleOk()
+						if roleAssignmentIdOk && roleAssignmentRoleOk {
 							importBlocks = append(importBlocks, connector.ImportBlock{
 								ResourceType: r.ResourceType(),
-								ResourceName: fmt.Sprintf("%s_role_assignment_%d", *gatewayName, (roleAssignmentIndex + 1)),
+								ResourceName: fmt.Sprintf("%s_role_assignment_%s", *gatewayName, *roleAssignmentRoleName),
 								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *gatewayId, *roleAssignmentId),
 							})
 						}

@@ -45,6 +45,7 @@ func (c *PingoneSSOConnector) Export(format, outputDir string, overwriteExport b
 		resources.ApplicationAttributeMapping(&c.clientInfo),
 		resources.ApplicationFlowPolicyAssignment(&c.clientInfo),
 		resources.ApplicationResourceGrant(&c.clientInfo),
+		resources.ApplicationRoleAssignment(&c.clientInfo),
 		resources.ApplicationSecret(&c.clientInfo),
 		resources.ApplicationSignOnPolicyAssignment(&c.clientInfo),
 		resources.Group(&c.clientInfo),
@@ -61,6 +62,7 @@ func (c *PingoneSSOConnector) Export(format, outputDir string, overwriteExport b
 		resources.ResourceScopePingOneApi(&c.clientInfo),
 		resources.SchemaAttribute(&c.clientInfo),
 		resources.SignOnPolicy(&c.clientInfo),
+		resources.SignOnPolicyAction(&c.clientInfo),
 		resources.User(&c.clientInfo),
 		resources.UserGroupAssignment(&c.clientInfo),
 	}

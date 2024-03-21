@@ -113,6 +113,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		ssoresources.ResourceScopePingOneApi(&c.clientInfo),
 		ssoresources.SchemaAttribute(&c.clientInfo),
 		ssoresources.SignOnPolicy(&c.clientInfo),
+		ssoresources.SignOnPolicyAction(&c.clientInfo),
 		ssoresources.User(&c.clientInfo),
 		ssoresources.UserGroupAssignment(&c.clientInfo),
 	}

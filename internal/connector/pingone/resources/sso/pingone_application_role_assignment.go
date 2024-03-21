@@ -60,15 +60,21 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 		case app.ApplicationSAML != nil:
 			appId, appIdOk = app.ApplicationSAML.GetIdOk()
 			appName, appNameOk = app.ApplicationSAML.GetNameOk()
-			appRole, appRoleOk = app.ApplicationSAML.AccessControl.GetRoleOk()
+			if app.ApplicationSAML.AccessControl != nil {
+				appRole, appRoleOk = app.ApplicationSAML.AccessControl.GetRoleOk()
+			}
 		case app.ApplicationExternalLink != nil:
 			appId, appIdOk = app.ApplicationExternalLink.GetIdOk()
 			appName, appNameOk = app.ApplicationExternalLink.GetNameOk()
-			appRole, appRoleOk = app.ApplicationExternalLink.AccessControl.GetRoleOk()
+			if app.ApplicationExternalLink.AccessControl != nil {
+				appRole, appRoleOk = app.ApplicationExternalLink.AccessControl.GetRoleOk()
+			}
 		case app.ApplicationWSFED != nil:
 			appId, appIdOk = app.ApplicationWSFED.GetIdOk()
 			appName, appNameOk = app.ApplicationWSFED.GetNameOk()
-			appRole, appRoleOk = app.ApplicationWSFED.AccessControl.GetRoleOk()
+			if app.ApplicationWSFED.AccessControl != nil {
+				appRole, appRoleOk = app.ApplicationWSFED.AccessControl.GetRoleOk()
+			}
 		default:
 			continue
 		}

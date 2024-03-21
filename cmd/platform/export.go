@@ -7,8 +7,8 @@ import (
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
-	"github.com/pingidentity/pingctl/internal/connector/pingone_platform"
-	"github.com/pingidentity/pingctl/internal/connector/pingone_sso"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/platform"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/sso"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/spf13/cobra"
@@ -86,6 +86,18 @@ func NewExportCommand() *cobra.Command {
 				outputDir = pwd
 			}
 
+			// Validate outputDir exists
+			l.Debug().Msgf("Validating export output directory...")
+
+			_, err = os.Stat(outputDir)
+			if err != nil {
+				output.Format(cmd, output.CommandOutput{
+					Message: fmt.Sprintf("Failed to find or validate export output directory %q", outputDir),
+					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+				})
+				return err
+			}
+
 			// Find the env ID to export. Default to worker env id if not provided by user.
 			exportEnvID := viper.GetString(pingoneExportEnvironmentIdParamConfigKey)
 			if exportEnvID == "" {
@@ -101,15 +113,34 @@ func NewExportCommand() *cobra.Command {
 				}
 			}
 
+			l.Debug().Msgf("Validating export environment ID...")
+
+			environment, response, err := apiClient.ManagementAPIClient.EnvironmentsApi.ReadOneEnvironment(cmd.Context(), exportEnvID).Execute()
+			defer response.Body.Close()
+			if err != nil {
+				l.Error().Err(err).Msgf("ReadOneEnvironment Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+				return err
+			}
+
+			if environment == nil {
+				l.Error().Msgf("Returned ReadOneEnvironment() environment is nil.")
+				l.Error().Msgf("ReadOneEnvironment Response Code: %s\nResponse Body: %s", response.Status, response.Body)
+				if response.StatusCode == 404 {
+					return fmt.Errorf("failed to fetch environment. the provided environment id %q does not exist", exportEnvID)
+				} else {
+					return fmt.Errorf("failed to fetch environment %q via ReadOneEnvironment()", exportEnvID)
+				}
+			}
+
 			// Using the --service parameter(s) provided by user, build list of connectors to export
 			exportableConnectors := []connector.Exportable{}
 
 			for _, service := range *multiService.GetServices() {
 				switch service {
 				case serviceEnumPlatform:
-					exportableConnectors = append(exportableConnectors, pingone_platform.PlatformConnector(cmd.Context(), apiClient, exportEnvID))
+					exportableConnectors = append(exportableConnectors, platform.PlatformConnector(cmd.Context(), apiClient, exportEnvID))
 				case serviceEnumSSO:
-					exportableConnectors = append(exportableConnectors, pingone_sso.SSOConnector(cmd.Context(), apiClient, exportEnvID))
+					exportableConnectors = append(exportableConnectors, sso.SSOConnector(cmd.Context(), apiClient, exportEnvID))
 					// default:
 					// This unrecognized service condition is handled by cobra with the custom type MultiService
 				}

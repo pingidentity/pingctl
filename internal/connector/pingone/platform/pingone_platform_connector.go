@@ -1,13 +1,12 @@
-package pingone_platform
+package platform
 
 import (
 	"context"
-	"fmt"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
-	"github.com/pingidentity/pingctl/internal/connector/pingone_platform/resources"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -38,25 +37,6 @@ func PlatformConnector(ctx context.Context, apiClient *sdk.Client, exportEnviron
 
 func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExport bool) error {
 	l := logger.Get()
-
-	l.Debug().Msgf("Validating export environment ID...")
-
-	environment, response, err := c.clientInfo.ApiClient.ManagementAPIClient.EnvironmentsApi.ReadOneEnvironment(c.clientInfo.Context, c.clientInfo.ExportEnvironmentID).Execute()
-	defer response.Body.Close()
-	if err != nil {
-		l.Error().Err(err).Msgf("ReadOneEnvironment Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		return err
-	}
-
-	if environment == nil {
-		l.Error().Msgf("Returned ReadOneEnvironment() environment is nil.")
-		l.Error().Msgf("ReadOneEnvironment Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-		if response.StatusCode == 404 {
-			return fmt.Errorf("failed to fetch environment. the provided environment id %q does not exist", c.clientInfo.ExportEnvironmentID)
-		} else {
-			return fmt.Errorf("failed to fetch environment %q via ReadOneEnvironment()", c.clientInfo.ExportEnvironmentID)
-		}
-	}
 
 	l.Debug().Msgf("Exporting all PingOne Platform Resources...")
 
@@ -93,7 +73,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.Webhook(&c.clientInfo),
 	}
 
-	return common.WriteFiles(exportableResources, l, format, outputDir, overwriteExport)
+	return common.WriteFiles(exportableResources, format, outputDir, c.ConnectorServiceName(), overwriteExport)
 }
 
 func (c *PingonePlatformConnector) ConnectorServiceName() string {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
@@ -61,7 +62,7 @@ func NewExportCommand() *cobra.Command {
 
 			l.Debug().Msgf("Export Subcommand Called.")
 
-			apiClient, err := initApiClient(cmd.Context())
+			apiClient, err := initApiClient(cmd.Context(), cmd.Root().Version)
 			if err != nil {
 				output.Format(cmd, output.CommandOutput{
 					Message: "Unable to initialize PingOne SDK client",
@@ -204,7 +205,7 @@ func init() {
 	l.Debug().Msgf("Initializing Export Subcommand...")
 }
 
-func initApiClient(ctx context.Context) (*sdk.Client, error) {
+func initApiClient(ctx context.Context, version string) (*sdk.Client, error) {
 	l := logger.Get()
 
 	if apiClient != nil {
@@ -232,11 +233,18 @@ func initApiClient(ctx context.Context) (*sdk.Client, error) {
 		return nil, fmt.Errorf("unrecognized PingOne Region: %q. Must be one of: %q, %q, %q, %q", region, connector.ENUMREGION_AP, connector.ENUMREGION_CA, connector.ENUMREGION_EU, connector.ENUMREGION_NA)
 	}
 
+	userAgent := fmt.Sprintf("pingctl/%s", version)
+
+	if v := strings.TrimSpace(os.Getenv("PINGCTL_PINGONE_APPEND_USER_AGENT")); v != "" {
+		userAgent += fmt.Sprintf(" %s", v)
+	}
+
 	apiConfig := &sdk.Config{
-		ClientID:      &clientID,
-		ClientSecret:  &clientSecret,
-		EnvironmentID: &environmentID,
-		Region:        region,
+		ClientID:        &clientID,
+		ClientSecret:    &clientSecret,
+		EnvironmentID:   &environmentID,
+		Region:          region,
+		UserAgentSuffix: &userAgent,
 	}
 
 	client, err := apiConfig.APIClient(ctx)

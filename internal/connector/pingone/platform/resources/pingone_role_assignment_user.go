@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 
+	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -43,10 +44,9 @@ func (r *PingoneRoleAssignmentUserResource) ExportAll() (*[]connector.ImportBloc
 
 	for _, user := range usersEmbedded.GetUsers() {
 		userId, userIdOk := user.GetIdOk()
-		userName, userNameOk := user.GetNameOk()
-		userNameGiven, userNameGivenOk := userName.GetGivenOk()
+		userName, userNameOk := user.GetUsernameOk()
 
-		if userIdOk && userNameOk && userNameGivenOk {
+		if userIdOk && userNameOk {
 			apiExecuteFunc = r.clientInfo.ApiClient.ManagementAPIClient.UserRoleAssignmentsApi.ReadUserRoleAssignments(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *userId).Execute
 			apiFunctionName = "ReadUserRoleAssignments"
 
@@ -54,15 +54,44 @@ func (r *PingoneRoleAssignmentUserResource) ExportAll() (*[]connector.ImportBloc
 			if err != nil {
 				return nil, err
 			}
-			for index, userRoleAssignment := range userRoleAssignmentsEmbedded.GetRoleAssignments() {
+			for userRoleAssignmentIndex, userRoleAssignment := range userRoleAssignmentsEmbedded.GetRoleAssignments() {
 				userRoleAssignmentId, userRoleAssignmentIdOk := userRoleAssignment.GetIdOk()
+				userRoleAssignmentRole, userRoleAssignmentRoleOk := userRoleAssignment.GetRoleOk()
+				userRoleAssignmentScope, userRoleAssignmentScopeOk := userRoleAssignment.GetScopeOk()
 
-				if userRoleAssignmentIdOk {
-					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_role_assignment_%d", *userNameGiven, index),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *userId, *userRoleAssignmentId),
-					})
+				var (
+					userRoleAssignmentRoleId   *string
+					userRoleAssignmentRoleIdOk bool
+
+					userRoleAssignmentScopeType   *management.EnumRoleAssignmentScopeType
+					userRoleAssignmentScopeTypeOk bool
+				)
+
+				if userRoleAssignmentRoleOk {
+					userRoleAssignmentRoleId, userRoleAssignmentRoleIdOk = userRoleAssignmentRole.GetIdOk()
+				}
+
+				if userRoleAssignmentScopeOk {
+					userRoleAssignmentScopeType, userRoleAssignmentScopeTypeOk = userRoleAssignmentScope.GetTypeOk()
+				}
+
+				if userRoleAssignmentIdOk && userRoleAssignmentRoleOk && userRoleAssignmentRoleIdOk && userRoleAssignmentScopeOk && userRoleAssignmentScopeTypeOk {
+					role, response, err := r.clientInfo.ApiClient.ManagementAPIClient.RolesApi.ReadOneRole(r.clientInfo.Context, *userRoleAssignmentRoleId).Execute()
+					err = common.HandleClientResponse(response, err, "ReadOneRole", r.ResourceType())
+					if err != nil {
+						return nil, err
+					}
+
+					if role != nil {
+						roleName, roleNameOk := role.GetNameOk()
+						if roleNameOk {
+							importBlocks = append(importBlocks, connector.ImportBlock{
+								ResourceType: r.ResourceType(),
+								ResourceName: fmt.Sprintf("%s_%s_%s_%d", *userName, *roleName, *userRoleAssignmentScopeType, (userRoleAssignmentIndex + 1)),
+								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *userId, *userRoleAssignmentId),
+							})
+						}
+					}
 				}
 			}
 

@@ -44,11 +44,12 @@ func (r *PingoneKeyResource) ExportAll() (*[]connector.ImportBlock, error) {
 	for _, key := range embedded.GetKeys() {
 		keyId, keyIdOk := key.GetIdOk()
 		keyName, keyNameOk := key.GetNameOk()
+		keyUsageType, keyUsageTypeOk := key.GetUsageTypeOk()
 
-		if keyIdOk && keyNameOk {
+		if keyIdOk && keyNameOk && keyUsageTypeOk {
 			importBlocks = append(importBlocks, connector.ImportBlock{
 				ResourceType: r.ResourceType(),
-				ResourceName: *keyName,
+				ResourceName: fmt.Sprintf("%s_%s", *keyName, *keyUsageType),
 				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *keyId),
 			})
 		}

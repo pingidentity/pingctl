@@ -2,6 +2,7 @@ package connector
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -33,4 +34,28 @@ func (b *ImportBlock) Sanitize() {
 	b.ResourceName = regexp.MustCompile(`[^a-zA-Z0-9_]+`).ReplaceAllString(b.ResourceName, "")
 	// Make everything lowercase
 	b.ResourceName = strings.ToLower(b.ResourceName)
+}
+
+func (b *ImportBlock) Equals(a ImportBlock) bool {
+	if a.ResourceType != b.ResourceType {
+		return false
+	}
+
+	if a.ResourceName != b.ResourceName {
+		return false
+	}
+
+	if a.ResourceID != b.ResourceID {
+		return false
+	}
+
+	return true
+}
+
+func (b *ImportBlock) String() string {
+	pattern := `import {
+		to = %s.%s
+		id = "%s"
+	}`
+	return fmt.Sprintf(pattern, b.ResourceType, b.ResourceName, b.ResourceID)
 }

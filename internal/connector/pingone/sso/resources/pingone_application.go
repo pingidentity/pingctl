@@ -59,9 +59,6 @@ func (r *PingoneApplicationResource) ExportAll() (*[]connector.ImportBlock, erro
 		case app.ApplicationExternalLink != nil:
 			appId, appIdOk = app.ApplicationExternalLink.GetIdOk()
 			appName, appNameOk = app.ApplicationExternalLink.GetNameOk()
-		case app.ApplicationWSFED != nil:
-			appId, appIdOk = app.ApplicationWSFED.GetIdOk()
-			appName, appNameOk = app.ApplicationWSFED.GetNameOk()
 		default:
 			continue
 		}

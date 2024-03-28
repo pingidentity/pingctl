@@ -56,9 +56,6 @@ func (r *PingoneApplicationAttributeMappingResource) ExportAll() (*[]connector.I
 		case app.ApplicationSAML != nil:
 			appId, appIdOk = app.ApplicationSAML.GetIdOk()
 			appName, appNameOk = app.ApplicationSAML.GetNameOk()
-		case app.ApplicationWSFED != nil:
-			appId, appIdOk = app.ApplicationWSFED.GetIdOk()
-			appName, appNameOk = app.ApplicationWSFED.GetNameOk()
 		default:
 			continue
 		}

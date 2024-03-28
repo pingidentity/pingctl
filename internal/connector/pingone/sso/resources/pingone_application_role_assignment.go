@@ -71,12 +71,6 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 			if app.ApplicationExternalLink.AccessControl != nil {
 				appAccessControlRole, appAccessControlRoleOk = app.ApplicationExternalLink.AccessControl.GetRoleOk()
 			}
-		case app.ApplicationWSFED != nil:
-			appId, appIdOk = app.ApplicationWSFED.GetIdOk()
-			appName, appNameOk = app.ApplicationWSFED.GetNameOk()
-			if app.ApplicationWSFED.AccessControl != nil {
-				appAccessControlRole, appAccessControlRoleOk = app.ApplicationWSFED.AccessControl.GetRoleOk()
-			}
 		default:
 			continue
 		}

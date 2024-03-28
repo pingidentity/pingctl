@@ -22,5 +22,10 @@ func TestBrandingThemeDefaultExport(t *testing.T) {
 		},
 	}
 
-	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	expectedImportBlocksMap := map[string]connector.ImportBlock{}
+	for _, importBlock := range expectedImportBlocks {
+		expectedImportBlocksMap[importBlock.ResourceName] = importBlock
+	}
+
+	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocksMap)
 }

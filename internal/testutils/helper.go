@@ -11,18 +11,18 @@ import (
 )
 
 var (
-	envIdOnce      sync.Once
-	apiClientOnce  sync.Once
-	sdkClientInfo  *connector.SDKClientInfo
-	environementId string
+	envIdOnce     sync.Once
+	apiClientOnce sync.Once
+	sdkClientInfo *connector.SDKClientInfo
+	environmentId string
 )
 
 func GetEnvironmentID() string {
 	envIdOnce.Do(func() {
-		environementId = os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+		environmentId = os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
 	})
 
-	return environementId
+	return environmentId
 }
 
 // Utility method to print log file if present.
@@ -77,7 +77,7 @@ func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
 	return sdkClientInfo
 }
 
-func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, expectedImportBlocks *[]connector.ImportBlock) {
+func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, expectedImportBlocksMap *map[string]connector.ImportBlock) {
 	t.Helper()
 
 	importBlocks, err := resource.ExportAll()
@@ -86,15 +86,20 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 	}
 
 	// Check number of export blocks
-	expectedNumberOfBlocks := len(*expectedImportBlocks)
+	var expectedNumberOfBlocks int
+	if *expectedImportBlocksMap == nil {
+		expectedNumberOfBlocks = 0
+	} else {
+		expectedNumberOfBlocks = len(*expectedImportBlocksMap)
+	}
 	actualNumberOfBlocks := len(*importBlocks)
 	if actualNumberOfBlocks != expectedNumberOfBlocks {
 		t.Fatalf("Expected %d import blocks, got %d", expectedNumberOfBlocks, actualNumberOfBlocks)
 	}
 
 	// Make sure the importblocks match the expected import blocks
-	for index, importBlock := range *importBlocks {
-		expectedImportBlock := (*expectedImportBlocks)[index]
+	for _, importBlock := range *importBlocks {
+		expectedImportBlock := (*expectedImportBlocksMap)[importBlock.ResourceName]
 
 		if !importBlock.Equals(expectedImportBlock) {
 			t.Errorf("Expected import block \n%s\n Got import block \n%s", expectedImportBlock.String(), importBlock.String())

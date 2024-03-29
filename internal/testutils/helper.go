@@ -114,9 +114,9 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 
 	// Make sure the importblocks match the expected import blocks
 	for _, importBlock := range *importBlocks {
-		expectedImportBlock := (expectedImportBlocksMap)[importBlock.ResourceName]
+		expectedImportBlock, ok := expectedImportBlocksMap[importBlock.ResourceName]
 
-		if expectedImportBlock.Equals(connector.ImportBlock{}) {
+		if !ok {
 			t.Errorf("No matching expected import block for generated import block:\n%s", importBlock.String())
 			continue
 		}

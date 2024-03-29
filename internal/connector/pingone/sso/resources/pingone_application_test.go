@@ -48,10 +48,5 @@ func TestApplicationExport(t *testing.T) {
 		},
 	}
 
-	expectedImportBlocksMap := map[string]connector.ImportBlock{}
-	for _, importBlock := range expectedImportBlocks {
-		expectedImportBlocksMap[importBlock.ResourceName] = importBlock
-	}
-
-	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocksMap)
+	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

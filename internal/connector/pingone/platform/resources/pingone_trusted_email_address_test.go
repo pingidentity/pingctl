@@ -16,10 +16,5 @@ func TestTrustedEmailAddressExport(t *testing.T) {
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{}
 
-	expectedImportBlocksMap := map[string]connector.ImportBlock{}
-	for _, importBlock := range expectedImportBlocks {
-		expectedImportBlocksMap[importBlock.ResourceName] = importBlock
-	}
-
-	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocksMap)
+	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

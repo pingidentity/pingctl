@@ -77,7 +77,7 @@ func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
 	return sdkClientInfo
 }
 
-func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, expectedImportBlocksMap *map[string]connector.ImportBlock) {
+func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, expectedImportBlocks *[]connector.ImportBlock) {
 	t.Helper()
 
 	importBlocks, err := resource.ExportAll()
@@ -100,13 +100,13 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 		resourceIDs[importBlock.ResourceID] = true
 	}
 
-	// Check number of export blocks
-	var expectedNumberOfBlocks int
-	if *expectedImportBlocksMap == nil {
-		expectedNumberOfBlocks = 0
-	} else {
-		expectedNumberOfBlocks = len(*expectedImportBlocksMap)
+	expectedImportBlocksMap := map[string]connector.ImportBlock{}
+	for _, importBlock := range *expectedImportBlocks {
+		expectedImportBlocksMap[importBlock.ResourceName] = importBlock
 	}
+
+	// Check number of export blocks
+	expectedNumberOfBlocks := len(expectedImportBlocksMap)
 	actualNumberOfBlocks := len(*importBlocks)
 	if actualNumberOfBlocks != expectedNumberOfBlocks {
 		t.Fatalf("Expected %d import blocks, got %d", expectedNumberOfBlocks, actualNumberOfBlocks)
@@ -114,7 +114,7 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 
 	// Make sure the importblocks match the expected import blocks
 	for _, importBlock := range *importBlocks {
-		expectedImportBlock := (*expectedImportBlocksMap)[importBlock.ResourceName]
+		expectedImportBlock := (expectedImportBlocksMap)[importBlock.ResourceName]
 
 		if expectedImportBlock.Equals(connector.ImportBlock{}) {
 			t.Errorf("No matching expected import block for generated import block:\n%s", importBlock.String())

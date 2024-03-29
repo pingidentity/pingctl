@@ -84,7 +84,7 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 				return nil, err
 			}
 
-			for _, roleAssignment := range appRoleAssignmentsEmbedded.GetRoleAssignments() {
+			for roleAssignmentIndex, roleAssignment := range appRoleAssignmentsEmbedded.GetRoleAssignments() {
 				roleAssignmentId, roleAssignmentIdOk := roleAssignment.GetIdOk()
 				roleAssignmentRole, roleAssignmentRoleOk := roleAssignment.GetRoleOk()
 				if roleAssignmentIdOk && roleAssignmentRoleOk {
@@ -100,7 +100,7 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 							if apiRoleNameOk {
 								importBlocks = append(importBlocks, connector.ImportBlock{
 									ResourceType: r.ResourceType(),
-									ResourceName: fmt.Sprintf("%s_%s", *appName, *apiRoleName),
+									ResourceName: fmt.Sprintf("%s_%s_%d", *appName, *apiRoleName, (roleAssignmentIndex + 1)),
 									ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *roleAssignmentId),
 								})
 							}

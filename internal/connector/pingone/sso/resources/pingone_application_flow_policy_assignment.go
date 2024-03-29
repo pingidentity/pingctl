@@ -72,14 +72,36 @@ func (r *PingoneApplicationFlowPolicyAssignmentResource) ExportAll() (*[]connect
 				return nil, err
 			}
 
-			for _, policy := range policyEmbedded.GetFlowPolicyAssignments() {
-				policyId, policyIdOk := policy.GetIdOk()
-				if policyIdOk {
-					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *appName, *policyId),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *policyId),
-					})
+			for _, flowPolicyAssignment := range policyEmbedded.GetFlowPolicyAssignments() {
+				flowPolicyAssignmentId, flowPolicyAssignmentIdOk := flowPolicyAssignment.GetIdOk()
+				flowPolicyAssignmentFlowPolicy, flowPolicyAssignmentFlowPolicyOk := flowPolicyAssignment.GetFlowPolicyOk()
+
+				var (
+					flowPolicyId   *string
+					flowPolicyIdOk bool
+				)
+
+				if flowPolicyAssignmentFlowPolicyOk {
+					flowPolicyId, flowPolicyIdOk = flowPolicyAssignmentFlowPolicy.GetIdOk()
+				}
+
+				if flowPolicyAssignmentIdOk && flowPolicyAssignmentFlowPolicyOk && flowPolicyIdOk {
+					flowPolicy, response, err := r.clientInfo.ApiClient.ManagementAPIClient.FlowPoliciesApi.ReadOneFlowPolicy(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *flowPolicyId).Execute()
+					err = common.HandleClientResponse(response, err, "ReadOneFlowPolicy", r.ResourceType())
+					if err != nil {
+						return nil, err
+					}
+
+					if flowPolicy != nil {
+						flowPolicyName, flowPolicyNameOk := flowPolicy.GetNameOk()
+						if flowPolicyNameOk {
+							importBlocks = append(importBlocks, connector.ImportBlock{
+								ResourceType: r.ResourceType(),
+								ResourceName: fmt.Sprintf("%s_%s", *appName, *flowPolicyName),
+								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *flowPolicyAssignmentId),
+							})
+						}
+					}
 				}
 			}
 		}

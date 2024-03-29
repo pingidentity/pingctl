@@ -1,24 +1,25 @@
 package resources_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/connector"
-	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/sso/resources"
 	"github.com/pingidentity/pingctl/internal/testutils"
 )
 
-func TestBrandingThemeDefaultExport(t *testing.T) {
+func TestIdentityProviderExport(t *testing.T) {
 	// Get initialized apiClient and resource
 	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
-	resource := resources.BrandingThemeDefault(sdkClientInfo)
+	resource := resources.IdentityProvider(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{
 		{
-			ResourceType: "pingone_branding_theme_default",
-			ResourceName: "active_theme",
-			ResourceID:   testutils.GetEnvironmentID(),
+			ResourceType: "pingone_identity_provider",
+			ResourceName: "Test IdP",
+			ResourceID:   fmt.Sprintf("%s/a99df558-7090-4303-8f35-860ac660e371", testutils.GetEnvironmentID()),
 		},
 	}
 

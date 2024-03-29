@@ -1,24 +1,25 @@
 package resources_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/connector"
-	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/sso/resources"
 	"github.com/pingidentity/pingctl/internal/testutils"
 )
 
-func TestBrandingThemeDefaultExport(t *testing.T) {
+func TestGroupNestingExport(t *testing.T) {
 	// Get initialized apiClient and resource
 	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
-	resource := resources.BrandingThemeDefault(sdkClientInfo)
+	resource := resources.GroupNesting(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{
 		{
-			ResourceType: "pingone_branding_theme_default",
-			ResourceName: "active_theme",
-			ResourceID:   testutils.GetEnvironmentID(),
+			ResourceType: "pingone_group_nesting",
+			ResourceName: "My parent group_My nested group",
+			ResourceID:   fmt.Sprintf("%s/298cf355-6806-4058-b87e-1ae92c7fb13b/d12ae346-c596-438c-95e3-3d76f364d527", testutils.GetEnvironmentID()),
 		},
 	}
 

@@ -72,14 +72,37 @@ func (r *PingoneApplicationSignOnPolicyAssignmentResource) ExportAll() (*[]conne
 				return nil, err
 			}
 
-			for _, signOnPolicy := range signOnPolicyEmbedded.GetSignOnPolicyAssignments() {
-				signOnPolicyId, signOnPolicyIdOk := signOnPolicy.GetIdOk()
-				if signOnPolicyIdOk {
-					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *appName, *signOnPolicyId),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *signOnPolicyId),
-					})
+			for _, signOnPolicyAssignment := range signOnPolicyEmbedded.GetSignOnPolicyAssignments() {
+				signOnPolicyAssignmentId, signOnPolicyAssignmentIdOk := signOnPolicyAssignment.GetIdOk()
+				signOnPolicyAssignmentSignOnPolicy, signOnPolicyAssignmentSignOnPolicyOk := signOnPolicyAssignment.GetSignOnPolicyOk()
+
+				var (
+					signOnPolicyAssignmentSignOnPolicyId   *string
+					signOnPolicyAssignmentSignOnPolicyIdOk bool
+				)
+
+				if signOnPolicyAssignmentSignOnPolicyOk {
+					signOnPolicyAssignmentSignOnPolicyId, signOnPolicyAssignmentSignOnPolicyIdOk = signOnPolicyAssignmentSignOnPolicy.GetIdOk()
+				}
+
+				if signOnPolicyAssignmentIdOk && signOnPolicyAssignmentSignOnPolicyOk && signOnPolicyAssignmentSignOnPolicyIdOk {
+					signOnPolicy, response, err := r.clientInfo.ApiClient.ManagementAPIClient.SignOnPoliciesApi.ReadOneSignOnPolicy(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *signOnPolicyAssignmentSignOnPolicyId).Execute()
+					err = common.HandleClientResponse(response, err, "ReadOneSignOnPolicy", r.ResourceType())
+					if err != nil {
+						return nil, err
+					}
+
+					if signOnPolicy != nil {
+						signOnPolicyName, signOnPolicyNameOk := signOnPolicy.GetNameOk()
+
+						if signOnPolicyNameOk {
+							importBlocks = append(importBlocks, connector.ImportBlock{
+								ResourceType: r.ResourceType(),
+								ResourceName: fmt.Sprintf("%s_%s", *appName, *signOnPolicyName),
+								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *signOnPolicyAssignmentId),
+							})
+						}
+					}
 				}
 			}
 		}

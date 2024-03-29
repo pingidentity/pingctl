@@ -77,33 +77,12 @@ func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
 	return sdkClientInfo
 }
 
-func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, expectedImportBlocksMap *map[string]connector.ImportBlock) {
+func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, expectedImportBlocks *[]connector.ImportBlock) {
 	t.Helper()
 
 	importBlocks, err := resource.ExportAll()
 	if err != nil {
 		t.Fatalf("Failed to export %s: %s", resource.ResourceType(), err.Error())
-	}
-
-	// Check number of export blocks
-	var expectedNumberOfBlocks int
-	if *expectedImportBlocksMap == nil {
-		expectedNumberOfBlocks = 0
-	} else {
-		expectedNumberOfBlocks = len(*expectedImportBlocksMap)
-	}
-	actualNumberOfBlocks := len(*importBlocks)
-	if actualNumberOfBlocks != expectedNumberOfBlocks {
-		t.Fatalf("Expected %d import blocks, got %d", expectedNumberOfBlocks, actualNumberOfBlocks)
-	}
-
-	// Make sure the importblocks match the expected import blocks
-	for _, importBlock := range *importBlocks {
-		expectedImportBlock := (*expectedImportBlocksMap)[importBlock.ResourceName]
-
-		if !importBlock.Equals(expectedImportBlock) {
-			t.Errorf("Expected import block \n%s\n Got import block \n%s", expectedImportBlock.String(), importBlock.String())
-		}
 	}
 
 	// Make sure the resource name and id in each import block is unique across all import blocks
@@ -119,5 +98,36 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 			t.Errorf("Resource ID %s is not unique", importBlock.ResourceID)
 		}
 		resourceIDs[importBlock.ResourceID] = true
+	}
+
+	// Check if provided pointer to expected import blocks is nil, and created an empty slice if so.
+	if expectedImportBlocks == nil {
+		expectedImportBlocks = &[]connector.ImportBlock{}
+	}
+
+	expectedImportBlocksMap := map[string]connector.ImportBlock{}
+	for _, importBlock := range *expectedImportBlocks {
+		expectedImportBlocksMap[importBlock.ResourceName] = importBlock
+	}
+
+	// Check number of export blocks
+	expectedNumberOfBlocks := len(expectedImportBlocksMap)
+	actualNumberOfBlocks := len(*importBlocks)
+	if actualNumberOfBlocks != expectedNumberOfBlocks {
+		t.Fatalf("Expected %d import blocks, got %d", expectedNumberOfBlocks, actualNumberOfBlocks)
+	}
+
+	// Make sure the importblocks match the expected import blocks
+	for _, importBlock := range *importBlocks {
+		expectedImportBlock, ok := expectedImportBlocksMap[importBlock.ResourceName]
+
+		if !ok {
+			t.Errorf("No matching expected import block for generated import block:\n%s", importBlock.String())
+			continue
+		}
+
+		if !importBlock.Equals(expectedImportBlock) {
+			t.Errorf("Expected import block \n%s\n Got import block \n%s", expectedImportBlock.String(), importBlock.String())
+		}
 	}
 }

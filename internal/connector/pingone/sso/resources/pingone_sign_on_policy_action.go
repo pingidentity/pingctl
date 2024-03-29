@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 
+	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -42,11 +43,6 @@ func (r *PingoneSignOnPolicyActionResource) ExportAll() (*[]connector.ImportBloc
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
 	for _, signOnPolicy := range embedded.GetSignOnPolicies() {
-		var (
-			actionId   *string
-			actionIdOk bool
-		)
-
 		signOnPolicyId, signOnPolicyIdOk := signOnPolicy.GetIdOk()
 		signOnPolicyName, signOnPolicyNameOk := signOnPolicy.GetNameOk()
 
@@ -60,32 +56,47 @@ func (r *PingoneSignOnPolicyActionResource) ExportAll() (*[]connector.ImportBloc
 				return nil, err
 			}
 
+			var (
+				actionId     *string
+				actionIdOk   bool
+				actionType   *management.EnumSignOnPolicyType
+				actionTypeOk bool
+			)
+
 			for _, action := range actionEmbedded.GetActions() {
 				switch {
 				case action.SignOnPolicyActionAgreement != nil:
 					actionId, actionIdOk = action.SignOnPolicyActionAgreement.GetIdOk()
+					actionType, actionTypeOk = action.SignOnPolicyActionAgreement.GetTypeOk()
 				case action.SignOnPolicyActionCommon != nil:
 					actionId, actionIdOk = action.SignOnPolicyActionCommon.GetIdOk()
+					actionType, actionTypeOk = action.SignOnPolicyActionCommon.GetTypeOk()
 				case action.SignOnPolicyActionIDFirst != nil:
 					actionId, actionIdOk = action.SignOnPolicyActionIDFirst.GetIdOk()
+					actionType, actionTypeOk = action.SignOnPolicyActionIDFirst.GetTypeOk()
 				case action.SignOnPolicyActionIDP != nil:
 					actionId, actionIdOk = action.SignOnPolicyActionIDP.GetIdOk()
+					actionType, actionTypeOk = action.SignOnPolicyActionIDP.GetTypeOk()
 				case action.SignOnPolicyActionLogin != nil:
 					actionId, actionIdOk = action.SignOnPolicyActionLogin.GetIdOk()
+					actionType, actionTypeOk = action.SignOnPolicyActionLogin.GetTypeOk()
 				case action.SignOnPolicyActionMFA != nil:
 					actionId, actionIdOk = action.SignOnPolicyActionMFA.GetIdOk()
+					actionType, actionTypeOk = action.SignOnPolicyActionMFA.GetTypeOk()
 				case action.SignOnPolicyActionPingIDWinLoginPasswordless != nil:
 					actionId, actionIdOk = action.SignOnPolicyActionPingIDWinLoginPasswordless.GetIdOk()
+					actionType, actionTypeOk = action.SignOnPolicyActionPingIDWinLoginPasswordless.GetTypeOk()
 				case action.SignOnPolicyActionProgressiveProfiling != nil:
 					actionId, actionIdOk = action.SignOnPolicyActionProgressiveProfiling.GetIdOk()
+					actionType, actionTypeOk = action.SignOnPolicyActionProgressiveProfiling.GetTypeOk()
 				default:
 					continue
 				}
 
-				if actionIdOk {
+				if actionIdOk && actionTypeOk {
 					importBlocks = append(importBlocks, connector.ImportBlock{
 						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *signOnPolicyName, *actionId),
+						ResourceName: fmt.Sprintf("%s_%s", *signOnPolicyName, *actionType),
 						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *signOnPolicyId, *actionId),
 					})
 				}

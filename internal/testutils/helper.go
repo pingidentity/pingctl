@@ -100,6 +100,11 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 		resourceIDs[importBlock.ResourceID] = true
 	}
 
+	// Check if provided pointer to expected import blocks is nil, and created an empty slice if so.
+	if expectedImportBlocks == nil {
+		expectedImportBlocks = &[]connector.ImportBlock{}
+	}
+
 	expectedImportBlocksMap := map[string]connector.ImportBlock{}
 	for _, importBlock := range *expectedImportBlocks {
 		expectedImportBlocksMap[importBlock.ResourceName] = importBlock

@@ -54,14 +54,37 @@ func (r *PingoneGroupRoleAssignmentResource) ExportAll() (*[]connector.ImportBlo
 				return nil, err
 			}
 
-			for _, roleAssignment := range embeddedGroupRoleAssignments.GetRoleAssignments() {
-				roleAssignmentId, roleAssignmentIdOk := roleAssignment.GetIdOk()
-				if roleAssignmentIdOk {
-					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *groupName, *roleAssignmentId),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *groupId, *roleAssignmentId),
-					})
+			for groupRoleAssignmentIndex, groupRoleAssignment := range embeddedGroupRoleAssignments.GetRoleAssignments() {
+				groupRoleAssignmentId, groupRoleAssignmentIdOk := groupRoleAssignment.GetIdOk()
+				groupRoleAssignmentRole, groupRoleAssignmentRoleOk := groupRoleAssignment.GetRoleOk()
+
+				var (
+					groupRoleAssignmentRoleId   *string
+					groupRoleAssignmentRoleIdOk bool
+				)
+
+				if groupRoleAssignmentRoleOk {
+					groupRoleAssignmentRoleId, groupRoleAssignmentRoleIdOk = groupRoleAssignmentRole.GetIdOk()
+				}
+
+				if groupRoleAssignmentIdOk && groupRoleAssignmentRoleOk && groupRoleAssignmentRoleIdOk {
+					role, response, err := r.clientInfo.ApiClient.ManagementAPIClient.RolesApi.ReadOneRole(r.clientInfo.Context, *groupRoleAssignmentRoleId).Execute()
+					err = common.HandleClientResponse(response, err, "ReadOneRole", r.ResourceType())
+					if err != nil {
+						return nil, err
+					}
+
+					if role != nil {
+						roleName, roleNameOk := role.GetNameOk()
+
+						if roleNameOk {
+							importBlocks = append(importBlocks, connector.ImportBlock{
+								ResourceType: r.ResourceType(),
+								ResourceName: fmt.Sprintf("%s_%s_%d", *groupName, *roleName, (groupRoleAssignmentIndex + 1)),
+								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *groupId, *groupRoleAssignmentId),
+							})
+						}
+					}
 				}
 			}
 		}

@@ -74,12 +74,34 @@ func (r *PingoneApplicationResourceGrantResource) ExportAll() (*[]connector.Impo
 
 			for _, grant := range applicationEmbedded.GetGrants() {
 				grantId, grantIdOk := grant.GetIdOk()
-				if grantIdOk {
-					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *appName, *grantId),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *grantId),
-					})
+				grantResource, grantResourceOk := grant.GetResourceOk()
+
+				var (
+					grantResourceId   *string
+					grantResourceIdOk bool
+				)
+
+				if grantResourceOk {
+					grantResourceId, grantResourceIdOk = grantResource.GetIdOk()
+				}
+
+				if grantIdOk && grantResourceOk && grantResourceIdOk {
+					resource, response, err := r.clientInfo.ApiClient.ManagementAPIClient.ResourcesApi.ReadOneResource(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *grantResourceId).Execute()
+					err = common.HandleClientResponse(response, err, "ReadOneResource", r.ResourceType())
+					if err != nil {
+						return nil, err
+					}
+
+					if resource != nil {
+						resourceName, resourceNameOk := resource.GetNameOk()
+						if resourceNameOk {
+							importBlocks = append(importBlocks, connector.ImportBlock{
+								ResourceType: r.ResourceType(),
+								ResourceName: fmt.Sprintf("%s_%s", *appName, *resourceName),
+								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *grantId),
+							})
+						}
+					}
 				}
 			}
 		}

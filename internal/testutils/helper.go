@@ -85,6 +85,21 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 		t.Fatalf("Failed to export %s: %s", resource.ResourceType(), err.Error())
 	}
 
+	// Make sure the resource name and id in each import block is unique across all import blocks
+	resourceNames := map[string]bool{}
+	resourceIDs := map[string]bool{}
+	for _, importBlock := range *importBlocks {
+		if resourceNames[importBlock.ResourceName] {
+			t.Errorf("Resource name %s is not unique", importBlock.ResourceName)
+		}
+		resourceNames[importBlock.ResourceName] = true
+
+		if resourceIDs[importBlock.ResourceID] {
+			t.Errorf("Resource ID %s is not unique", importBlock.ResourceID)
+		}
+		resourceIDs[importBlock.ResourceID] = true
+	}
+
 	// Check number of export blocks
 	var expectedNumberOfBlocks int
 	if *expectedImportBlocksMap == nil {
@@ -101,23 +116,13 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 	for _, importBlock := range *importBlocks {
 		expectedImportBlock := (*expectedImportBlocksMap)[importBlock.ResourceName]
 
+		if expectedImportBlock.Equals(connector.ImportBlock{}) {
+			t.Errorf("No matching expected import block for generated import block:\n%s", importBlock.String())
+			continue
+		}
+
 		if !importBlock.Equals(expectedImportBlock) {
 			t.Errorf("Expected import block \n%s\n Got import block \n%s", expectedImportBlock.String(), importBlock.String())
 		}
-	}
-
-	// Make sure the resource name and id in each import block is unique across all import blocks
-	resourceNames := map[string]bool{}
-	resourceIDs := map[string]bool{}
-	for _, importBlock := range *importBlocks {
-		if resourceNames[importBlock.ResourceName] {
-			t.Errorf("Resource name %s is not unique", importBlock.ResourceName)
-		}
-		resourceNames[importBlock.ResourceName] = true
-
-		if resourceIDs[importBlock.ResourceID] {
-			t.Errorf("Resource ID %s is not unique", importBlock.ResourceID)
-		}
-		resourceIDs[importBlock.ResourceID] = true
 	}
 }

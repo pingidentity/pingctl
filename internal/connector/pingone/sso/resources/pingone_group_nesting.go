@@ -58,10 +58,20 @@ func (r *PingoneGroupNestingResource) ExportAll() (*[]connector.ImportBlock, err
 				nestedGroupId, nestedGroupIdOk := nestedGroup.GetIdOk()
 				nestedGroupName, nestedGroupNameOk := nestedGroup.GetNameOk()
 				if nestedGroupIdOk && nestedGroupNameOk {
+					commentData := map[string]string{
+						"Resource Type":         r.ResourceType(),
+						"Parent Group Name":     *parentGroupName,
+						"Nested Group Name":     *nestedGroupName,
+						"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+						"Parent Group ID":       *parentGroupId,
+						"Nested Group ID":       *nestedGroupId,
+					}
+
 					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *parentGroupName, *nestedGroupName),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *parentGroupId, *nestedGroupId),
+						ResourceType:       r.ResourceType(),
+						ResourceName:       fmt.Sprintf("%s_%s", *parentGroupName, *nestedGroupName),
+						ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *parentGroupId, *nestedGroupId),
+						CommentInformation: common.GenerateCommentInformation(commentData),
 					})
 				}
 			}

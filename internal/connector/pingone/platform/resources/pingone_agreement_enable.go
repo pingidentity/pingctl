@@ -39,9 +39,10 @@ func (r *PingoneAgreementEnableResource) ExportAll() (*[]connector.ImportBlock, 
 
 	for _, importBlock := range *agreementImportBlocks {
 		importBlocks = append(importBlocks, connector.ImportBlock{
-			ResourceType: r.ResourceType(),
-			ResourceName: fmt.Sprintf("%s_enable", importBlock.ResourceName),
-			ResourceID:   importBlock.ResourceID,
+			ResourceType:       r.ResourceType(),
+			ResourceName:       fmt.Sprintf("%s_enable", importBlock.ResourceName),
+			ResourceID:         importBlock.ResourceID,
+			CommentInformation: importBlock.CommentInformation,
 		})
 	}
 

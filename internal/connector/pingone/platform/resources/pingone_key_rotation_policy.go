@@ -46,10 +46,18 @@ func (r *PingoneKeyRotationPolicyResource) ExportAll() (*[]connector.ImportBlock
 		keyRotationPolicyName, keyRotationPolicyNameOk := keyRotationPolicy.GetNameOk()
 
 		if keyRotationPolicyIdOk && keyRotationPolicyNameOk {
+			commentData := map[string]string{
+				"Resource Type":            r.ResourceType(),
+				"Key Rotation Policy Name": *keyRotationPolicyName,
+				"Export Environment ID":    r.clientInfo.ExportEnvironmentID,
+				"Key Rotation Policy ID":   *keyRotationPolicyId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *keyRotationPolicyName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *keyRotationPolicyId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *keyRotationPolicyName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *keyRotationPolicyId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

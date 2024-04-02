@@ -95,10 +95,20 @@ func (r *PingoneApplicationFlowPolicyAssignmentResource) ExportAll() (*[]connect
 					if flowPolicy != nil {
 						flowPolicyName, flowPolicyNameOk := flowPolicy.GetNameOk()
 						if flowPolicyNameOk {
+							commentData := map[string]string{
+								"Resource Type":             r.ResourceType(),
+								"Application Name":          *appName,
+								"Flow Policy Name":          *flowPolicyName,
+								"Export Environment ID":     r.clientInfo.ExportEnvironmentID,
+								"Application ID":            *appId,
+								"Flow Policy Assignment ID": *flowPolicyAssignmentId,
+							}
+
 							importBlocks = append(importBlocks, connector.ImportBlock{
-								ResourceType: r.ResourceType(),
-								ResourceName: fmt.Sprintf("%s_%s", *appName, *flowPolicyName),
-								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *flowPolicyAssignmentId),
+								ResourceType:       r.ResourceType(),
+								ResourceName:       fmt.Sprintf("%s_%s", *appName, *flowPolicyName),
+								ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *flowPolicyAssignmentId),
+								CommentInformation: common.GenerateCommentInformation(commentData),
 							})
 						}
 					}

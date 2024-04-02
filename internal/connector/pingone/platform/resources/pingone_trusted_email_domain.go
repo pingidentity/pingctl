@@ -46,10 +46,18 @@ func (r *PingoneTrustedEmailDomainResource) ExportAll() (*[]connector.ImportBloc
 		emailDomainName, emailDomainNameOk := emailDomain.GetDomainNameOk()
 
 		if emailDomainIdOk && emailDomainNameOk {
+			commentData := map[string]string{
+				"Resource Type":             r.ResourceType(),
+				"Trusted Email Domain Name": *emailDomainName,
+				"Export Environment ID":     r.clientInfo.ExportEnvironmentID,
+				"Trusted Email Domain ID":   *emailDomainId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *emailDomainName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *emailDomainId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *emailDomainName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *emailDomainId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

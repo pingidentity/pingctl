@@ -76,10 +76,20 @@ func (r *PingoneGatewayCredentialResource) ExportAll() (*[]connector.ImportBlock
 				gatewayCredentialId, gatewayCredentialIdOk := gatewayCredential.GetIdOk()
 
 				if gatewayCredentialIdOk {
+					commentData := map[string]string{
+						"Resource Type":          r.ResourceType(),
+						"Gateway Name":           *gatewayName,
+						"Gateway Credential No.": fmt.Sprintf("%d", (gatewayCredentialIndex + 1)),
+						"Export Environment ID":  r.clientInfo.ExportEnvironmentID,
+						"Gateway ID":             *gatewayId,
+						"Gateway Credential ID":  *gatewayCredentialId,
+					}
+
 					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_credential_%d", *gatewayName, (gatewayCredentialIndex + 1)),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *gatewayId, *gatewayCredentialId),
+						ResourceType:       r.ResourceType(),
+						ResourceName:       fmt.Sprintf("%s_credential_%d", *gatewayName, (gatewayCredentialIndex + 1)),
+						ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *gatewayId, *gatewayCredentialId),
+						CommentInformation: common.GenerateCommentInformation(commentData),
 					})
 				}
 			}

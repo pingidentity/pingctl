@@ -54,19 +54,26 @@ func (r *PingoneTrustedEmailAddressResource) ExportAll() (*[]connector.ImportBlo
 				return nil, err
 			}
 
-			for _, trustedEmailAddress := range trustedEmailAddressEmbedded.GetTrustedEmails() {
-				if trustedEmailAddress.EmailAddress != "" {
-					trustedEmailAddressId, trustedEmailAddressIdOk := trustedEmailAddress.GetIdOk()
+			for _, trustedEmail := range trustedEmailAddressEmbedded.GetTrustedEmails() {
+				trustedEmailAddress, trustedEmailAddressOk := trustedEmail.GetEmailAddressOk()
+				trustedEmailId, trustedEmailIdOk := trustedEmail.GetIdOk()
 
-					trustedEmailAddressDomainId, trustedEmailAddressDomainIdOk := trustedEmailAddress.GetDomainIdOk()
-
-					if trustedEmailAddressIdOk && trustedEmailAddressDomainIdOk {
-						importBlocks = append(importBlocks, connector.ImportBlock{
-							ResourceType: r.ResourceType(),
-							ResourceName: fmt.Sprintf("%s_%s", *trustedEmailDomainName, trustedEmailAddress.EmailAddress),
-							ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *trustedEmailAddressDomainId, *trustedEmailAddressId),
-						})
+				if trustedEmailAddressOk && trustedEmailIdOk {
+					commentData := map[string]string{
+						"Resource Type":             r.ResourceType(),
+						"Trusted Email Domain Name": *trustedEmailDomainName,
+						"Trusted Email Address":     *trustedEmailAddress,
+						"Export Environment ID":     r.clientInfo.ExportEnvironmentID,
+						"Trusted Email Domain ID":   *trustedEmailDomainId,
+						"Trusted Email Address ID":  *trustedEmailId,
 					}
+
+					importBlocks = append(importBlocks, connector.ImportBlock{
+						ResourceType:       r.ResourceType(),
+						ResourceName:       fmt.Sprintf("%s_%s", *trustedEmailDomainName, *trustedEmailAddress),
+						ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *trustedEmailDomainId, *trustedEmailId),
+						CommentInformation: common.GenerateCommentInformation(commentData),
+					})
 				}
 			}
 		}

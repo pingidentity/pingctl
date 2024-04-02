@@ -2,6 +2,7 @@ package resources
 
 import (
 	"github.com/pingidentity/pingctl/internal/connector"
+	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -30,10 +31,16 @@ func (r *PingoneNotificationSettingsResource) ExportAll() (*[]connector.ImportBl
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
+	commentData := map[string]string{
+		"Resource Type":         r.ResourceType(),
+		"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+	}
+
 	importBlocks = append(importBlocks, connector.ImportBlock{
-		ResourceType: r.ResourceType(),
-		ResourceName: "notification_settings",
-		ResourceID:   r.clientInfo.ExportEnvironmentID,
+		ResourceType:       r.ResourceType(),
+		ResourceName:       "notification_settings",
+		ResourceID:         r.clientInfo.ExportEnvironmentID,
+		CommentInformation: common.GenerateCommentInformation(commentData),
 	})
 
 	return &importBlocks, nil

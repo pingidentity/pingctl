@@ -57,10 +57,20 @@ func (r *PingoneSchemaAttributeResource) ExportAll() (*[]connector.ImportBlock, 
 				schemaAttributeId, schemaAttributeIdOk := schemaAttribute.SchemaAttribute.GetIdOk()
 				schemaAttributeName, schemaAttributeNameOk := schemaAttribute.SchemaAttribute.GetNameOk()
 				if schemaAttributeIdOk && schemaAttributeNameOk {
+					commentData := map[string]string{
+						"Resource Type":         r.ResourceType(),
+						"Schema Name":           *schemaName,
+						"Schema Attribute Name": *schemaAttributeName,
+						"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+						"Schema ID":             *schemaId,
+						"Schema Attribute ID":   *schemaAttributeId,
+					}
+
 					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *schemaName, *schemaAttributeName),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *schemaId, *schemaAttributeId),
+						ResourceType:       r.ResourceType(),
+						ResourceName:       fmt.Sprintf("%s_%s", *schemaName, *schemaAttributeName),
+						ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *schemaId, *schemaAttributeId),
+						CommentInformation: common.GenerateCommentInformation(commentData),
 					})
 				}
 			}

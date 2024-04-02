@@ -46,10 +46,18 @@ func (r *PingoneCertificateResource) ExportAll() (*[]connector.ImportBlock, erro
 		certificateId, certificateIdOk := certificate.GetIdOk()
 
 		if certificateNameOk && certificateIdOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Certificate Name":      *certificateName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Certificate ID":        *certificateId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *certificateName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *certificateId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *certificateName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *certificateId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

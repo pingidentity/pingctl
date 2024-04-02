@@ -61,10 +61,18 @@ func (r *PingoneSystemApplicationResource) ExportAll() (*[]connector.ImportBlock
 		}
 
 		if appIdOk && appNameOk {
+			commentData := map[string]string{
+				"Resource Type":           r.ResourceType(),
+				"System Application Name": *appName,
+				"Export Environment ID":   r.clientInfo.ExportEnvironmentID,
+				"System Application ID":   *appId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *appName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *appId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *appName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *appId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

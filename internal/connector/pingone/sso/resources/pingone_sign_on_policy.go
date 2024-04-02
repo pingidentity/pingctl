@@ -46,10 +46,18 @@ func (r *PingoneSignOnPolicyResource) ExportAll() (*[]connector.ImportBlock, err
 		signOnPolicyName, signOnPolicyNameOk := signOnPolicy.GetNameOk()
 
 		if signOnPolicyIdOk && signOnPolicyNameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Sign On Policy Name":   *signOnPolicyName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Sign On Policy ID":     *signOnPolicyId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *signOnPolicyName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *signOnPolicyId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *signOnPolicyName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *signOnPolicyId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

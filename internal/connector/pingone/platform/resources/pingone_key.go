@@ -47,10 +47,19 @@ func (r *PingoneKeyResource) ExportAll() (*[]connector.ImportBlock, error) {
 		keyUsageType, keyUsageTypeOk := key.GetUsageTypeOk()
 
 		if keyIdOk && keyNameOk && keyUsageTypeOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Key Name":              *keyName,
+				"Key Usage Type":        string(*keyUsageType),
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Key ID":                *keyId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: fmt.Sprintf("%s_%s", *keyName, *keyUsageType),
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *keyId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       fmt.Sprintf("%s_%s", *keyName, *keyUsageType),
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *keyId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

@@ -60,3 +60,11 @@ func GetManagementEmbedded(apiExecuteFunc func() (*management.EntityArray, *http
 
 	return embedded, nil
 }
+
+func GenerateCommentInformation(data map[string]string) string {
+	commentInformation := "\n"
+	for key, value := range data {
+		commentInformation += fmt.Sprintf("# %s: %s\n", key, value)
+	}
+	return commentInformation
+}

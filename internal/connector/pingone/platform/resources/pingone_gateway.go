@@ -64,10 +64,18 @@ func (r *PingoneGatewayResource) ExportAll() (*[]connector.ImportBlock, error) {
 		}
 
 		if gatewayIdOk && gatewayNameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Gateway Name":          *gatewayName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Gateway ID":            *gatewayId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *gatewayName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *gatewayId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *gatewayName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *gatewayId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

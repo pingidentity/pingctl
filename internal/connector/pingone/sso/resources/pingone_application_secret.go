@@ -64,10 +64,18 @@ func (r *PingoneApplicationSecretResource) ExportAll() (*[]connector.ImportBlock
 		}
 
 		if appIdOk && appNameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Application Name":      *appName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Application ID":        *appId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: fmt.Sprintf("%s_secret", *appName),
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *appId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       fmt.Sprintf("%s_secret", *appName),
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *appId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

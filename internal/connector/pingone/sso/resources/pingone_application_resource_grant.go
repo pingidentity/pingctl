@@ -95,10 +95,20 @@ func (r *PingoneApplicationResourceGrantResource) ExportAll() (*[]connector.Impo
 					if resource != nil {
 						resourceName, resourceNameOk := resource.GetNameOk()
 						if resourceNameOk {
+							commentData := map[string]string{
+								"Resource Type":         r.ResourceType(),
+								"Application Name":      *appName,
+								"Resource Name":         *resourceName,
+								"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+								"Application ID":        *appId,
+								"Resource Grant ID":     *grantId,
+							}
+
 							importBlocks = append(importBlocks, connector.ImportBlock{
-								ResourceType: r.ResourceType(),
-								ResourceName: fmt.Sprintf("%s_%s", *appName, *resourceName),
-								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *grantId),
+								ResourceType:       r.ResourceType(),
+								ResourceName:       fmt.Sprintf("%s_%s", *appName, *resourceName),
+								ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *grantId),
+								CommentInformation: common.GenerateCommentInformation(commentData),
 							})
 						}
 					}

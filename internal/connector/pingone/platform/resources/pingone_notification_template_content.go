@@ -106,10 +106,24 @@ func (r *PingoneNotificationTemplateContentResource) ExportAll() (*[]connector.I
 			}
 
 			if templateContentsIdOk && templateDeliveryMethodOk && templateLocaleOk {
+				commentData := map[string]string{
+					"Resource Type":            r.ResourceType(),
+					"Template Name":            string(templateNameEnum),
+					"Template Delivery Method": string(*templateDeliveryMethod),
+					"Template Locale":          string(*templateLocale),
+					"Export Environment ID":    r.clientInfo.ExportEnvironmentID,
+					"Template Contents ID":     string(*templateContentsId),
+				}
+
+				if templateVariantOk {
+					commentData["Template Variant"] = *templateVariant
+				}
+
 				importBlocks = append(importBlocks, connector.ImportBlock{
-					ResourceType: r.ResourceType(),
-					ResourceName: fmt.Sprintf("%s_%s_%s%s", templateNameEnum, *templateDeliveryMethod, *templateLocale, *templateVariant),
-					ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, templateNameEnum, *templateContentsId),
+					ResourceType:       r.ResourceType(),
+					ResourceName:       fmt.Sprintf("%s_%s_%s%s", templateNameEnum, *templateDeliveryMethod, *templateLocale, *templateVariant),
+					ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, templateNameEnum, *templateContentsId),
+					CommentInformation: common.GenerateCommentInformation(commentData),
 				})
 			}
 		}

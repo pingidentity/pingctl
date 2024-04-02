@@ -59,10 +59,19 @@ func (r *PingoneResourceScopeOpenIdResource) ExportAll() (*[]connector.ImportBlo
 				scopeOpenIdId, scopeOpenIdIdOk := scopeOpenId.GetIdOk()
 				scopeOpenIdName, scopeOpenIdNameOk := scopeOpenId.GetNameOk()
 				if scopeOpenIdIdOk && scopeOpenIdNameOk {
+					commentData := map[string]string{
+						"Resource Type":            r.ResourceType(),
+						"Resource Name":            *resourceName,
+						"Scope OpenID Name":        *scopeOpenIdName,
+						"Export Environment ID":    r.clientInfo.ExportEnvironmentID,
+						"Resource Scope OpenID ID": *scopeOpenIdId,
+					}
+
 					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *resourceName, *scopeOpenIdName),
-						ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *scopeOpenIdId),
+						ResourceType:       r.ResourceType(),
+						ResourceName:       fmt.Sprintf("%s_%s", *resourceName, *scopeOpenIdName),
+						ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *scopeOpenIdId),
+						CommentInformation: common.GenerateCommentInformation(commentData),
 					})
 				}
 			}

@@ -73,10 +73,22 @@ func (r *PingoneAgreementLocalizationRevisionResource) ExportAll() (*[]connector
 							revisionId, revisionIdOk := revision.GetIdOk()
 
 							if revisionIdOk {
+								commentData := map[string]string{
+									"Resource Type":                      r.ResourceType(),
+									"Agreement Name":                     *agreementName,
+									"Agreement Language Locale":          *agreementLanguageLocale,
+									"Revision No.":                       fmt.Sprintf("%d", (revisionIndex + 1)),
+									"Export Environment ID":              r.clientInfo.ExportEnvironmentID,
+									"Agreement ID":                       *agreementId,
+									"Agreement Language ID":              *agreementLanguageId,
+									"Agreement Localization Revision ID": *revisionId,
+								}
+
 								importBlocks = append(importBlocks, connector.ImportBlock{
-									ResourceType: r.ResourceType(),
-									ResourceName: fmt.Sprintf("%s_%s_%d", *agreementName, *agreementLanguageLocale, (revisionIndex + 1)),
-									ResourceID:   fmt.Sprintf("%s/%s/%s/%s", r.clientInfo.ExportEnvironmentID, *agreementId, *agreementLanguageId, *revisionId),
+									ResourceType:       r.ResourceType(),
+									ResourceName:       fmt.Sprintf("%s_%s_%d", *agreementName, *agreementLanguageLocale, (revisionIndex + 1)),
+									ResourceID:         fmt.Sprintf("%s/%s/%s/%s", r.clientInfo.ExportEnvironmentID, *agreementId, *agreementLanguageId, *revisionId),
+									CommentInformation: common.GenerateCommentInformation(commentData),
 								})
 							}
 						}

@@ -46,10 +46,18 @@ func (r *PingoneCustomDomainResource) ExportAll() (*[]connector.ImportBlock, err
 		customDomainId, customDomainIdOk := customDomain.GetIdOk()
 
 		if customDomainIdOk && customDomainNameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Custom Domain Name":    *customDomainName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Custom Domain ID":      *customDomainId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *customDomainName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *customDomainId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *customDomainName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *customDomainId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

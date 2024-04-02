@@ -46,10 +46,18 @@ func (r *PingonePasswordPolicyResource) ExportAll() (*[]connector.ImportBlock, e
 		passwordPolicyName, passwordPolicyNameOk := passwordPolicy.GetNameOk()
 
 		if passwordPolicyIdOk && passwordPolicyNameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Password Policy Name":  *passwordPolicyName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Password Policy ID":    *passwordPolicyId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *passwordPolicyName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *passwordPolicyId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *passwordPolicyName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *passwordPolicyId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

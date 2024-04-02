@@ -46,10 +46,18 @@ func (r *PingoneWebhookResource) ExportAll() (*[]connector.ImportBlock, error) {
 		subscriptionName, subscriptionNameOk := subscription.GetNameOk()
 
 		if subscriptionIdOk && subscriptionNameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Webhook Name":          *subscriptionName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Webhook ID":            *subscriptionId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *subscriptionName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *subscriptionId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *subscriptionName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *subscriptionId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

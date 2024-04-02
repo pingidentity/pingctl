@@ -78,10 +78,20 @@ func (r *PingoneApplicationAttributeMappingResource) ExportAll() (*[]connector.I
 				attributeMappingName, attributeMappingNameOk := attributeMapping.ApplicationAttributeMapping.GetNameOk()
 
 				if attributeMappingIdOk && attributeMappingNameOk {
+					commentData := map[string]string{
+						"Resource Type":          r.ResourceType(),
+						"Application Name":       *appName,
+						"Attribute Mapping Name": *attributeMappingName,
+						"Export Environment ID":  r.clientInfo.ExportEnvironmentID,
+						"Application ID":         *appId,
+						"Attribute Mapping ID":   *attributeMappingId,
+					}
+
 					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *appName, *attributeMappingName),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *attributeMappingId),
+						ResourceType:       r.ResourceType(),
+						ResourceName:       fmt.Sprintf("%s_%s", *appName, *attributeMappingName),
+						ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *appId, *attributeMappingId),
+						CommentInformation: common.GenerateCommentInformation(commentData),
 					})
 				}
 			}

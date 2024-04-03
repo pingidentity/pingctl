@@ -96,7 +96,7 @@ func NewExportCommand() *cobra.Command {
 					Message: fmt.Sprintf("Failed to find or validate export output directory %q", outputDir),
 					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 				})
-				return err
+				return fmt.Errorf("failed to find or validate export output directory %q. Err: %s", outputDir, err.Error())
 			}
 
 			// Find the env ID to export. Default to worker env id if not provided by user.

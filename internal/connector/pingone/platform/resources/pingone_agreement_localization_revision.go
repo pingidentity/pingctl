@@ -77,7 +77,6 @@ func (r *PingoneAgreementLocalizationRevisionResource) ExportAll() (*[]connector
 									"Resource Type":                      r.ResourceType(),
 									"Agreement Name":                     *agreementName,
 									"Agreement Language Locale":          *agreementLanguageLocale,
-									"Revision No.":                       fmt.Sprintf("%d", (revisionIndex + 1)),
 									"Export Environment ID":              r.clientInfo.ExportEnvironmentID,
 									"Agreement ID":                       *agreementId,
 									"Agreement Language ID":              *agreementLanguageId,

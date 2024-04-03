@@ -79,13 +79,12 @@ func (r *PingoneGroupRoleAssignmentResource) ExportAll() (*[]connector.ImportBlo
 
 						if roleNameOk {
 							commentData := map[string]string{
-								"Resource Type":             r.ResourceType(),
-								"Group Name":                *groupName,
-								"Role Name":                 string(*roleName),
-								"Group Role Assignment No.": fmt.Sprintf("%d", (groupRoleAssignmentIndex + 1)),
-								"Export Environment ID":     r.clientInfo.ExportEnvironmentID,
-								"Group ID":                  *groupId,
-								"Group Role Assignment ID":  *groupRoleAssignmentId,
+								"Resource Type":            r.ResourceType(),
+								"Group Name":               *groupName,
+								"Role Name":                string(*roleName),
+								"Export Environment ID":    r.clientInfo.ExportEnvironmentID,
+								"Group ID":                 *groupId,
+								"Group Role Assignment ID": *groupRoleAssignmentId,
 							}
 
 							importBlocks = append(importBlocks, connector.ImportBlock{

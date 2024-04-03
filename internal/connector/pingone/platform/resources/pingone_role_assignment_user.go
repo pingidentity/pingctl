@@ -90,7 +90,6 @@ func (r *PingoneRoleAssignmentUserResource) ExportAll() (*[]connector.ImportBloc
 								"Username":                         *userName,
 								"Role Name":                        string(*roleName),
 								"User Role Asssignment Scope Type": string(*userRoleAssignmentScopeType),
-								"User Role Assignment No.":         fmt.Sprintf("%d", (userRoleAssignmentIndex + 1)),
 								"Export Environment ID":            r.clientInfo.ExportEnvironmentID,
 								"User ID":                          *userId,
 								"User Role Assignment ID":          *userRoleAssignmentId,

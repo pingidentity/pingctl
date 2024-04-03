@@ -99,13 +99,12 @@ func (r *PingoneApplicationRoleAssignmentResource) ExportAll() (*[]connector.Imp
 							apiRoleName, apiRoleNameOk := apiRole.GetNameOk()
 							if apiRoleNameOk {
 								commentData := map[string]string{
-									"Resource Type":                  r.ResourceType(),
-									"Application Name":               *appName,
-									"Role Name":                      string(*apiRoleName),
-									"Appliation Role Assignment No.": fmt.Sprintf("%d", (roleAssignmentIndex + 1)),
-									"Export Environment ID":          r.clientInfo.ExportEnvironmentID,
-									"Application ID":                 *appId,
-									"Role Assignment ID":             *roleAssignmentId,
+									"Resource Type":         r.ResourceType(),
+									"Application Name":      *appName,
+									"Role Name":             string(*apiRoleName),
+									"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+									"Application ID":        *appId,
+									"Role Assignment ID":    *roleAssignmentId,
 								}
 
 								importBlocks = append(importBlocks, connector.ImportBlock{

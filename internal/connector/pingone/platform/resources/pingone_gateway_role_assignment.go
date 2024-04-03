@@ -73,10 +73,20 @@ func (r *PingoneGatewayRoleAssignmentResource) ExportAll() (*[]connector.ImportB
 								if apiRole != nil {
 									apiRoleName, apiRoleNameOk := apiRole.GetNameOk()
 									if apiRoleNameOk {
+										commentData := map[string]string{
+											"Resource Type":         r.ResourceType(),
+											"Gateway Name":          *gatewayName,
+											"Role Name":             string(*apiRoleName),
+											"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+											"Gateway ID":            *gatewayId,
+											"Role Assignment ID":    *roleAssignmentId,
+										}
+
 										importBlocks = append(importBlocks, connector.ImportBlock{
-											ResourceType: r.ResourceType(),
-											ResourceName: fmt.Sprintf("%s_%s", *gatewayName, *apiRoleName),
-											ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *gatewayId, *roleAssignmentId),
+											ResourceType:       r.ResourceType(),
+											ResourceName:       fmt.Sprintf("%s_%s", *gatewayName, *apiRoleName),
+											ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *gatewayId, *roleAssignmentId),
+											CommentInformation: common.GenerateCommentInformation(commentData),
 										})
 									}
 								}

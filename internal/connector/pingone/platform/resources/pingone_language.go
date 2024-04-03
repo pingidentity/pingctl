@@ -47,10 +47,18 @@ func (r *PingoneLanguageResource) ExportAll() (*[]connector.ImportBlock, error) 
 			languageName, languageNameOk := language.Language.GetNameOk()
 
 			if languageIdOk && languageNameOk {
+				commentData := map[string]string{
+					"Resource Type":         r.ResourceType(),
+					"Language Name":         *languageName,
+					"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+					"Language ID":           *languageId,
+				}
+
 				importBlocks = append(importBlocks, connector.ImportBlock{
-					ResourceType: r.ResourceType(),
-					ResourceName: *languageName,
-					ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *languageId),
+					ResourceType:       r.ResourceType(),
+					ResourceName:       *languageName,
+					ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *languageId),
+					CommentInformation: common.GenerateCommentInformation(commentData),
 				})
 			}
 		}

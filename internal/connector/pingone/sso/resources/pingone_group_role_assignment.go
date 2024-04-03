@@ -78,10 +78,20 @@ func (r *PingoneGroupRoleAssignmentResource) ExportAll() (*[]connector.ImportBlo
 						roleName, roleNameOk := role.GetNameOk()
 
 						if roleNameOk {
+							commentData := map[string]string{
+								"Resource Type":            r.ResourceType(),
+								"Group Name":               *groupName,
+								"Role Name":                string(*roleName),
+								"Export Environment ID":    r.clientInfo.ExportEnvironmentID,
+								"Group ID":                 *groupId,
+								"Group Role Assignment ID": *groupRoleAssignmentId,
+							}
+
 							importBlocks = append(importBlocks, connector.ImportBlock{
-								ResourceType: r.ResourceType(),
-								ResourceName: fmt.Sprintf("%s_%s_%d", *groupName, *roleName, (groupRoleAssignmentIndex + 1)),
-								ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *groupId, *groupRoleAssignmentId),
+								ResourceType:       r.ResourceType(),
+								ResourceName:       fmt.Sprintf("%s_%s_%d", *groupName, *roleName, (groupRoleAssignmentIndex + 1)),
+								ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *groupId, *groupRoleAssignmentId),
+								CommentInformation: common.GenerateCommentInformation(commentData),
 							})
 						}
 					}

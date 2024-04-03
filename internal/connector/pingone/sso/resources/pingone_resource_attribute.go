@@ -63,10 +63,20 @@ func (r *PingoneResourceAttributeResource) ExportAll() (*[]connector.ImportBlock
 				resourceAttributeName, resourceAttributeNameOk := resourceAttribute.ResourceAttribute.GetNameOk()
 
 				if resourceAttributeIdOk && resourceAttributeNameOk {
+					commentData := map[string]string{
+						"Resource Type":           r.ResourceType(),
+						"Resource Name":           *resourceName,
+						"Resource Attribute Name": *resourceAttributeName,
+						"Export Environment ID":   r.clientInfo.ExportEnvironmentID,
+						"Resource ID":             *resourceId,
+						"Resource Attribute ID":   *resourceAttributeId,
+					}
+
 					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *resourceName, *resourceAttributeName),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *resourceId, *resourceAttributeId),
+						ResourceType:       r.ResourceType(),
+						ResourceName:       fmt.Sprintf("%s_%s", *resourceName, *resourceAttributeName),
+						ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *resourceId, *resourceAttributeId),
+						CommentInformation: common.GenerateCommentInformation(commentData),
 					})
 				}
 			}

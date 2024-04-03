@@ -57,10 +57,20 @@ func (r *PingoneUserGroupAssignmentResource) ExportAll() (*[]connector.ImportBlo
 				groupMembershipId, groupMembershipIdOk := groupMembership.GetIdOk()
 				groupMembershipName, groupMembershipNameOk := groupMembership.GetNameOk()
 				if groupMembershipIdOk && groupMembershipNameOk {
+					commentData := map[string]string{
+						"Resource Type":         r.ResourceType(),
+						"Username":              *username,
+						"Group Name":            *groupMembershipName,
+						"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+						"User ID":               *userId,
+						"Group Assignment ID":   *groupMembershipId,
+					}
+
 					importBlocks = append(importBlocks, connector.ImportBlock{
-						ResourceType: r.ResourceType(),
-						ResourceName: fmt.Sprintf("%s_%s", *username, *groupMembershipName),
-						ResourceID:   fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *userId, *groupMembershipId),
+						ResourceType:       r.ResourceType(),
+						ResourceName:       fmt.Sprintf("%s_%s", *username, *groupMembershipName),
+						ResourceID:         fmt.Sprintf("%s/%s/%s", r.clientInfo.ExportEnvironmentID, *userId, *groupMembershipId),
+						CommentInformation: common.GenerateCommentInformation(commentData),
 					})
 				}
 			}

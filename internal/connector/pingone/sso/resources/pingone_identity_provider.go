@@ -73,10 +73,18 @@ func (r *PingoneIdentityProviderResource) ExportAll() (*[]connector.ImportBlock,
 		}
 
 		if idpIdOk && idpNameOk {
+			commentData := map[string]string{
+				"Resource Type":          r.ResourceType(),
+				"Identity Provider Name": *idpName,
+				"Export Environment ID":  r.clientInfo.ExportEnvironmentID,
+				"Identity Provider ID":   *idpId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *idpName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *idpId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *idpName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *idpId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

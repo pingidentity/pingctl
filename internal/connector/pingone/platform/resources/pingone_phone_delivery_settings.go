@@ -74,10 +74,18 @@ func (r *PingonePhoneDeliverySettingsResource) ExportAll() (*[]connector.ImportB
 		}
 
 		if phoneDeliverySettingsIdOk && phoneDeliverySettingsNameOk {
+			commentData := map[string]string{
+				"Resource Type":                r.ResourceType(),
+				"Phone Delivery Settings Name": *phoneDeliverySettingsName,
+				"Export Environment ID":        r.clientInfo.ExportEnvironmentID,
+				"Phone Delivery Settings ID":   *phoneDeliverySettingsId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *phoneDeliverySettingsName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *phoneDeliverySettingsId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *phoneDeliverySettingsName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *phoneDeliverySettingsId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

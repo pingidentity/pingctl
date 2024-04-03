@@ -39,9 +39,10 @@ func (r *PingoneAgreementLocalizationEnableResource) ExportAll() (*[]connector.I
 
 	for _, importBlock := range *localizationImportBlocks {
 		importBlocks = append(importBlocks, connector.ImportBlock{
-			ResourceType: r.ResourceType(),
-			ResourceName: fmt.Sprintf("%s_enable", importBlock.ResourceName),
-			ResourceID:   importBlock.ResourceID,
+			ResourceType:       r.ResourceType(),
+			ResourceName:       fmt.Sprintf("%s_enable", importBlock.ResourceName),
+			ResourceID:         importBlock.ResourceID,
+			CommentInformation: importBlock.CommentInformation,
 		})
 	}
 

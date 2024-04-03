@@ -10,14 +10,15 @@ import (
 )
 
 type ImportBlock struct {
-	ResourceType string
-	ResourceName string
-	ResourceID   string
+	CommentInformation string
+	ResourceType       string
+	ResourceName       string
+	ResourceID         string
 }
 
 type SDKClientInfo struct {
-	Context             context.Context
 	ApiClient           *sdk.Client
+	Context             context.Context
 	ExportEnvironmentID string
 }
 
@@ -53,9 +54,11 @@ func (b *ImportBlock) Equals(a ImportBlock) bool {
 }
 
 func (b *ImportBlock) String() string {
-	pattern := `import {
-		to = %s.%s
-		id = "%s"
-	}`
-	return fmt.Sprintf(pattern, b.ResourceType, b.ResourceName, b.ResourceID)
+	pattern := `// The following data was used to construct this import block:
+%s
+import {
+	to = %s.%s
+	id = "%s"
+}`
+	return fmt.Sprintf(pattern, b.CommentInformation, b.ResourceType, b.ResourceName, b.ResourceID)
 }

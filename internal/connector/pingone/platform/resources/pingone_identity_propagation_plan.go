@@ -46,10 +46,18 @@ func (r *PingoneIdentityPropagationPlanResource) ExportAll() (*[]connector.Impor
 		identityPropagationPlanName, identityPropagationPlanNameOk := identityPropagationPlan.GetNameOk()
 
 		if identityPropagationPlanIdOk && identityPropagationPlanNameOk {
+			commentData := map[string]string{
+				"Resource Type":                  r.ResourceType(),
+				"Identity Propagation Plan Name": *identityPropagationPlanName,
+				"Export Environment ID":          r.clientInfo.ExportEnvironmentID,
+				"Identity Propagation Plan ID":   *identityPropagationPlanId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *identityPropagationPlanName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *identityPropagationPlanId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *identityPropagationPlanName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *identityPropagationPlanId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

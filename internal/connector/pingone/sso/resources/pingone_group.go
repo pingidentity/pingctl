@@ -46,10 +46,18 @@ func (r *PingoneGroupResource) ExportAll() (*[]connector.ImportBlock, error) {
 		groupName, groupNameOk := group.GetNameOk()
 
 		if groupIdOk && groupNameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Group Name":            *groupName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Group ID":              *groupId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *groupName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *groupId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *groupName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *groupId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

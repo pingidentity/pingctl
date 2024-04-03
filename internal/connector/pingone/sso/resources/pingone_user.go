@@ -45,10 +45,18 @@ func (r *PingoneUserResource) ExportAll() (*[]connector.ImportBlock, error) {
 		userId, userIdOk := user.GetIdOk()
 		username, usernameOk := user.GetUsernameOk()
 		if userIdOk && usernameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Username":              *username,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"User ID":               *userId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *username,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *userId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *username,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *userId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

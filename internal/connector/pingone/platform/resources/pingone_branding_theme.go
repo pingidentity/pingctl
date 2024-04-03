@@ -51,10 +51,18 @@ func (r *PingoneBrandingThemeResource) ExportAll() (*[]connector.ImportBlock, er
 		}
 
 		if themeIdOk && themeConfigurationOk && themeNameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Branding Theme Name":   *themeName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Branding Theme ID":     *themeId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *themeName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *themeId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *themeName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *themeId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

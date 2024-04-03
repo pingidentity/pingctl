@@ -46,10 +46,18 @@ func (r *PingoneFormResource) ExportAll() (*[]connector.ImportBlock, error) {
 		formName, formNameOk := form.GetNameOk()
 
 		if formIdOk && formNameOk {
+			commentData := map[string]string{
+				"Resource Type":         r.ResourceType(),
+				"Form Name":             *formName,
+				"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+				"Form ID":               *formId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *formName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *formId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *formName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *formId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

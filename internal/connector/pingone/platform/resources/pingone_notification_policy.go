@@ -46,10 +46,18 @@ func (r *PingoneNotificationPolicyResource) ExportAll() (*[]connector.ImportBloc
 		notificationPolicyName, notificationPolicyNameOk := notificationPolicy.GetNameOk()
 
 		if notificationPolicyIdOk && notificationPolicyNameOk {
+			commentData := map[string]string{
+				"Resource Type":            r.ResourceType(),
+				"Notification Policy Name": *notificationPolicyName,
+				"Export Environment ID":    r.clientInfo.ExportEnvironmentID,
+				"Notification Policy ID":   *notificationPolicyId,
+			}
+
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *notificationPolicyName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *notificationPolicyId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *notificationPolicyName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *notificationPolicyId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

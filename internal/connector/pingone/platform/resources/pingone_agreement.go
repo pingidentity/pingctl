@@ -44,11 +44,19 @@ func (r *PingoneAgreementResource) ExportAll() (*[]connector.ImportBlock, error)
 		agreementId, agreementIdOk := agreement.GetIdOk()
 		agreementName, agreementNameOk := agreement.GetNameOk()
 
+		commentData := map[string]string{
+			"Resource Type":           r.ResourceType(),
+			"Agreement Resource Name": *agreementName,
+			"Export Environment ID":   r.clientInfo.ExportEnvironmentID,
+			"Agreement Resource ID":   *agreementId,
+		}
+
 		if agreementIdOk && agreementNameOk {
 			importBlocks = append(importBlocks, connector.ImportBlock{
-				ResourceType: r.ResourceType(),
-				ResourceName: *agreementName,
-				ResourceID:   fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *agreementId),
+				ResourceType:       r.ResourceType(),
+				ResourceName:       *agreementName,
+				ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *agreementId),
+				CommentInformation: common.GenerateCommentInformation(commentData),
 			})
 		}
 	}

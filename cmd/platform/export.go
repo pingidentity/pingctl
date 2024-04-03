@@ -99,6 +99,20 @@ func NewExportCommand() *cobra.Command {
 				return fmt.Errorf("failed to find or validate export output directory %q. Err: %s", outputDir, err.Error())
 			}
 
+			// Check if the output directory is empty
+			// If not, default behavior is to exit and not overwrite.
+			// This can be changed with the --overwrite export parameter
+			if !overwriteExport {
+				dirEntries, err := os.ReadDir(outputDir)
+				if err != nil {
+					return fmt.Errorf("failed to read contents of export directory %q. err: %s", outputDir, err.Error())
+				}
+
+				if len(dirEntries) > 0 {
+					return fmt.Errorf("export directory %q is not empty. Use --overwrite to overwrite existing export data", outputDir)
+				}
+			}
+
 			// Find the env ID to export. Default to worker env id if not provided by user.
 			exportEnvID := viper.GetString(pingoneExportEnvironmentIdParamConfigKey)
 			if exportEnvID == "" {

@@ -17,7 +17,7 @@ func TestBrandingThemeDefaultExport(t *testing.T) {
 	expectedImportBlocks := []connector.ImportBlock{
 		{
 			ResourceType: "pingone_branding_theme_default",
-			ResourceName: "active_theme",
+			ResourceName: "test_slate_2_default_theme",
 			ResourceID:   testutils.GetEnvironmentID(),
 		},
 	}

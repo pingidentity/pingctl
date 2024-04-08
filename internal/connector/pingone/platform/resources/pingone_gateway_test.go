@@ -41,6 +41,11 @@ func TestGatewayExport(t *testing.T) {
 			ResourceName: "TestGateway",
 			ResourceID:   fmt.Sprintf("%s/bc37814f-b3a9-4149-b880-0ed457bbb5c5", testutils.GetEnvironmentID()),
 		},
+		{
+			ResourceType: "pingone_gateway",
+			ResourceName: "another connection for testing",
+			ResourceID:   fmt.Sprintf("%s/8773b833-ade0-4883-9cad-05fe82b23135", testutils.GetEnvironmentID()),
+		},
 	}
 
 	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)

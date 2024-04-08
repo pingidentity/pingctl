@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
@@ -64,52 +65,51 @@ func NewExportCommand() *cobra.Command {
 
 			apiClient, err := initApiClient(cmd.Context(), cmd.Root().Version)
 			if err != nil {
-				output.Format(cmd, output.CommandOutput{
-					Message: "Unable to initialize PingOne SDK client",
-					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
-				})
-				return err
+				return fmt.Errorf("failed to initialize PingOne SDK client: %s", err.Error())
 			}
 
 			if outputDir == "" {
 				// Default the outputDir variable to the user's present working directory.
-				pwd, err := os.Getwd()
+				outputDir, err = os.Getwd()
 				if err != nil {
-					output.Format(cmd, output.CommandOutput{
-						Message: "Failed to determine user's present working directory",
-						Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
-					})
-					return err
+					return fmt.Errorf("failed to determine user's present working directory: %s", err.Error())
 				}
 
-				l.Debug().Msgf("Defaulting export command output directory to %q...", pwd)
+				// Append "export" to the output directory as export needs an empty directory to write to
+				outputDir = filepath.Join(outputDir, "export")
 
-				outputDir = pwd
+				l.Debug().Msgf("Defaulting export command output directory to %q...", outputDir)
 			}
 
-			// Validate outputDir exists
-			l.Debug().Msgf("Validating export output directory...")
-
+			// Check if outputDir exists
+			// If not, create the directory
+			l.Debug().Msgf("Validating export output directory %q...", outputDir)
 			_, err = os.Stat(outputDir)
 			if err != nil {
 				output.Format(cmd, output.CommandOutput{
-					Message: fmt.Sprintf("Failed to find or validate export output directory %q", outputDir),
-					Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+					Warn:   fmt.Sprintf("Failed to find or validate export output directory %q\nCreating new output directory...", outputDir),
+					Result: output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
 				})
-				return fmt.Errorf("failed to find or validate export output directory %q. Err: %s", outputDir, err.Error())
-			}
 
-			// Check if the output directory is empty
-			// If not, default behavior is to exit and not overwrite.
-			// This can be changed with the --overwrite export parameter
-			if !overwriteExport {
-				dirEntries, err := os.ReadDir(outputDir)
+				err = os.MkdirAll(outputDir, os.ModePerm)
 				if err != nil {
-					return fmt.Errorf("failed to read contents of export directory %q. err: %s", outputDir, err.Error())
+					return fmt.Errorf("failed to create export output directory %q: %s", outputDir, err.Error())
 				}
 
-				if len(dirEntries) > 0 {
-					return fmt.Errorf("export directory %q is not empty. Use --overwrite to overwrite existing export data", outputDir)
+				l.Debug().Msgf("New export output directory %q created.", outputDir)
+			} else {
+				// Check if the output directory is empty
+				// If not, default behavior is to exit and not overwrite.
+				// This can be changed with the --overwrite export parameter
+				if !overwriteExport {
+					dirEntries, err := os.ReadDir(outputDir)
+					if err != nil {
+						return fmt.Errorf("failed to read contents of export directory %q: %s", outputDir, err.Error())
+					}
+
+					if len(dirEntries) > 0 {
+						return fmt.Errorf("export directory %q is not empty. Use --overwrite to overwrite existing export data", outputDir)
+					}
 				}
 			}
 
@@ -120,10 +120,6 @@ func NewExportCommand() *cobra.Command {
 
 				// if the exportEnvID is still empty, this is a problem. Return error.
 				if exportEnvID == "" {
-					output.Format(cmd, output.CommandOutput{
-						Message: "Failed to determine export environment ID",
-						Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
-					})
 					return fmt.Errorf("failed to determine export environment ID")
 				}
 			}
@@ -133,17 +129,14 @@ func NewExportCommand() *cobra.Command {
 			environment, response, err := apiClient.ManagementAPIClient.EnvironmentsApi.ReadOneEnvironment(cmd.Context(), exportEnvID).Execute()
 			defer response.Body.Close()
 			if err != nil {
-				l.Error().Err(err).Msgf("ReadOneEnvironment Response Code: %s\nResponse Body: %s", response.Status, response.Body)
-				return err
+				return fmt.Errorf("failed to read environment.\nReadOneEnvironment Response Code: %s\nResponse Body: %s\n Error: %s", response.Status, response.Body, err.Error())
 			}
 
 			if environment == nil {
-				l.Error().Msgf("Returned ReadOneEnvironment() environment is nil.")
-				l.Error().Msgf("ReadOneEnvironment Response Code: %s\nResponse Body: %s", response.Status, response.Body)
 				if response.StatusCode == 404 {
-					return fmt.Errorf("failed to fetch environment. the provided environment id %q does not exist", exportEnvID)
+					return fmt.Errorf("failed to fetch environment. the provided environment id %q does not exist.\nReadOneEnvironment Response Code: %s\nResponse Body: %s", exportEnvID, response.Status, response.Body)
 				} else {
-					return fmt.Errorf("failed to fetch environment %q via ReadOneEnvironment()", exportEnvID)
+					return fmt.Errorf("failed to fetch environment %q via ReadOneEnvironment()\nReadOneEnvironment Response Code: %s\nResponse Body: %s", exportEnvID, response.Status, response.Body)
 				}
 			}
 
@@ -170,11 +163,7 @@ func NewExportCommand() *cobra.Command {
 
 				err := connector.Export(string(exportFormat), outputDir, overwriteExport)
 				if err != nil {
-					output.Format(cmd, output.CommandOutput{
-						Message: fmt.Sprintf("Export failed for service: %s.", connector.ConnectorServiceName()),
-						Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
-					})
-					return err
+					return fmt.Errorf("failed to export %s service: %s", connector.ConnectorServiceName(), err.Error())
 				}
 			}
 

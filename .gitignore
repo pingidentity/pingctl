@@ -3,6 +3,6 @@
 .vscode/*
 go.work
 go.work.sum
-gen
+export
 vendor
 env*.sh

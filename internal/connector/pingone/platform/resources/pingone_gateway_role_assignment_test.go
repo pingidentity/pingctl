@@ -36,6 +36,16 @@ func TestGatewayRoleAssignmentExport(t *testing.T) {
 			ResourceName: "Local Test_Environment Admin",
 			ResourceID:   fmt.Sprintf("%s/5cd3f6b7-35f0-4873-ac64-f32118bf3102/393d4c4e-6642-432d-bc11-1638948d6dd2", testutils.GetEnvironmentID()),
 		},
+		{
+			ResourceType: "pingone_gateway_role_assignment",
+			ResourceName: "another connection for testing_Identity Data Admin",
+			ResourceID:   fmt.Sprintf("%s/8773b833-ade0-4883-9cad-05fe82b23135/239579d0-fc0b-4b50-ba03-dfe80e2bb6d0", testutils.GetEnvironmentID()),
+		},
+		{
+			ResourceType: "pingone_gateway_role_assignment",
+			ResourceName: "another connection for testing_Environment Admin",
+			ResourceID:   fmt.Sprintf("%s/8773b833-ade0-4883-9cad-05fe82b23135/07ed5801-4d44-4578-9d2f-c6ef6d537e83", testutils.GetEnvironmentID()),
+		},
 	}
 
 	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)

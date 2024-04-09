@@ -27,9 +27,20 @@ func (r *PingoneNotificationSettingsEmailResource) ExportAll() (*[]connector.Imp
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
+	_, response, err := r.clientInfo.ApiClient.ManagementAPIClient.NotificationsSettingsSMTPApi.ReadEmailNotificationsSettings(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
+	err = common.HandleClientResponse(response, err, "ReadEmailNotificationsSettings", r.ResourceType())
+	if err != nil {
+		return nil, err
+	}
+
 	importBlocks := []connector.ImportBlock{}
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
+
+	if response.StatusCode == 204 {
+		l.Debug().Msgf("No exportable %s resource found", r.ResourceType())
+		return &importBlocks, nil
+	}
 
 	commentData := map[string]string{
 		"Resource Type":         r.ResourceType(),

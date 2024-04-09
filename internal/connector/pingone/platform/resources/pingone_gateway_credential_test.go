@@ -51,6 +51,11 @@ func TestGatewayCredentialExport(t *testing.T) {
 			ResourceName: "TestGateway_credential_3",
 			ResourceID:   fmt.Sprintf("%s/bc37814f-b3a9-4149-b880-0ed457bbb5c5/ed648842-d109-4a40-97ba-ef4f8ce8eabe", testutils.GetEnvironmentID()),
 		},
+		{
+			ResourceType: "pingone_gateway_credential",
+			ResourceName: "another connection for testing_credential_1",
+			ResourceID:   fmt.Sprintf("%s/8773b833-ade0-4883-9cad-05fe82b23135/98f9946c-3a78-4b4b-8645-a425f89c7ab5", testutils.GetEnvironmentID()),
+		},
 	}
 
 	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)

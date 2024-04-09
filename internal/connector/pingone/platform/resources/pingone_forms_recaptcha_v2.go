@@ -27,9 +27,22 @@ func (r *PingoneFormRecaptchaV2Resource) ExportAll() (*[]connector.ImportBlock, 
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	importBlocks := []connector.ImportBlock{}
+	// Fetch FormRecaptchaV2 Resource from API.
+	// If response is 204 No Content, then return empty import blocks.
+	_, response, err := r.clientInfo.ApiClient.ManagementAPIClient.RecaptchaConfigurationApi.ReadRecaptchaConfiguration(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
+	err = common.HandleClientResponse(response, err, "ReadRecaptchaConfiguration", r.ResourceType())
+	if err != nil {
+		return nil, err
+	}
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
+
+	importBlocks := []connector.ImportBlock{}
+
+	if response.StatusCode == 204 {
+		l.Debug().Msgf("No exportable %s resource found", r.ResourceType())
+		return &importBlocks, nil
+	}
 
 	commentData := map[string]string{
 		"Resource Type":         r.ResourceType(),

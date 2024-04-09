@@ -17,7 +17,7 @@ func TestPopulationDefaultExport(t *testing.T) {
 	expectedImportBlocks := []connector.ImportBlock{
 		{
 			ResourceType: "pingone_population_default",
-			ResourceName: "population_default",
+			ResourceName: "Default_population_default",
 			ResourceID:   testutils.GetEnvironmentID(),
 		},
 	}

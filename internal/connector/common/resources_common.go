@@ -18,9 +18,9 @@ func HandleClientResponse(response *http.Response, err error, apiFunctionName st
 	}
 
 	if response.StatusCode == 404 {
-		l.Error().Msgf("%s Request was not successful. Resources %s not found", apiFunctionName, resourceType)
+		l.Error().Msgf("%s Request was not successful. Resource(s) %s not found", apiFunctionName, resourceType)
 		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
-		return fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
+		return fmt.Errorf("failed to fetch %s resource(s) via %s()", resourceType, apiFunctionName)
 	}
 
 	if response.StatusCode >= 300 {

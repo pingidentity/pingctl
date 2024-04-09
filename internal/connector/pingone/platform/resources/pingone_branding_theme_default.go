@@ -1,6 +1,9 @@
 package resources
 
 import (
+	"fmt"
+
+	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -27,21 +30,56 @@ func (r *PingoneBrandingThemeDefaultResource) ExportAll() (*[]connector.ImportBl
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.BrandingThemesApi.ReadBrandingThemes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadBrandingThemes"
+
+	embedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+	if err != nil {
+		return nil, err
+	}
+
+	foundDefault := false
+	var defaultBrandingTheme management.BrandingTheme
+
+	for _, brandingTheme := range embedded.GetThemes() {
+		if brandingTheme.GetDefault() {
+			foundDefault = true
+			defaultBrandingTheme = brandingTheme
+			break
+		}
+	}
+
+	if !foundDefault {
+		l.Debug().Msgf("No exportable %s resource found", r.ResourceType())
+		return &[]connector.ImportBlock{}, nil
+	}
+
 	importBlocks := []connector.ImportBlock{}
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	commentData := map[string]string{
-		"Resource Type":         r.ResourceType(),
-		"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+	defaultBrandingThemeConfiguration, defaultBrandingThemeConfigurationOk := defaultBrandingTheme.GetConfigurationOk()
+	var (
+		defaultBrandingThemeName   *string
+		defaultBrandingThemeNameOk = false
+	)
+	if defaultBrandingThemeConfigurationOk {
+		defaultBrandingThemeName, defaultBrandingThemeNameOk = defaultBrandingThemeConfiguration.GetNameOk()
 	}
 
-	importBlocks = append(importBlocks, connector.ImportBlock{
-		ResourceType:       r.ResourceType(),
-		ResourceName:       "active_theme",
-		ResourceID:         r.clientInfo.ExportEnvironmentID,
-		CommentInformation: common.GenerateCommentInformation(commentData),
-	})
+	if defaultBrandingThemeConfigurationOk && defaultBrandingThemeNameOk {
+		commentData := map[string]string{
+			"Resource Type":         r.ResourceType(),
+			"Export Environment ID": r.clientInfo.ExportEnvironmentID,
+		}
+
+		importBlocks = append(importBlocks, connector.ImportBlock{
+			ResourceType:       r.ResourceType(),
+			ResourceName:       fmt.Sprintf("%s_default_theme", *defaultBrandingThemeName),
+			ResourceID:         r.clientInfo.ExportEnvironmentID,
+			CommentInformation: common.GenerateCommentInformation(commentData),
+		})
+	}
 
 	return &importBlocks, nil
 }

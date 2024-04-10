@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pingidentity/pingctl/cmd/auth"
 	"github.com/pingidentity/pingctl/cmd/platform"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
@@ -50,7 +49,7 @@ func NewRootCommand() *cobra.Command {
 	cmd.AddCommand(
 		platform.NewPlatformCommand(),
 		NewFeedbackCommand(),
-		auth.NewAuthCommand(),
+		// auth.NewAuthCommand(),
 	)
 
 	cmd.PersistentFlags().StringVar(&cfgFile, configParamName, "", "Configuration file location\nDefault: $HOME/.pingctl/config.yaml")

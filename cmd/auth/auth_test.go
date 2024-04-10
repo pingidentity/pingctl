@@ -1,49 +1,41 @@
 package auth_test
 
-import (
-	"bytes"
-	"testing"
-
-	"github.com/pingidentity/pingctl/cmd"
-	"github.com/pingidentity/pingctl/internal/testutils"
-)
-
 // Test Auth Login Command Executes without issue
-func TestAuthLoginCmd_Execute(t *testing.T) {
-	// Create the command
-	rootCmd := cmd.NewRootCommand()
+// func TestAuthLoginCmd_Execute(t *testing.T) {
+// 	// Create the command
+// 	rootCmd := cmd.NewRootCommand()
 
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	rootCmd.SetOut(&stdout)
-	rootCmd.SetErr(&stdout)
+// 	// Redirect stdout to a buffer to capture the output
+// 	var stdout bytes.Buffer
+// 	rootCmd.SetOut(&stdout)
+// 	rootCmd.SetErr(&stdout)
 
-	rootCmd.SetArgs([]string{"auth", "login"})
+// 	rootCmd.SetArgs([]string{"auth", "login"})
 
-	// Execute the command
-	err := rootCmd.Execute()
-	if err != nil {
-		testutils.PrintLogs(t)
-		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
-	}
-}
+// 	// Execute the command
+// 	err := rootCmd.Execute()
+// 	if err != nil {
+// 		testutils.PrintLogs(t)
+// 		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
+// 	}
+// }
 
-// Test Auth Logout Command Executes without issue
-func TestAuthLogoutCmd_Execute(t *testing.T) {
-	// Create the command
-	rootCmd := cmd.NewRootCommand()
+// // Test Auth Logout Command Executes without issue
+// func TestAuthLogoutCmd_Execute(t *testing.T) {
+// 	// Create the command
+// 	rootCmd := cmd.NewRootCommand()
 
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	rootCmd.SetOut(&stdout)
-	rootCmd.SetErr(&stdout)
+// 	// Redirect stdout to a buffer to capture the output
+// 	var stdout bytes.Buffer
+// 	rootCmd.SetOut(&stdout)
+// 	rootCmd.SetErr(&stdout)
 
-	rootCmd.SetArgs([]string{"auth", "logout"})
+// 	rootCmd.SetArgs([]string{"auth", "logout"})
 
-	// Execute the command
-	err := rootCmd.Execute()
-	if err != nil {
-		testutils.PrintLogs(t)
-		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
-	}
-}
+// 	// Execute the command
+// 	err := rootCmd.Execute()
+// 	if err != nil {
+// 		testutils.PrintLogs(t)
+// 		t.Fatalf("Err: %q, Captured StdOut: %q", err, stdout.String())
+// 	}
+// }

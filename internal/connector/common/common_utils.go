@@ -13,16 +13,6 @@ import (
 func WriteFiles(exportableResources []connector.ExportableResource, format, outputDir string, service string, overwriteExport bool) error {
 	l := logger.Get()
 
-	// Make subdirectory for exported service if there are resources to export
-	if len(exportableResources) > 0 {
-		err := os.MkdirAll(filepath.Join(outputDir, service), os.ModePerm)
-		if err != nil {
-			return fmt.Errorf("failed to create %s export subfolder. err: %s", service, err.Error())
-		}
-	} else {
-		return nil
-	}
-
 	// Parse the HCL import block template
 	hclImportBlockTemplate, err := template.New("HCLImportBlock").Parse(connector.HCLImportBlockTemplate)
 	if err != nil {
@@ -44,7 +34,7 @@ func WriteFiles(exportableResources []connector.ExportableResource, format, outp
 		l.Debug().Msgf("Generating import file for %s resource...", exportableResource.ResourceType())
 
 		outputFileName := fmt.Sprintf("%s.tf", exportableResource.ResourceType())
-		outputFilePath := filepath.Join(outputDir, service, filepath.Base(outputFileName))
+		outputFilePath := filepath.Join(outputDir, filepath.Base(outputFileName))
 
 		// Check to see if outputFile already exists.
 		// If so, default behavior is to exit and not overwrite.

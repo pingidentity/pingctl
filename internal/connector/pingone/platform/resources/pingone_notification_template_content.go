@@ -30,6 +30,29 @@ func (r *PingoneNotificationTemplateContentResource) ExportAll() (*[]connector.I
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
+	// Get all enabled language locales
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.LanguagesApi.ReadLanguages(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadLanguages"
+
+	embedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
+	if err != nil {
+		return nil, err
+	}
+
+	enabledLocales := map[string]bool{}
+	for _, languageInner := range embedded.GetLanguages() {
+		if languageInner.Language != nil {
+			language := languageInner.Language
+
+			languageEnabled, languageEnabledOk := language.GetEnabledOk()
+			languageLocale, languageLocaleOk := language.GetLocaleOk()
+
+			if languageEnabledOk && languageLocaleOk && *languageEnabled {
+				enabledLocales[*languageLocale] = true
+			}
+		}
+	}
+
 	importBlocks := []connector.ImportBlock{}
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
@@ -92,6 +115,11 @@ func (r *PingoneNotificationTemplateContentResource) ExportAll() (*[]connector.I
 				templateLocale, templateLocaleOk = templateContents.TemplateContentVoice.GetLocaleOk()
 				templateVariant, templateVariantOk = templateContents.TemplateContentVoice.GetVariantOk()
 			default:
+				continue
+			}
+
+			// If the template content locale is not enabled, skip it
+			if templateLocaleOk && !enabledLocales[*templateLocale] {
 				continue
 			}
 

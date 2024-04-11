@@ -9,17 +9,17 @@ import (
 	"github.com/pingidentity/pingctl/internal/testutils"
 )
 
-func TestLanguageExport(t *testing.T) {
+func TestLanguageUpdateExport(t *testing.T) {
 	// Get initialized apiClient and resource
 	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
-	resource := resources.Language(sdkClientInfo)
+	resource := resources.LanguageUpdate(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{
 		{
-			ResourceType: "pingone_language",
-			ResourceName: "Afar",
-			ResourceID:   fmt.Sprintf("%s/07aa34bb-e2b4-43f7-a09d-b7cee6615c95", testutils.GetEnvironmentID()),
+			ResourceType: "pingone_language_update",
+			ResourceName: "French_update",
+			ResourceID:   fmt.Sprintf("%s/3f8a2e14-0ace-41db-a92d-74b3b7913ffe", testutils.GetEnvironmentID()),
 		},
 	}
 

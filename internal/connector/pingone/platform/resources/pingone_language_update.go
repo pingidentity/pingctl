@@ -10,21 +10,21 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneLanguageResource{}
+	_ connector.ExportableResource = &PingoneLanguageUpdateResource{}
 )
 
-type PingoneLanguageResource struct {
+type PingoneLanguageUpdateResource struct {
 	clientInfo *connector.SDKClientInfo
 }
 
-// Utility method for creating a PingoneLanguageResource
-func Language(clientInfo *connector.SDKClientInfo) *PingoneLanguageResource {
-	return &PingoneLanguageResource{
+// Utility method for creating a PingoneLanguageUpdateResource
+func LanguageUpdate(clientInfo *connector.SDKClientInfo) *PingoneLanguageUpdateResource {
+	return &PingoneLanguageUpdateResource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingoneLanguageResource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingoneLanguageUpdateResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
@@ -45,16 +45,18 @@ func (r *PingoneLanguageResource) ExportAll() (*[]connector.ImportBlock, error) 
 		if languageInner.Language != nil {
 			language := languageInner.Language
 
-			// If language is not customer added, skip it
-			languageCustomerAdded, languageCustomerAddedOk := language.GetCustomerAddedOk()
-			if languageCustomerAddedOk && !*languageCustomerAdded {
+			languageCreatedAt, languageCreatedAtOk := language.GetCreatedAtOk()
+			languageUpdatedAt, languageUpdatedAtOk := language.GetUpdatedAtOk()
+
+			// if language update time is equal to creation time, skip it as it has not been updated
+			if languageCreatedAtOk && languageUpdatedAtOk && (*languageCreatedAt).Equal(*languageUpdatedAt) {
 				continue
 			}
 
 			languageId, languageIdOk := language.GetIdOk()
 			languageName, languageNameOk := language.GetNameOk()
 
-			if languageIdOk && languageNameOk && languageCustomerAddedOk {
+			if languageIdOk && languageNameOk && languageCreatedAtOk && languageUpdatedAtOk {
 				commentData := map[string]string{
 					"Resource Type":         r.ResourceType(),
 					"Language Name":         *languageName,
@@ -64,7 +66,7 @@ func (r *PingoneLanguageResource) ExportAll() (*[]connector.ImportBlock, error) 
 
 				importBlocks = append(importBlocks, connector.ImportBlock{
 					ResourceType:       r.ResourceType(),
-					ResourceName:       *languageName,
+					ResourceName:       fmt.Sprintf("%s_update", *languageName),
 					ResourceID:         fmt.Sprintf("%s/%s", r.clientInfo.ExportEnvironmentID, *languageId),
 					CommentInformation: common.GenerateCommentInformation(commentData),
 				})
@@ -75,6 +77,6 @@ func (r *PingoneLanguageResource) ExportAll() (*[]connector.ImportBlock, error) 
 	return &importBlocks, nil
 }
 
-func (r *PingoneLanguageResource) ResourceType() string {
-	return "pingone_language"
+func (r *PingoneLanguageUpdateResource) ResourceType() string {
+	return "pingone_language_update"
 }

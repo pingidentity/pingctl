@@ -27,7 +27,7 @@ func (r *PingoneNotificationSettingsEmailResource) ExportAll() (*[]connector.Imp
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	_, response, err := r.clientInfo.ApiClient.ManagementAPIClient.NotificationsSettingsSMTPApi.ReadEmailNotificationsSettings(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
+	emailNotificationSettings, response, err := r.clientInfo.ApiClient.ManagementAPIClient.NotificationsSettingsSMTPApi.ReadEmailNotificationsSettings(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute()
 	err = common.HandleClientResponse(response, err, "ReadEmailNotificationsSettings", r.ResourceType())
 	if err != nil {
 		return nil, err
@@ -37,7 +37,27 @@ func (r *PingoneNotificationSettingsEmailResource) ExportAll() (*[]connector.Imp
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
+	if emailNotificationSettings == nil {
+		l.Debug().Msgf("No exportable %s resource found", r.ResourceType())
+		return &importBlocks, nil
+	}
+
 	if response.StatusCode == 204 {
+		l.Debug().Msgf("No exportable %s resource found", r.ResourceType())
+		return &importBlocks, nil
+	}
+
+	emailNotificationSettingsEnv, emailNotificationSettingsEnvOk := emailNotificationSettings.GetEnvironmentOk()
+	var (
+		emailNotificationSettingsEnvID   *string
+		emailNotificationSettingsEnvIDOk bool
+	)
+
+	if emailNotificationSettingsEnvOk {
+		emailNotificationSettingsEnvID, emailNotificationSettingsEnvIDOk = emailNotificationSettingsEnv.GetIdOk()
+	}
+
+	if !emailNotificationSettingsEnvOk || !emailNotificationSettingsEnvIDOk || emailNotificationSettingsEnvID == nil {
 		l.Debug().Msgf("No exportable %s resource found", r.ResourceType())
 		return &importBlocks, nil
 	}

@@ -29,10 +29,10 @@ func (r *PingoneApplicationSecretResource) ExportAll() (*[]connector.ImportBlock
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	apiExecuteApplicationsFunc := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationsApi.ReadAllApplications(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
-	apiApplicationFunctionName := "ReadAllApplications"
+	apiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationsApi.ReadAllApplications(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	apiFunctionName := "ReadAllApplications"
 
-	embedded, err := common.GetManagementEmbedded(apiExecuteApplicationsFunc, apiApplicationFunctionName, r.ResourceType())
+	embedded, err := common.GetManagementEmbedded(apiExecuteFunc, apiFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}
@@ -64,6 +64,22 @@ func (r *PingoneApplicationSecretResource) ExportAll() (*[]connector.ImportBlock
 		}
 
 		if appIdOk && appNameOk {
+			// The platform enforces that worker apps cannot read their own secret
+			// Make sure we can read the secret before adding it to the import blocks
+			_, response, err := r.clientInfo.ApiClient.ManagementAPIClient.ApplicationSecretApi.ReadApplicationSecret(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *appId).Execute()
+
+			// If the appId is the same as the worker ID, make sure the API response is a 403 and ignore the error
+			if *appId == *r.clientInfo.ApiClientId {
+				if response.StatusCode == 403 {
+					continue
+				}
+			}
+
+			err = common.HandleClientResponse(response, err, "ReadApplicationSecret", r.ResourceType())
+			if err != nil {
+				return nil, err
+			}
+
 			commentData := map[string]string{
 				"Resource Type":         r.ResourceType(),
 				"Application Name":      *appName,

@@ -18,6 +18,7 @@ type ImportBlock struct {
 
 type SDKClientInfo struct {
 	ApiClient           *sdk.Client
+	ApiClientId         *string
 	Context             context.Context
 	ExportEnvironmentID string
 }

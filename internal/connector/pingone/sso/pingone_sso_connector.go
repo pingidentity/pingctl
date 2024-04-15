@@ -25,11 +25,12 @@ type PingoneSSOConnector struct {
 }
 
 // Utility method for creating a PingoneSSOConnector
-func SSOConnector(ctx context.Context, apiClient *sdk.Client, exportEnvironmentID string) *PingoneSSOConnector {
+func SSOConnector(ctx context.Context, apiClient *sdk.Client, apiClientId *string, exportEnvironmentID string) *PingoneSSOConnector {
 	return &PingoneSSOConnector{
 		clientInfo: connector.SDKClientInfo{
 			Context:             ctx,
 			ApiClient:           apiClient,
+			ApiClientId:         apiClientId,
 			ExportEnvironmentID: exportEnvironmentID,
 		},
 	}

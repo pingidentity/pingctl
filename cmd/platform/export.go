@@ -67,6 +67,7 @@ func NewExportCommand() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to initialize PingOne SDK client: %s", err.Error())
 			}
+			apiClientId := viper.GetString(pingoneWorkerClientIdParamConfigKey)
 
 			if outputDir == "" {
 				// Default the outputDir variable to the user's present working directory.
@@ -146,9 +147,9 @@ func NewExportCommand() *cobra.Command {
 			for _, service := range *multiService.GetServices() {
 				switch service {
 				case serviceEnumPlatform:
-					exportableConnectors = append(exportableConnectors, platform.PlatformConnector(cmd.Context(), apiClient, exportEnvID))
+					exportableConnectors = append(exportableConnectors, platform.PlatformConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
 				case serviceEnumSSO:
-					exportableConnectors = append(exportableConnectors, sso.SSOConnector(cmd.Context(), apiClient, exportEnvID))
+					exportableConnectors = append(exportableConnectors, sso.SSOConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
 					// default:
 					// This unrecognized service condition is handled by cobra with the custom type MultiService
 				}

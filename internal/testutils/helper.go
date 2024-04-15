@@ -70,6 +70,7 @@ func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
 		sdkClientInfo = &connector.SDKClientInfo{
 			Context:             ctx,
 			ApiClient:           client,
+			ApiClientId:         &clientID,
 			ExportEnvironmentID: environmentId,
 		}
 	})

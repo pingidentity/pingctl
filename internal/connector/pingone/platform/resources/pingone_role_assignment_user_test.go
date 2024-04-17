@@ -38,28 +38,8 @@ func TestRoleAssignmentUserExport(t *testing.T) {
 		},
 		{
 			ResourceType: "pingone_role_assignment_user",
-			ResourceName: "test_user2_Client Application Developer_ENVIRONMENT_2",
-			ResourceID:   fmt.Sprintf("%s/7570f416-5503-4eb0-9fc3-9a485bddd411/1db1accc-f63f-4f03-ab62-c767398fa730", testutils.GetEnvironmentID()),
-		},
-		{
-			ResourceType: "pingone_role_assignment_user",
-			ResourceName: "test_user2_Identity Data Read Only_ENVIRONMENT_3",
-			ResourceID:   fmt.Sprintf("%s/7570f416-5503-4eb0-9fc3-9a485bddd411/53a88921-2a9f-44f1-958e-3db9be3f8c69", testutils.GetEnvironmentID()),
-		},
-		{
-			ResourceType: "pingone_role_assignment_user",
 			ResourceName: "testing_Identity Data Read Only_ENVIRONMENT_1",
 			ResourceID:   fmt.Sprintf("%s/68cb3634-0ed4-4044-85d1-576eb3a55360/224da3de-c879-478e-b219-6255feb78a59", testutils.GetEnvironmentID()),
-		},
-		{
-			ResourceType: "pingone_role_assignment_user",
-			ResourceName: "testing_Client Application Developer_ENVIRONMENT_2",
-			ResourceID:   fmt.Sprintf("%s/68cb3634-0ed4-4044-85d1-576eb3a55360/1db1accc-f63f-4f03-ab62-c767398fa730", testutils.GetEnvironmentID()),
-		},
-		{
-			ResourceType: "pingone_role_assignment_user",
-			ResourceName: "testing_Identity Data Read Only_ENVIRONMENT_3",
-			ResourceID:   fmt.Sprintf("%s/68cb3634-0ed4-4044-85d1-576eb3a55360/53a88921-2a9f-44f1-958e-3db9be3f8c69", testutils.GetEnvironmentID()),
 		},
 	}
 

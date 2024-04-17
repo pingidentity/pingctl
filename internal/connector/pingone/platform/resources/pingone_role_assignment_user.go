@@ -55,6 +55,12 @@ func (r *PingoneRoleAssignmentUserResource) ExportAll() (*[]connector.ImportBloc
 				return nil, err
 			}
 			for userRoleAssignmentIndex, userRoleAssignment := range userRoleAssignmentsEmbedded.GetRoleAssignments() {
+				// if the role assignment comes from a group, skip it
+				_, userRoleAssignmentGroupRoleAssignmentOk := userRoleAssignment.GetGroupOk()
+				if userRoleAssignmentGroupRoleAssignmentOk {
+					continue
+				}
+
 				userRoleAssignmentId, userRoleAssignmentIdOk := userRoleAssignment.GetIdOk()
 				userRoleAssignmentRole, userRoleAssignmentRoleOk := userRoleAssignment.GetRoleOk()
 				userRoleAssignmentScope, userRoleAssignmentScopeOk := userRoleAssignment.GetScopeOk()

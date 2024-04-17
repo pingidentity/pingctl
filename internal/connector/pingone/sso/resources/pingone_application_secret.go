@@ -72,6 +72,8 @@ func (r *PingoneApplicationSecretResource) ExportAll() (*[]connector.ImportBlock
 			if *appId == *r.clientInfo.ApiClientId {
 				if response.StatusCode == 403 {
 					continue
+				} else {
+					return nil, fmt.Errorf("ReadApplicationSecret: Expected response code 403 - worker apps cannot read their own secret, actual response code: %d", response.StatusCode)
 				}
 			}
 

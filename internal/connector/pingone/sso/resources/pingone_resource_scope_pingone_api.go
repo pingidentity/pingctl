@@ -64,8 +64,11 @@ func (r *PingoneResourceScopePingOneApiResource) ExportAll() (*[]connector.Impor
 				// Make sure the scope name is in the form of one of the following four patterns
 				// p1:read:user, p1:update:user, p1:read:user:{suffix}, or p1:update:user:{suffix}
 				// as supported by https://registry.terraform.io/providers/pingidentity/pingone/latest/docs/resources/resource_scope_pingone_api
-				re := regexp.MustCompile(`p1:(read|update):user($|(:.+))`)
-				scopeMatch := re.MatchString(*scopePingOneApiName)
+				var scopeMatch bool
+				if scopePingOneApiNameOk {
+					re := regexp.MustCompile(`p1:(read|update):user($|(:.+))`)
+					scopeMatch = re.MatchString(*scopePingOneApiName)
+				}
 
 				if scopeMatch && scopePingOneApiIdOk && scopePingOneApiNameOk {
 					commentData := map[string]string{

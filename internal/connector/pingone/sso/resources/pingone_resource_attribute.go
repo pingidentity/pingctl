@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 
+	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -44,8 +45,9 @@ func (r *PingoneResourceAttributeResource) ExportAll() (*[]connector.ImportBlock
 	for _, resource := range embedded.GetResources() {
 		resourceId, resourceIdOk := resource.GetIdOk()
 		resourceName, resourceNameOk := resource.GetNameOk()
+		resourceType, resourceTypeOk := resource.GetTypeOk()
 
-		if resourceIdOk && resourceNameOk {
+		if resourceIdOk && resourceNameOk && resourceTypeOk {
 			apiExecuteFunc = r.clientInfo.ApiClient.ManagementAPIClient.ResourceAttributesApi.ReadAllResourceAttributes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *resourceId).Execute
 			apiFunctionName = "ReadAllResourceAttributes"
 
@@ -54,15 +56,31 @@ func (r *PingoneResourceAttributeResource) ExportAll() (*[]connector.ImportBlock
 				return nil, err
 			}
 
-			for _, resourceAttribute := range embedded.GetAttributes() {
-				if resourceAttribute.ResourceAttribute == nil {
+			for _, attributeInner := range embedded.GetAttributes() {
+				if attributeInner.ResourceAttribute == nil {
 					continue
 				}
+				resourceAttribute := attributeInner.ResourceAttribute
 
-				resourceAttributeId, resourceAttributeIdOk := resourceAttribute.ResourceAttribute.GetIdOk()
-				resourceAttributeName, resourceAttributeNameOk := resourceAttribute.ResourceAttribute.GetNameOk()
+				resourceAttributeId, resourceAttributeIdOk := resourceAttribute.GetIdOk()
+				resourceAttributeName, resourceAttributeNameOk := resourceAttribute.GetNameOk()
+				resourceAttributeType, resourceAttributeTypeOk := resourceAttribute.GetTypeOk()
 
-				if resourceAttributeIdOk && resourceAttributeNameOk {
+				if resourceAttributeTypeOk {
+					switch {
+					// Any CORE attribute is required and cannot be overriden
+					case *resourceAttributeType == management.ENUMRESOURCEATTRIBUTETYPE_CORE:
+						// Handle the special case where a CUSTOM resource can override the sub attribute
+						if *resourceType != management.ENUMRESOURCETYPE_CUSTOM {
+							continue
+						}
+						if *resourceAttributeName != "sub" {
+							continue
+						}
+					}
+				}
+
+				if resourceAttributeIdOk && resourceAttributeNameOk && resourceAttributeTypeOk {
 					commentData := map[string]string{
 						"Resource Type":           r.ResourceType(),
 						"Resource Name":           *resourceName,

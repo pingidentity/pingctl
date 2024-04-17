@@ -25,11 +25,12 @@ type PingonePlatformConnector struct {
 }
 
 // Utility method for creating a PingonePlatformConnector
-func PlatformConnector(ctx context.Context, apiClient *sdk.Client, exportEnvironmentID string) *PingonePlatformConnector {
+func PlatformConnector(ctx context.Context, apiClient *sdk.Client, apiClientId *string, exportEnvironmentID string) *PingonePlatformConnector {
 	return &PingonePlatformConnector{
 		clientInfo: connector.SDKClientInfo{
 			Context:             ctx,
 			ApiClient:           apiClient,
+			ApiClientId:         apiClientId,
 			ExportEnvironmentID: exportEnvironmentID,
 		},
 	}

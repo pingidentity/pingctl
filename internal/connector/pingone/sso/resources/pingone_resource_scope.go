@@ -3,6 +3,7 @@ package resources
 import (
 	"fmt"
 
+	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -44,8 +45,9 @@ func (r *PingoneResourceScopeResource) ExportAll() (*[]connector.ImportBlock, er
 	for _, resource := range embedded.GetResources() {
 		resourceId, resourceIdOk := resource.GetIdOk()
 		resourceName, resourceNameOk := resource.GetNameOk()
+		resourceType, resourceTypeOk := resource.GetTypeOk()
 
-		if resourceIdOk && resourceNameOk {
+		if resourceIdOk && resourceNameOk && resourceTypeOk && *resourceType == management.ENUMRESOURCETYPE_CUSTOM {
 			apiResourceScopesExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.ResourceScopesApi.ReadAllResourceScopes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *resourceId).Execute
 			apiResourceScopesFunctionName := "ReadAllResourceScopes"
 

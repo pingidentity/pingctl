@@ -2,7 +2,9 @@ package resources
 
 import (
 	"fmt"
+	"regexp"
 
+	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -46,7 +48,7 @@ func (r *PingoneResourceScopePingOneApiResource) ExportAll() (*[]connector.Impor
 		resourceName, resourceNameOk := resource.GetNameOk()
 		resourceType, resourceTypeOk := resource.GetTypeOk()
 
-		if resourceIdOk && resourceNameOk && resourceTypeOk && *resourceType == "PINGONE_API" {
+		if resourceIdOk && resourceNameOk && resourceTypeOk && *resourceType == management.ENUMRESOURCETYPE_PINGONE_API {
 			apiResourceScopePingOneApisExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.ResourceScopesApi.ReadAllResourceScopes(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID, *resourceId).Execute
 			apiResourceScopePingOneApisFunctionName := "ReadAllResourceScopes"
 
@@ -58,7 +60,17 @@ func (r *PingoneResourceScopePingOneApiResource) ExportAll() (*[]connector.Impor
 			for _, scopePingOneApi := range embeddedResourceScopePingOneApis.GetScopes() {
 				scopePingOneApiId, scopePingOneApiIdOk := scopePingOneApi.GetIdOk()
 				scopePingOneApiName, scopePingOneApiNameOk := scopePingOneApi.GetNameOk()
-				if scopePingOneApiIdOk && scopePingOneApiNameOk {
+
+				// Make sure the scope name is in the form of one of the following four patterns
+				// p1:read:user, p1:update:user, p1:read:user:{suffix}, or p1:update:user:{suffix}
+				// as supported by https://registry.terraform.io/providers/pingidentity/pingone/latest/docs/resources/resource_scope_pingone_api
+				var scopeMatch bool
+				if scopePingOneApiNameOk {
+					re := regexp.MustCompile(`p1:(read|update):user($|(:.+))`)
+					scopeMatch = re.MatchString(*scopePingOneApiName)
+				}
+
+				if scopeMatch && scopePingOneApiIdOk && scopePingOneApiNameOk {
 					commentData := map[string]string{
 						"Resource Type":                r.ResourceType(),
 						"Resource Name":                *resourceName,

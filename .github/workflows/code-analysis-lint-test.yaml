@@ -5,7 +5,7 @@ on:
     branches: ["main", "go-cli"]
   pull_request:
     paths:
-      - ".github/workflows/code-analysis-lint-test.yaml"
+      - ".github/workflows/*"
       - "**.go"
       - "go.mod"
       - "go.sum"

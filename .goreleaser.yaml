@@ -1,0 +1,60 @@
+builds:
+  # You can have multiple builds defined as a yaml list
+  - #
+    # ID of the build.
+    #
+    # Default: Project directory name
+    id: "pingctl"
+
+    # Binary name.
+    # Can be a path (e.g. `bin/app`) to wrap the binary in a directory.
+    #
+    # Default: Project directory name
+    binary: pingctl
+
+    # GOOS list to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Choices for $GOOS are android, darwin, dragonfly, freebsd, illumos, ios, js, linux, netbsd, openbsd, plan9, solaris, wasip1, and windows.
+    #
+    # Default: [ 'darwin', 'linux', 'windows' ]
+    goos:
+      - darwin
+      - linux
+      - windows
+
+    # GOARCH to build for.
+    # For more info refer to: https://golang.org/doc/install/source#environment
+    # Choices for $GOARCH are amd64 (64-bit x86, the most mature port), 386 (32-bit x86), arm (32-bit ARM), arm64 (64-bit ARM), ppc64le (PowerPC 64-bit, little-endian), ppc64 (PowerPC 64-bit, big-endian), mips64le (MIPS 64-bit, little-endian), mips64 (MIPS 64-bit, big-endian), mipsle (MIPS 32-bit, little-endian), mips (MIPS 32-bit, big-endian), s390x (IBM System z 64-bit, big-endian), and wasm (WebAssembly 32-bit).
+    #
+    # Default: [ '386', 'amd64', 'arm64' ]
+    goarch:
+      - amd64
+      - arm64
+
+release:
+  # If set to auto, will mark the release as not ready for production
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
+  prerelease: auto
+
+  # If set to false, will NOT mark the release as "latest".
+  # This prevents it from being shown at the top of the release list,
+  # and from being returned when calling https://api.github.com/repos/OWNER/REPO/releases/latest.
+  #
+  # Available only for GitHub.
+  #
+  # Default is true.
+  # Since: v1.20
+  make_latest: true
+
+  # What to do with the release notes in case there the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append

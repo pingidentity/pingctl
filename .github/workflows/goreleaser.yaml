@@ -3,8 +3,6 @@ name: goreleaser
 # Only release on tags in the go-cli branch
 on:
   push:
-    branches:
-      - 'go-cli'
     tags:
       - 'v*'
 

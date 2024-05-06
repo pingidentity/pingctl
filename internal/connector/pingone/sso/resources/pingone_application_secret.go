@@ -77,9 +77,18 @@ func (r *PingoneApplicationSecretResource) ExportAll() (*[]connector.ImportBlock
 				}
 			}
 
-			err = common.HandleClientResponse(response, err, "ReadApplicationSecret", r.ResourceType())
+			// Use output package to warn the user of any errors or non-200 response codes
+			// Expected behavior in this case is to skip the resource, and continue exporting the other resources
+			defer response.Body.Close()
+
 			if err != nil {
-				return nil, err
+				l.Warn().Err(err).Msgf("Failed to read secret for application %s. %s Response Code: %s\nResponse Body: %s", *appName, apiFunctionName, response.Status, response.Body)
+				continue
+			}
+
+			if response.StatusCode >= 300 {
+				l.Warn().Msgf("Failed to read secret for application %s. %s Response Code: %s\nResponse Body: %s", *appName, apiFunctionName, response.Status, response.Body)
+				continue
 			}
 
 			commentData := map[string]string{

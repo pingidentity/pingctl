@@ -13,6 +13,7 @@ import (
 	"github.com/pingidentity/pingctl/internal/connector/pingone/sso"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
+	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -54,10 +55,9 @@ var (
 
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "export",
-		//TODO add command short and long description
-		Short: "",
-		Long:  ``,
+		Use:   "export",
+		Short: "Export configuration-as-code packages for the Ping Platform.",
+		Long:  `Export configuration-as-code packages for the Ping Platform.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			l := logger.Get()
 
@@ -88,8 +88,8 @@ func NewExportCommand() *cobra.Command {
 			_, err = os.Stat(outputDir)
 			if err != nil {
 				output.Format(cmd, output.CommandOutput{
-					Warn:   fmt.Sprintf("Failed to find or validate export output directory %q\nCreating new output directory...", outputDir),
-					Result: output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+					Message: fmt.Sprintf("Failed to find or validate export output directory %q. Creating new output directory...", outputDir),
+					Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
 				})
 
 				err = os.MkdirAll(outputDir, os.ModePerm)
@@ -123,6 +123,11 @@ func NewExportCommand() *cobra.Command {
 				if exportEnvID == "" {
 					return fmt.Errorf("failed to determine export environment ID")
 				}
+
+				output.Format(cmd, output.CommandOutput{
+					Message: "No target export environment ID specified. Defaulting export environment ID to the Worker App environment ID.",
+					Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+				})
 			}
 
 			l.Debug().Msgf("Validating export environment ID...")
@@ -218,11 +223,14 @@ func initApiClient(ctx context.Context, version string) (*sdk.Client, error) {
 
 	l.Debug().Msgf("Initialising API client..")
 
+	// Make sure the API client can be initialized with the required parameters
 	if !viper.IsSet(pingoneWorkerClientIdParamConfigKey) || !viper.IsSet(pingoneWorkerClientSecretParamConfigKey) ||
 		!viper.IsSet(pingoneWorkerEnvironmentIdParamConfigKey) || !viper.IsSet(pingoneRegionParamConfigKey) {
 		return nil, fmt.Errorf(`unable to initialize PingOne API client.
-		One of environment ID, client ID, client secret, and region is not set.
-		Configure these properties via parameter flags, environment variables, or configuration file`)
+		One of worker environment ID, worker client ID, worker client secret,
+		and/or pingone region is not set.
+		Configure these properties via parameter flags, environment variables,
+		or the tool's configuration file (Default: $HOME/.pingctl/config.yaml)`)
 	}
 
 	clientID := viper.GetString(pingoneWorkerClientIdParamConfigKey)
@@ -253,11 +261,17 @@ func initApiClient(ctx context.Context, version string) (*sdk.Client, error) {
 
 	client, err := apiConfig.APIClient(ctx)
 	if err != nil {
-		return nil, err
+		// If logging level is DEBUG or TRACE, include the worker client secret in the error message
+		var clientSecretErrorMessage string
+		if l.GetLevel() <= zerolog.DebugLevel {
+			clientSecretErrorMessage = fmt.Sprintf("Worker Client Secret - %s", clientSecret)
+		} else {
+			clientSecretErrorMessage = "Worker Client Secret - (Use DEBUG or TRACE logging level to view the client secret in the error message)" // #nosec G101
+		}
+		return nil, fmt.Errorf("%s\n\nConfiguration values used for client initialization:\nWorker Client ID - %s\nWorker Environment ID - %s\nPingOne Region - %s\n%s", err.Error(), clientID, environmentID, region, clientSecretErrorMessage)
 	}
 
 	return client, nil
-
 }
 
 func bindFlags(paramlist map[string]string, command *cobra.Command) error {

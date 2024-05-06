@@ -39,11 +39,11 @@ var (
 // rootCmd represents the base command when called without any subcommands
 func NewRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "pingctl",
-		Version: "v0.0.1",
-		//TODO add command short and long description
-		Short: "",
-		Long:  ``,
+		Use:           "pingctl",
+		Version:       "v2.0.0-alpha.2",
+		Short:         "A CLI tool for managing Ping Identity products.",
+		Long:          `A CLI tool for managing Ping Identity products.`,
+		SilenceErrors: true, // Upon error in RunE method, let output package in main.go handle error output
 	}
 
 	cmd.AddCommand(

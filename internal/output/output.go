@@ -134,12 +134,6 @@ func formatJson(cmd *cobra.Command, output CommandOutput) {
 	cmd.Println(string(jsonOut))
 
 	switch output.Result {
-	case ENUMCOMMANDOUTPUTRESULT_SUCCESS:
-		fallthrough
-	case ENUMCOMMANDOUTPUTRESULT_NIL:
-		fallthrough
-	case ENUMCOMMANDOUTPUTRESULT_NOACTION_OK:
-		l.Info().Msgf(string(jsonOut))
 	case ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN:
 		l.Warn().Msgf(string(jsonOut))
 	case ENUMCOMMANDOUTPUTRESULT_FAILURE:
@@ -152,7 +146,7 @@ func formatJson(cmd *cobra.Command, output CommandOutput) {
 		if output.Fatal != nil {
 			l.Fatal().Msgf(output.Fatal.Error())
 		}
-	default:
+	default: //ENUMCOMMANDOUTPUTRESULT_SUCCESS, ENUMCOMMANDOUTPUTRESULT_NIL, ENUMCOMMANDOUTPUTRESULT_NOACTION_OK
 		l.Info().Msgf(string(jsonOut))
 	}
 

@@ -24,7 +24,6 @@ type CommandOutputResult string
 type CommandOutput struct {
 	Fields  map[string]interface{}
 	Message string
-	Warn    string
 	Error   error
 	Fatal   error
 	Result  CommandOutputResult
@@ -60,9 +59,8 @@ func Format(cmd *cobra.Command, output CommandOutput) {
 		formatJson(cmd, output)
 	default:
 		formatText(cmd, CommandOutput{
-			Message: "",
-			Warn:    fmt.Sprintf("Output format %q is not recognized. Defaulting to \"text\" output", outputFormat),
-			Result:  ENUMCOMMANDOUTPUTRESULT_NIL,
+			Message: fmt.Sprintf("Output format %q is not recognized. Defaulting to \"text\" output", outputFormat),
+			Result:  ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
 		})
 		formatText(cmd, output)
 	}
@@ -109,12 +107,6 @@ func formatText(cmd *cobra.Command, output CommandOutput) {
 		}
 	}
 
-	// Inform the user of a warning and log the warning
-	if output.Warn != "" {
-		cmd.Println(yellow("Warn: %s", output.Warn))
-		l.Warn().Msgf(output.Warn)
-	}
-
 	// Inform the user of an error and log the error
 	if output.Error != nil {
 		cmd.Println(red("Error: %s", output.Error.Error()))
@@ -141,21 +133,21 @@ func formatJson(cmd *cobra.Command, output CommandOutput) {
 	// Output the JSON as uncolored string
 	cmd.Println(string(jsonOut))
 
-	// Log the serialized JSON as info.
-	l.Info().Msgf(string(jsonOut))
+	switch output.Result {
+	case ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN:
+		l.Warn().Msgf(string(jsonOut))
+	case ENUMCOMMANDOUTPUTRESULT_FAILURE:
+		// Log the error if exists
+		if output.Error != nil {
+			l.Error().Msgf(output.Error.Error())
+		}
 
-	// Log the warning if exists
-	if output.Warn != "" {
-		l.Warn().Msgf(output.Warn)
+		// Log the fatal error if exists. This exits the program.
+		if output.Fatal != nil {
+			l.Fatal().Msgf(output.Fatal.Error())
+		}
+	default: //ENUMCOMMANDOUTPUTRESULT_SUCCESS, ENUMCOMMANDOUTPUTRESULT_NIL, ENUMCOMMANDOUTPUTRESULT_NOACTION_OK
+		l.Info().Msgf(string(jsonOut))
 	}
 
-	// Log the error if exists
-	if output.Error != nil {
-		l.Error().Msgf(output.Error.Error())
-	}
-
-	// Log the fatal error if exists. This exits the program.
-	if output.Fatal != nil {
-		l.Fatal().Msgf(output.Fatal.Error())
-	}
 }

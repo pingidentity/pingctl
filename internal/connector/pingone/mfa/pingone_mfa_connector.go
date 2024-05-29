@@ -43,6 +43,7 @@ func (c *PingoneMFAConnector) Export(format, outputDir string, overwriteExport b
 
 	exportableResources := []connector.ExportableResource{
 		resources.MFAApplicationPushCredential(&c.clientInfo),
+		resources.MFAFido2Policy(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, c.ConnectorServiceName(), overwriteExport)

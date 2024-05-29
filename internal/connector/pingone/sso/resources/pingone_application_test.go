@@ -46,6 +46,11 @@ func TestApplicationExport(t *testing.T) {
 			ResourceName: "Worker App",
 			ResourceID:   fmt.Sprintf("%s/c45c2f8c-dee0-4a12-b169-bae693a13d57", testutils.GetEnvironmentID()),
 		},
+		{
+			ResourceType: "pingone_application",
+			ResourceName: "Test MFA",
+			ResourceID:   fmt.Sprintf("%s/11cfc8c7-ec0c-43ff-b49a-64f5e243f932", testutils.GetEnvironmentID()),
+		},
 	}
 
 	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)

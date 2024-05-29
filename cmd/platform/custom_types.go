@@ -11,6 +11,7 @@ import (
 const (
 	serviceEnumPlatform string = "pingone-platform"
 	serviceEnumSSO      string = "pingone-sso"
+	serviceEnumMFA      string = "pingone-mfa"
 )
 
 type MultiService struct {
@@ -36,6 +37,7 @@ func NewMultiService() *MultiService {
 		services: &map[string]bool{
 			serviceEnumPlatform: true,
 			serviceEnumSSO:      true,
+			serviceEnumMFA:      true,
 		},
 		isDefaultServices: true,
 	}
@@ -65,8 +67,10 @@ func (s *MultiService) Set(service string) error {
 		(*s.services)[serviceEnumPlatform] = true
 	case serviceEnumSSO:
 		(*s.services)[serviceEnumSSO] = true
+	case serviceEnumMFA:
+		(*s.services)[serviceEnumMFA] = true
 	default:
-		return fmt.Errorf("unrecognized service %q. Must be one of: %q, %q", service, serviceEnumPlatform, serviceEnumSSO)
+		return fmt.Errorf("unrecognized service %q. Must be one of: %q, %q, %q", service, serviceEnumPlatform, serviceEnumSSO, serviceEnumMFA)
 	}
 	return nil
 }

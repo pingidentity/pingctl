@@ -46,6 +46,11 @@ func TestApplicationAttributeMappingExport(t *testing.T) {
 			ResourceName: "Worker App_sub",
 			ResourceID:   fmt.Sprintf("%s/c45c2f8c-dee0-4a12-b169-bae693a13d57/f6d41400-e571-432e-9151-4ff06e0b51ce", testutils.GetEnvironmentID()),
 		},
+		{
+			ResourceType: "pingone_application_attribute_mapping",
+			ResourceName: "Test MFA_sub",
+			ResourceID:   fmt.Sprintf("%s/11cfc8c7-ec0c-43ff-b49a-64f5e243f932/f6d41400-e571-432e-9151-4ff06e0b51ce", testutils.GetEnvironmentID()),
+		},
 	}
 
 	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)

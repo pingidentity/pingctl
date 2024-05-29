@@ -41,6 +41,11 @@ func TestApplicationSecretExport(t *testing.T) {
 			ResourceName: "test app_secret",
 			ResourceID:   fmt.Sprintf("%s/a4cbf57e-fa2c-452f-bbc8-f40b551da0e2", testutils.GetEnvironmentID()),
 		},
+		{
+			ResourceType: "pingone_application_secret",
+			ResourceName: "Test MFA_secret",
+			ResourceID:   fmt.Sprintf("%s/11cfc8c7-ec0c-43ff-b49a-64f5e243f932", testutils.GetEnvironmentID()),
+		},
 	}
 
 	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)

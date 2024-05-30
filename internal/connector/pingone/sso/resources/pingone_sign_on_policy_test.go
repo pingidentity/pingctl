@@ -31,6 +31,11 @@ func TestSignOnPolicyExport(t *testing.T) {
 			ResourceName: "Single_Factor",
 			ResourceID:   fmt.Sprintf("%s/b1fdc38d-ea0c-47b1-9d83-c48105bd6806", testutils.GetEnvironmentID()),
 		},
+		{
+			ResourceType: "pingone_sign_on_policy",
+			ResourceName: "multi_factor",
+			ResourceID:   fmt.Sprintf("%s/7c857f42-12ef-4ff0-96e8-4dfe6d84c425", testutils.GetEnvironmentID()),
+		},
 	}
 
 	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)

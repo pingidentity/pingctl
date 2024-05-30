@@ -9,6 +9,7 @@ import (
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
+	"github.com/pingidentity/pingctl/internal/connector/pingone/mfa"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/sso"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -155,6 +156,8 @@ func NewExportCommand() *cobra.Command {
 					exportableConnectors = append(exportableConnectors, platform.PlatformConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
 				case serviceEnumSSO:
 					exportableConnectors = append(exportableConnectors, sso.SSOConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
+				case serviceEnumMFA:
+					exportableConnectors = append(exportableConnectors, mfa.MFAConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
 					// default:
 					// This unrecognized service condition is handled by cobra with the custom type MultiService
 				}

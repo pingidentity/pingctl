@@ -79,8 +79,10 @@ func (r *PingoneMFAApplicationPushCredentialResource) ExportAll() (*[]connector.
 				if mfaPushCredentialResponseTypeOk && mfaPushCredentialResponseIdOk {
 					commentData := map[string]string{
 						"Resource Type":            r.ResourceType(),
+						"Application Name":         *appName,
 						"MFA Push Credential Type": string(*mfaPushCredentialResponseType),
 						"Export Environment ID":    r.clientInfo.ExportEnvironmentID,
+						"Application ID":           *appId,
 						"MFA Push Credential ID":   *mfaPushCredentialResponseId,
 					}
 

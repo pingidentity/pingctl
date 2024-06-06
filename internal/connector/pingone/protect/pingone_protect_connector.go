@@ -43,6 +43,7 @@ func (c *PingoneProtectConnector) Export(format, outputDir string, overwriteExpo
 
 	exportableResources := []connector.ExportableResource{
 		resources.RiskPolicy(&c.clientInfo),
+		resources.RiskPredictor(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, c.ConnectorServiceName(), overwriteExport)

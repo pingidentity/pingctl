@@ -8,6 +8,7 @@ require (
 	github.com/patrickcping/pingone-go-sdk-v2 v0.11.8
 	github.com/patrickcping/pingone-go-sdk-v2/management v0.38.0
 	github.com/patrickcping/pingone-go-sdk-v2/mfa v0.18.3
+	github.com/patrickcping/pingone-go-sdk-v2/risk v0.14.1
 	github.com/pavius/impi v0.0.3
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/cobra v1.8.0
@@ -127,7 +128,6 @@ require (
 	github.com/patrickcping/pingone-go-sdk-v2/agreementmanagement v0.3.1 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/authorize v0.4.1 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/credentials v0.6.2 // indirect
-	github.com/patrickcping/pingone-go-sdk-v2/risk v0.14.1 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/verify v0.4.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect

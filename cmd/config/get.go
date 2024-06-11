@@ -21,8 +21,10 @@ func NewConfigGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "Get pingctl configuration settings.",
-		Long:  `Get pingctl configuration settings.`,
-		RunE:  ConfigGetRunE,
+		Long: `Get pingctl configuration settings.
+		
+Example command usage: 'pingctl config get pingctl.color'`,
+		RunE: ConfigGetRunE,
 	}
 
 	return cmd
@@ -54,7 +56,11 @@ func ConfigGetRunE(cmd *cobra.Command, args []string) error {
 
 	// Check if the viper configuration key is set
 	if !viper.IsSet(viperKey) {
-		return fmt.Errorf("unable to get configuration: key '%s' is not set", viperKey)
+		output.Format(cmd, output.CommandOutput{
+			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+			Message: fmt.Sprintf("Configuration key '%s' is not set", viperKey),
+		})
+		return nil
 	}
 
 	yaml, err := yaml.Marshal(viper.Get(viperKey))

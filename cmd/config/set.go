@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -21,8 +22,10 @@ func NewConfigSetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set",
 		Short: "Set pingctl configuration settings.",
-		Long:  `Set pingctl configuration settings.`,
-		RunE:  ConfigSetRunE,
+		Long: `Set pingctl configuration settings.
+		
+Example command usage: 'pingctl config set pingctl.color=false'`,
+		RunE: ConfigSetRunE,
 	}
 
 	return cmd
@@ -48,9 +51,8 @@ func ConfigSetRunE(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("unable to set configuration: value '%s' is not recognized as a valid configuration key. \nValid keys: %s", viperKey, validKeys)
 	}
 
-	// Check is viper key maps to a map object
-	// If it does, do not allow setting the key directly
-	if len(viper.GetStringMap(viperKey)) > 0 {
+	// Check if viperKey is in viper.AllKeys()
+	if !slices.Contains(viper.AllKeys(), viperKey) {
 		return fmt.Errorf("unable to set configuration: key '%s' is an object and cannot be set. Use 'pingctl config set %s.<key>=%s' to set a specific configuration setting", viperKey, viperKey, value)
 	}
 

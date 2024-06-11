@@ -21,8 +21,10 @@ func NewConfigUnsetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unset",
 		Short: "Unset pingctl configuration settings.",
-		Long:  `Unset pingctl configuration settings.`,
-		RunE:  ConfigUnsetRunE,
+		Long: `Unset pingctl configuration settings.
+		
+Example command usage: 'pingctl config unset pingctl.color'`,
+		RunE: ConfigUnsetRunE,
 	}
 
 	return cmd

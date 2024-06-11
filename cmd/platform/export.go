@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
+	"github.com/pingidentity/pingctl/cmd/common"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/mfa"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform"
@@ -22,19 +23,24 @@ import (
 
 const (
 	pingoneExportEnvironmentIdParamName      = "pingone-export-environment-id"
-	pingoneExportEnvironmentIdParamConfigKey = "pingone.export-environment-id"
+	pingoneExportEnvironmentIdParamConfigKey = "pingone.export.environmentId"
+	pingoneExportEnvironmentIdEnvVar         = "PINGCTL_PINGONE_EXPORT_ENVIRONMENT_ID"
 
 	pingoneWorkerEnvironmentIdParamName      = "pingone-worker-environment-id"
-	pingoneWorkerEnvironmentIdParamConfigKey = "pingone.worker-environment-id"
+	pingoneWorkerEnvironmentIdParamConfigKey = "pingone.worker.environmentId"
+	pingoneWorkerEnvironmentIdEnvVar         = "PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"
 
 	pingoneWorkerClientIdParamName      = "pingone-worker-client-id"
-	pingoneWorkerClientIdParamConfigKey = "pingone.worker-client-id"
+	pingoneWorkerClientIdParamConfigKey = "pingone.worker.clientId"
+	pingoneWorkerClientIdEnvVar         = "PINGCTL_PINGONE_WORKER_CLIENT_ID"
 
 	pingoneWorkerClientSecretParamName      = "pingone-worker-client-secret"
-	pingoneWorkerClientSecretParamConfigKey = "pingone.worker-client-secret"
+	pingoneWorkerClientSecretParamConfigKey = "pingone.worker.clientSecret"
+	pingoneWorkerClientSecretEnvVar         = "PINGCTL_PINGONE_WORKER_CLIENT_SECRET" // #nosec G101
 
 	pingoneRegionParamName      = "pingone-region"
 	pingoneRegionParamConfigKey = "pingone.region"
+	pingoneRegionEnvVar         = "PINGCTL_PINGONE_REGION"
 )
 
 var (
@@ -46,145 +52,42 @@ var (
 	overwriteExport bool
 	apiClient       *sdk.Client
 
-	exportConfigurationParamMapping = map[string]string{
+	cobraParamToViperConfigKeyMapping = map[string]string{
 		pingoneWorkerEnvironmentIdParamName: pingoneWorkerEnvironmentIdParamConfigKey,
 		pingoneExportEnvironmentIdParamName: pingoneExportEnvironmentIdParamConfigKey,
 		pingoneWorkerClientIdParamName:      pingoneWorkerClientIdParamConfigKey,
 		pingoneWorkerClientSecretParamName:  pingoneWorkerClientSecretParamConfigKey,
 		pingoneRegionParamName:              pingoneRegionParamConfigKey,
 	}
+
+	viperConfigKeyToEnvVarMapping = map[string]string{
+		pingoneWorkerEnvironmentIdParamConfigKey: pingoneWorkerEnvironmentIdEnvVar,
+		pingoneExportEnvironmentIdParamConfigKey: pingoneExportEnvironmentIdEnvVar,
+		pingoneWorkerClientIdParamConfigKey:      pingoneWorkerClientIdEnvVar,
+		pingoneWorkerClientSecretParamConfigKey:  pingoneWorkerClientSecretEnvVar,
+		pingoneRegionParamConfigKey:              pingoneRegionEnvVar,
+	}
 )
+
+func init() {
+	l := logger.Get()
+
+	l.Debug().Msgf("Initializing Platform Export Subcommand...")
+
+	// Set default values for viper configuration keys
+	viper.SetDefault(pingoneExportEnvironmentIdParamConfigKey, nil)
+	viper.SetDefault(pingoneWorkerEnvironmentIdParamConfigKey, nil)
+	viper.SetDefault(pingoneWorkerClientIdParamConfigKey, nil)
+	viper.SetDefault(pingoneWorkerClientSecretParamConfigKey, nil)
+	viper.SetDefault(pingoneRegionParamConfigKey, nil)
+}
 
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export",
 		Short: "Export configuration-as-code packages for the Ping Platform.",
 		Long:  `Export configuration-as-code packages for the Ping Platform.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			l := logger.Get()
-
-			l.Debug().Msgf("Export Subcommand Called.")
-
-			apiClient, err := initApiClient(cmd.Context(), cmd.Root().Version)
-			if err != nil {
-				return fmt.Errorf("failed to initialize PingOne SDK client: %s", err.Error())
-			}
-			apiClientId := viper.GetString(pingoneWorkerClientIdParamConfigKey)
-
-			if outputDir == "" {
-				// Default the outputDir variable to the user's present working directory.
-				outputDir, err = os.Getwd()
-				if err != nil {
-					return fmt.Errorf("failed to determine user's present working directory: %s", err.Error())
-				}
-
-				// Append "export" to the output directory as export needs an empty directory to write to
-				outputDir = filepath.Join(outputDir, "export")
-
-				l.Debug().Msgf("Defaulting export command output directory to %q...", outputDir)
-			}
-
-			// Check if outputDir exists
-			// If not, create the directory
-			l.Debug().Msgf("Validating export output directory %q...", outputDir)
-			_, err = os.Stat(outputDir)
-			if err != nil {
-				output.Format(cmd, output.CommandOutput{
-					Message: fmt.Sprintf("Failed to find or validate export output directory %q. Creating new output directory...", outputDir),
-					Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
-				})
-
-				err = os.MkdirAll(outputDir, os.ModePerm)
-				if err != nil {
-					return fmt.Errorf("failed to create export output directory %q: %s", outputDir, err.Error())
-				}
-
-				l.Debug().Msgf("New export output directory %q created.", outputDir)
-			} else {
-				// Check if the output directory is empty
-				// If not, default behavior is to exit and not overwrite.
-				// This can be changed with the --overwrite export parameter
-				if !overwriteExport {
-					dirEntries, err := os.ReadDir(outputDir)
-					if err != nil {
-						return fmt.Errorf("failed to read contents of export directory %q: %s", outputDir, err.Error())
-					}
-
-					if len(dirEntries) > 0 {
-						return fmt.Errorf("export directory %q is not empty. Use --overwrite to overwrite existing export data", outputDir)
-					}
-				}
-			}
-
-			// Find the env ID to export. Default to worker env id if not provided by user.
-			exportEnvID := viper.GetString(pingoneExportEnvironmentIdParamConfigKey)
-			if exportEnvID == "" {
-				exportEnvID = viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)
-
-				// if the exportEnvID is still empty, this is a problem. Return error.
-				if exportEnvID == "" {
-					return fmt.Errorf("failed to determine export environment ID")
-				}
-
-				output.Format(cmd, output.CommandOutput{
-					Message: "No target export environment ID specified. Defaulting export environment ID to the Worker App environment ID.",
-					Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
-				})
-			}
-
-			l.Debug().Msgf("Validating export environment ID...")
-
-			environment, response, err := apiClient.ManagementAPIClient.EnvironmentsApi.ReadOneEnvironment(cmd.Context(), exportEnvID).Execute()
-			defer response.Body.Close()
-			if err != nil {
-				return fmt.Errorf("failed to read environment.\nReadOneEnvironment Response Code: %s\nResponse Body: %s\n Error: %s", response.Status, response.Body, err.Error())
-			}
-
-			if environment == nil {
-				if response.StatusCode == 404 {
-					return fmt.Errorf("failed to fetch environment. the provided environment id %q does not exist.\nReadOneEnvironment Response Code: %s\nResponse Body: %s", exportEnvID, response.Status, response.Body)
-				} else {
-					return fmt.Errorf("failed to fetch environment %q via ReadOneEnvironment()\nReadOneEnvironment Response Code: %s\nResponse Body: %s", exportEnvID, response.Status, response.Body)
-				}
-			}
-
-			// Using the --service parameter(s) provided by user, build list of connectors to export
-			exportableConnectors := []connector.Exportable{}
-
-			for _, service := range *multiService.GetServices() {
-				switch service {
-				case serviceEnumPlatform:
-					exportableConnectors = append(exportableConnectors, platform.PlatformConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
-				case serviceEnumSSO:
-					exportableConnectors = append(exportableConnectors, sso.SSOConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
-				case serviceEnumMFA:
-					exportableConnectors = append(exportableConnectors, mfa.MFAConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
-				case serviceEnumProtect:
-					exportableConnectors = append(exportableConnectors, protect.ProtectConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
-					// default:
-					// This unrecognized service condition is handled by cobra with the custom type MultiService
-				}
-			}
-
-			// Loop through user defined exportable connectors and export them
-			for _, connector := range exportableConnectors {
-				output.Format(cmd, output.CommandOutput{
-					Message: fmt.Sprintf("Exporting %s service...", connector.ConnectorServiceName()),
-					Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
-				})
-
-				err := connector.Export(string(exportFormat), outputDir, overwriteExport)
-				if err != nil {
-					return fmt.Errorf("failed to export %s service: %s", connector.ConnectorServiceName(), err.Error())
-				}
-			}
-
-			output.Format(cmd, output.CommandOutput{
-				Message: fmt.Sprintf("Export to directory %q complete.", outputDir),
-				Result:  output.ENUMCOMMANDOUTPUTRESULT_SUCCESS,
-			})
-			return nil
-		},
+		RunE:  ExportRunE,
 	}
 
 	// Add flags that are not tracked in the viper configuration file
@@ -203,9 +106,17 @@ func NewExportCommand() *cobra.Command {
 	cmd.MarkFlagsRequiredTogether(pingoneWorkerEnvironmentIdParamName, pingoneWorkerClientIdParamName, pingoneWorkerClientSecretParamName, pingoneRegionParamName)
 
 	// Bind the newly created flags to viper configuration file
-	if err := bindFlags(exportConfigurationParamMapping, cmd); err != nil {
+	if err := common.BindFlags(cobraParamToViperConfigKeyMapping, cmd); err != nil {
 		output.Format(cmd, output.CommandOutput{
 			Message: "Error binding export command flag parameters. Flag values may not be recognized.",
+			Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+			Error:   err,
+		})
+	}
+
+	if err := common.BindEnvVars(viperConfigKeyToEnvVarMapping); err != nil {
+		output.Format(cmd, output.CommandOutput{
+			Message: "Error binding environment varibales. Environment Variable values may not be recognized.",
 			Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 			Error:   err,
 		})
@@ -214,10 +125,132 @@ func NewExportCommand() *cobra.Command {
 	return cmd
 }
 
-func init() {
+func ExportRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 
-	l.Debug().Msgf("Initializing Export Subcommand...")
+	l.Debug().Msgf("Export Subcommand Called.")
+
+	fmt.Println(viper.Get(pingoneWorkerClientIdParamConfigKey))
+
+	apiClient, err := initApiClient(cmd.Context(), cmd.Root().Version)
+	if err != nil {
+		return fmt.Errorf("failed to initialize PingOne SDK client: %s", err.Error())
+	}
+	apiClientId := viper.GetString(pingoneWorkerClientIdParamConfigKey)
+
+	if outputDir == "" {
+		// Default the outputDir variable to the user's present working directory.
+		outputDir, err = os.Getwd()
+		if err != nil {
+			return fmt.Errorf("failed to determine user's present working directory: %s", err.Error())
+		}
+
+		// Append "export" to the output directory as export needs an empty directory to write to
+		outputDir = filepath.Join(outputDir, "export")
+
+		l.Debug().Msgf("Defaulting export command output directory to %q...", outputDir)
+	}
+
+	// Check if outputDir exists
+	// If not, create the directory
+	l.Debug().Msgf("Validating export output directory %q...", outputDir)
+	_, err = os.Stat(outputDir)
+	if err != nil {
+		output.Format(cmd, output.CommandOutput{
+			Message: fmt.Sprintf("Failed to find or validate export output directory %q. Creating new output directory...", outputDir),
+			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+		})
+
+		err = os.MkdirAll(outputDir, os.ModePerm)
+		if err != nil {
+			return fmt.Errorf("failed to create export output directory %q: %s", outputDir, err.Error())
+		}
+
+		l.Debug().Msgf("New export output directory %q created.", outputDir)
+	} else {
+		// Check if the output directory is empty
+		// If not, default behavior is to exit and not overwrite.
+		// This can be changed with the --overwrite export parameter
+		if !overwriteExport {
+			dirEntries, err := os.ReadDir(outputDir)
+			if err != nil {
+				return fmt.Errorf("failed to read contents of export directory %q: %s", outputDir, err.Error())
+			}
+
+			if len(dirEntries) > 0 {
+				return fmt.Errorf("export directory %q is not empty. Use --overwrite to overwrite existing export data", outputDir)
+			}
+		}
+	}
+
+	// Find the env ID to export. Default to worker env id if not provided by user.
+	exportEnvID := viper.GetString(pingoneExportEnvironmentIdParamConfigKey)
+	if exportEnvID == "" {
+		exportEnvID = viper.GetString(pingoneWorkerEnvironmentIdParamConfigKey)
+
+		// if the exportEnvID is still empty, this is a problem. Return error.
+		if exportEnvID == "" {
+			return fmt.Errorf("failed to determine export environment ID")
+		}
+
+		output.Format(cmd, output.CommandOutput{
+			Message: "No target export environment ID specified. Defaulting export environment ID to the Worker App environment ID.",
+			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+		})
+	}
+
+	l.Debug().Msgf("Validating export environment ID...")
+
+	environment, response, err := apiClient.ManagementAPIClient.EnvironmentsApi.ReadOneEnvironment(cmd.Context(), exportEnvID).Execute()
+	defer response.Body.Close()
+	if err != nil {
+		return fmt.Errorf("failed to read environment.\nReadOneEnvironment Response Code: %s\nResponse Body: %s\n Error: %s", response.Status, response.Body, err.Error())
+	}
+
+	if environment == nil {
+		if response.StatusCode == 404 {
+			return fmt.Errorf("failed to fetch environment. the provided environment id %q does not exist.\nReadOneEnvironment Response Code: %s\nResponse Body: %s", exportEnvID, response.Status, response.Body)
+		} else {
+			return fmt.Errorf("failed to fetch environment %q via ReadOneEnvironment()\nReadOneEnvironment Response Code: %s\nResponse Body: %s", exportEnvID, response.Status, response.Body)
+		}
+	}
+
+	// Using the --service parameter(s) provided by user, build list of connectors to export
+	exportableConnectors := []connector.Exportable{}
+
+	for _, service := range *multiService.GetServices() {
+		switch service {
+		case serviceEnumPlatform:
+			exportableConnectors = append(exportableConnectors, platform.PlatformConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
+		case serviceEnumSSO:
+			exportableConnectors = append(exportableConnectors, sso.SSOConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
+		case serviceEnumMFA:
+			exportableConnectors = append(exportableConnectors, mfa.MFAConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
+		case serviceEnumProtect:
+			exportableConnectors = append(exportableConnectors, protect.ProtectConnector(cmd.Context(), apiClient, &apiClientId, exportEnvID))
+			// default:
+			// This unrecognized service condition is handled by cobra with the custom type MultiService
+		}
+	}
+
+	// Loop through user defined exportable connectors and export them
+	for _, connector := range exportableConnectors {
+		output.Format(cmd, output.CommandOutput{
+			Message: fmt.Sprintf("Exporting %s service...", connector.ConnectorServiceName()),
+			Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
+		})
+
+		err := connector.Export(string(exportFormat), outputDir, overwriteExport)
+		if err != nil {
+			return fmt.Errorf("failed to export %s service: %s", connector.ConnectorServiceName(), err.Error())
+		}
+	}
+
+	output.Format(cmd, output.CommandOutput{
+		Message: fmt.Sprintf("Export to directory %q complete.", outputDir),
+		Result:  output.ENUMCOMMANDOUTPUTRESULT_SUCCESS,
+	})
+	return nil
 }
 
 func initApiClient(ctx context.Context, version string) (*sdk.Client, error) {
@@ -278,15 +311,4 @@ func initApiClient(ctx context.Context, version string) (*sdk.Client, error) {
 	}
 
 	return client, nil
-}
-
-func bindFlags(paramlist map[string]string, command *cobra.Command) error {
-	for k, v := range paramlist {
-		err := viper.BindPFlag(v, command.Flags().Lookup(k))
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }

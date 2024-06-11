@@ -44,13 +44,13 @@ func Format(cmd *cobra.Command, output CommandOutput) {
 		l.Fatal().Msgf("Failed to output. Expected cmd to be set.")
 	}
 
-	colorizeOutput := viper.GetBool("color")
+	colorizeOutput := viper.GetBool("pingctl.color")
 
 	if !colorizeOutput {
 		color.NoColor = true
 	}
 
-	outputFormat := viper.GetString("output")
+	outputFormat := viper.GetString("pingctl.output")
 
 	switch outputFormat {
 	case "text":

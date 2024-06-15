@@ -24,7 +24,7 @@ func NewConfigSetCommand() *cobra.Command {
 		Use:   "set",
 		Short: "Set pingctl configuration settings.",
 		Long: `Set pingctl configuration settings.
-		
+
 Example command usage: 'pingctl config set pingctl.color=false'`,
 		RunE: ConfigSetRunE,
 	}

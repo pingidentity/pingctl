@@ -24,7 +24,7 @@ func (s *OutputFormat) Set(outputFormat string) error {
 	case ENUM_OUTPUT_FORMAT_TEXT, ENUM_OUTPUT_FORMAT_JSON:
 		*s = OutputFormat(outputFormat)
 	default:
-		return fmt.Errorf("unrecognized Output Format: %q. Must be one of: %s", outputFormat, OutputFormatValidValues())
+		return fmt.Errorf("unrecognized Output Format: '%s'. Must be one of: %s", outputFormat, OutputFormatValidValues())
 	}
 	return nil
 }

@@ -65,7 +65,7 @@ func (s *MultiService) Set(service string) error {
 	case ENUM_SERVICE_PROTECT:
 		(*s.services)[ENUM_SERVICE_PROTECT] = true
 	default:
-		return fmt.Errorf("unrecognized service %q. Must be one of: %s", service, MultiServiceValidValues())
+		return fmt.Errorf("unrecognized service '%s'. Must be one of: %s", service, MultiServiceValidValues())
 	}
 	return nil
 }

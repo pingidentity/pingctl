@@ -19,7 +19,7 @@ func (s *ExportFormat) Set(format string) error {
 	case connector.ENUMEXPORTFORMAT_HCL:
 		*s = ExportFormat(format)
 	default:
-		return fmt.Errorf("unrecognized export format %q. Must be one of: %q", format, ExportFormatValidValues())
+		return fmt.Errorf("unrecognized export format '%s'. Must be one of: %s", format, ExportFormatValidValues())
 	}
 	return nil
 }

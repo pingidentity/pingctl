@@ -23,7 +23,7 @@ func NewConfigGetCommand() *cobra.Command {
 		Use:   "get",
 		Short: "Get pingctl configuration settings.",
 		Long: `Get pingctl configuration settings.
-		
+
 Example command usage: 'pingctl config get pingctl.color'`,
 		RunE: ConfigGetRunE,
 	}

@@ -27,8 +27,7 @@ func NewFeedbackCommand() *cobra.Command {
 
 func FeedbackRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
-
-	l.Debug().Msgf("Feedback command called.")
+	l.Debug().Msgf("Feedback Subcommand called.")
 
 	feedbackMessage := `Thank you for participating in early adoption of the refreshed Ping Identity universal CLI!
 

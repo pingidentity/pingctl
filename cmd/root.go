@@ -5,45 +5,25 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/pingidentity/pingctl/cmd/common"
 	"github.com/pingidentity/pingctl/cmd/config"
 	"github.com/pingidentity/pingctl/cmd/platform"
+	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
+	"github.com/pingidentity/pingctl/internal/viperconfig"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-)
-
-const (
-	configParamName      = "config"
-	configParamConfigKey = "pingctl.config"
-	configParamEnvVar    = "PINGCTL_CONFIG"
-
-	outputParamName      = "output"
-	outputParamConfigKey = "pingctl.output"
-	outputParamEnvVar    = "PINGCTL_OUTPUT"
-
-	colorParamName      = "color"
-	colorParamConfigKey = "pingctl.color"
-	colorParamEnvVar    = "PINGCTL_COLOR"
 )
 
 var (
 	cfgFile        string
 	defaultCfgFile string
-	outputFormat   string
+	outputFormat   customtypes.OutputFormat = customtypes.OutputFormat(customtypes.ENUM_OUTPUT_FORMAT_TEXT)
 	colorizeOutput bool
 
-	cobraParamToViperConfigKeyMapping = map[string]string{
-		configParamName: configParamConfigKey,
-		outputParamName: outputParamConfigKey,
-		colorParamName:  colorParamConfigKey,
-	}
-
-	viperConfigKeyToEnvVarMapping = map[string]string{
-		configParamConfigKey: configParamEnvVar,
-		outputParamConfigKey: outputParamEnvVar,
-		colorParamConfigKey:  colorParamEnvVar,
+	cobraParamNames = []viperconfig.ConfigCobraParam{
+		viperconfig.RootOutputParamName,
+		viperconfig.RootColorParamName,
 	}
 )
 
@@ -61,22 +41,18 @@ func init() {
 	// Default the config in $home/.pingctl directory with name "config.yaml".
 	defaultCfgFile = fmt.Sprintf("%s/.pingctl/config.yaml", home)
 
-	// Set config defaults
-	viper.SetDefault(configParamConfigKey, defaultCfgFile)
-	viper.SetDefault(outputParamConfigKey, "text")
-	viper.SetDefault(colorParamConfigKey, true)
-
 	cobra.OnInitialize(initViperConfigFile)
 }
 
 // rootCmd represents the base command when called without any subcommands
 func NewRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:           "pingctl",
-		Version:       "v2.0.0-alpha.3",
-		Short:         "A CLI tool for managing Ping Identity products.",
-		Long:          `A CLI tool for managing Ping Identity products.`,
-		SilenceErrors: true, // Upon error in RunE method, let output package in main.go handle error output
+		Use:               "pingctl",
+		Version:           "v2.0.0-alpha.3",
+		Short:             "A CLI tool for managing Ping Identity products.",
+		Long:              `A CLI tool for managing Ping Identity products.`,
+		SilenceErrors:     true, // Upon error in RunE method, let output package in main.go handle error output
+		PersistentPreRunE: RootPersistentPreRunE,
 	}
 
 	cmd.AddCommand(
@@ -86,23 +62,23 @@ func NewRootCommand() *cobra.Command {
 		// auth.NewAuthCommand(),
 	)
 
-	cmd.PersistentFlags().StringVar(&cfgFile, configParamName, "", "Configuration file location\nDefault: $HOME/.pingctl/config.yaml")
-	cmd.PersistentFlags().StringVar(&outputFormat, outputParamName, "text", "Specifies output format\nValid output options: 'text', 'json'")
-	cmd.PersistentFlags().BoolVar(&colorizeOutput, colorParamName, true, "Use colorized output")
+	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Configuration file location\nDefault: $HOME/.pingctl/config.yaml")
+	cmd.PersistentFlags().Var(&outputFormat, string(viperconfig.RootOutputParamName), fmt.Sprintf("Specifies output format\nValid output options: %s", customtypes.OutputFormatValidValues()))
+	cmd.PersistentFlags().BoolVar(&colorizeOutput, string(viperconfig.RootColorParamName), true, "Use colorized output")
 
-	if err := common.BindPersistentFlags(cobraParamToViperConfigKeyMapping, cmd); err != nil {
+	if err := viperconfig.BindPersistentFlags(cobraParamNames, cmd); err != nil {
 		output.Format(cmd, output.CommandOutput{
-			Message: "Error binding flag parameters. Flag values may not be recognized.",
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
-			Error:   err,
+			Message:      "Error binding flag parameters. Flag values may not be recognized.",
+			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+			ErrorMessage: err.Error(),
 		})
 	}
 
-	if err := common.BindEnvVars(viperConfigKeyToEnvVarMapping); err != nil {
+	if err := viperconfig.BindEnvVars(cobraParamNames); err != nil {
 		output.Format(cmd, output.CommandOutput{
-			Message: "Error binding environment varibales. Environment Variable values may not be recognized.",
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
-			Error:   err,
+			Message:      "Error binding environment varibales. Environment Variable values may not be recognized.",
+			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+			ErrorMessage: err.Error(),
 		})
 	}
 
@@ -145,4 +121,17 @@ func initViperConfigFile() {
 	} else {
 		l.Info().Msgf("Using configuration file: %s", viper.ConfigFileUsed())
 	}
+}
+
+func RootPersistentPreRunE(cmd *cobra.Command, args []string) error {
+	l := logger.Get()
+
+	// Validate viper config
+	err := viperconfig.ValidateViperConfig()
+	if err != nil {
+		return err
+	}
+
+	l.Info().Msgf("Successfully validated pingctl configuration")
+	return nil
 }

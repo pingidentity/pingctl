@@ -2,14 +2,15 @@ package config
 
 import (
 	"fmt"
-	"slices"
+	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-uuid"
+	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
-	"github.com/pingidentity/pingctl/internal/output"
+	"github.com/pingidentity/pingctl/internal/viperconfig"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v3"
 )
 
 func init() {
@@ -31,52 +32,118 @@ Example command usage: 'pingctl config set pingctl.color=false'`,
 	return cmd
 }
 func ConfigSetRunE(cmd *cobra.Command, args []string) error {
+	l := logger.Get()
+	l.Debug().Msgf("Config Get Subcommand Called.")
+
+	// Parse the key=value pair from the command line arguments
+	viperKey, value, err := parseSetArgs(args)
+	if err != nil {
+		return err
+	}
+
+	// Check if the key is a valid viper configuration key
+	if !viperconfig.IsValidViperKey(viperKey) {
+		validKeys := strings.Join(viperconfig.GetViperConfigKeys(), ", ")
+		return fmt.Errorf("unable to unset configuration: key '%s' is not recognized as a valid configuration key. \nValid keys: %s", viperKey, validKeys)
+	}
+
+	// Make sure value is not empty, and suggest unset command if it is
+	if value == "" {
+		return fmt.Errorf("failed to set configuration: value for key '%s' is empty. Use 'pingctl config unset %s' to unset the key", viperKey, viperKey)
+	}
+
+	valueType, ok := viperconfig.GetValueTypeFromViperKey(viperKey)
+	if !ok {
+		return fmt.Errorf("failed to set configuration: value type for key %s unrecognized", viperKey)
+	}
+
+	if err := setValue(viperKey, value, valueType); err != nil {
+		return err
+	}
+
+	if err := viper.WriteConfig(); err != nil {
+		return fmt.Errorf("failed to write pingctl configuration to file '%s': %s", viper.ConfigFileUsed(), err.Error())
+	}
+
+	if err := printConfig(cmd); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func parseSetArgs(args []string) (string, string, error) {
 	if len(args) == 0 {
-		return fmt.Errorf("unable to set configuration: no 'key=value' assignment given in set command")
+		return "", "", fmt.Errorf("failed to set configuration: no 'key=value' assignment given in set command")
 	}
 
 	// Assume viper configuration key=value pair is args[0] and ignore any other input
 	parsedInput := strings.SplitN(args[0], "=", 2)
 	if len(parsedInput) != 2 {
-		return fmt.Errorf("unable to set configuration: invalid assignment format '%s'. Expect 'key=value' format", args[0])
+		return "", "", fmt.Errorf("failed to set configuration: invalid assignment format '%s'. Expect 'key=value' format", args[0])
 	}
 
-	viperKey := parsedInput[0]
-	value := parsedInput[1]
+	return parsedInput[0], parsedInput[1], nil
+}
 
-	// The only valid configuration keys are those that are already set in the
-	// configuration file. This is ensured by viper.SetDefault calls on command's init.
-	if !viper.InConfig(viperKey) {
-		validKeys := strings.Join(viper.AllKeys(), ", ")
-		return fmt.Errorf("unable to set configuration: value '%s' is not recognized as a valid configuration key. \nValid keys: %s", viperKey, validKeys)
+func setValue(viperKey, value string, valueType viperconfig.ConfigType) error {
+	switch valueType {
+	case viperconfig.ENUM_BOOL:
+		return setBool(viperKey, value)
+	case viperconfig.ENUM_ID:
+		return setUUID(viperKey, value)
+	case viperconfig.ENUM_OUTPUT_FORMAT:
+		return setOutputFormat(viperKey, value)
+	case viperconfig.ENUM_PINGONE_REGION:
+		return setPingOneRegion(viperKey, value)
+	case viperconfig.ENUM_STRING:
+		viper.Set(viperKey, string(value))
+		return nil
+	default:
+		return fmt.Errorf("unable to set configuration: variable type for key '%s' is not recognized", viperKey)
 	}
+}
 
-	// Check if viperKey is in viper.AllKeys()
-	if !slices.Contains(viper.AllKeys(), viperKey) {
-		return fmt.Errorf("unable to set configuration: key '%s' is an object and cannot be set. Use 'pingctl config set %s.<key>=%s' to set a specific configuration setting", viperKey, viperKey, value)
-	}
-
-	// Make sure value is not empty, and suggest unset command if it is
-	if value == "" {
-		return fmt.Errorf("unable to set configuration: value for key '%s' is empty. Use 'pingctl config unset %s' to unset the key", viperKey, viperKey)
-	}
-
-	viper.Set(viperKey, value)
-
-	err := viper.WriteConfig()
+func setBool(viperKey string, value string) error {
+	boolValue, err := strconv.ParseBool(value)
 	if err != nil {
-		return fmt.Errorf("failed to write configuration to file: %s", err.Error())
+		return fmt.Errorf("failed to set configuration: value for key '%s' must be a boolean. Use 'true' or 'false'", viperKey)
 	}
 
-	// Print the updated configuration
-	yaml, err := yaml.Marshal(viper.AllSettings())
-	if err != nil {
-		return fmt.Errorf("failed to yaml marshal viper configuration: %s", err.Error())
+	viper.Set(viperKey, boolValue)
+
+	return nil
+}
+
+func setUUID(viperKey string, value string) error {
+	// Check string is in the form of a UUID
+	if _, err := uuid.ParseUUID(value); err != nil {
+		return fmt.Errorf("failed to set configuration: value for key '%s' must be a valid UUID", viperKey)
 	}
-	output.Format(cmd, output.CommandOutput{
-		Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
-		Message: string(yaml),
-	})
+
+	viper.Set(viperKey, string(value))
+
+	return nil
+}
+
+func setOutputFormat(viperKey string, value string) error {
+	outputFormat := customtypes.OutputFormat("")
+	if err := outputFormat.Set(value); err != nil {
+		return fmt.Errorf("failed to set configuration: %s", err.Error())
+	}
+
+	viper.Set(viperKey, outputFormat)
+
+	return nil
+}
+
+func setPingOneRegion(viperKey string, value string) error {
+	region := customtypes.PingOneRegion("")
+	if err := region.Set(value); err != nil {
+		return fmt.Errorf("failed to set configuration: %s", err.Error())
+	}
+
+	viper.Set(viperKey, region)
 
 	return nil
 }

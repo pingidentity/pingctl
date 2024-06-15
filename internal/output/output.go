@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	"github.com/fatih/color"
+	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
+	"github.com/pingidentity/pingctl/internal/viperconfig"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -22,11 +24,11 @@ var (
 type CommandOutputResult string
 
 type CommandOutput struct {
-	Fields  map[string]interface{}
-	Message string
-	Error   error
-	Fatal   error
-	Result  CommandOutputResult
+	Fields       map[string]interface{}
+	Message      string
+	ErrorMessage string
+	FatalMessage string
+	Result       CommandOutputResult
 }
 
 const (
@@ -44,18 +46,28 @@ func Format(cmd *cobra.Command, output CommandOutput) {
 		l.Fatal().Msgf("Failed to output. Expected cmd to be set.")
 	}
 
-	colorizeOutput := viper.GetBool("pingctl.color")
+	colorizeOutput := viper.GetBool(viperconfig.ConfigOptions[viperconfig.RootColorParamName].ViperConfigKey)
 
 	if !colorizeOutput {
 		color.NoColor = true
 	}
 
-	outputFormat := viper.GetString("pingctl.output")
+	// Get the output format from viper configuration
+	// If output format is loaded from file, it is of type string
+	// if output is loaded from parameter or "config set" it is of type common.OutputFormat
+	outputFormat := viper.Get(viperconfig.ConfigOptions[viperconfig.RootOutputParamName].ViperConfigKey)
+	var outputFormatString string
+	switch format := outputFormat.(type) {
+	case customtypes.OutputFormat:
+		outputFormatString = format.String()
+	case string:
+		outputFormatString = format
+	}
 
-	switch outputFormat {
-	case "text":
+	switch outputFormatString {
+	case customtypes.ENUM_OUTPUT_FORMAT_TEXT:
 		formatText(cmd, output)
-	case "json":
+	case customtypes.ENUM_OUTPUT_FORMAT_JSON:
 		formatJson(cmd, output)
 	default:
 		formatText(cmd, CommandOutput{
@@ -108,15 +120,15 @@ func formatText(cmd *cobra.Command, output CommandOutput) {
 	}
 
 	// Inform the user of an error and log the error
-	if output.Error != nil {
-		cmd.Println(red("Error: %s", output.Error.Error()))
-		l.Error().Msgf(output.Error.Error())
+	if output.ErrorMessage != "" {
+		cmd.Println(red("Error: %s", output.ErrorMessage))
+		l.Error().Msgf(output.ErrorMessage)
 	}
 
 	// Inform the user of a fatal error and log the fatal error. This exits the program.
-	if output.Fatal != nil {
-		cmd.Println(boldRed("Fatal: %s", output.Fatal.Error()))
-		l.Fatal().Msgf(output.Fatal.Error())
+	if output.FatalMessage != "" {
+		cmd.Println(boldRed("Fatal: %s", output.FatalMessage))
+		l.Fatal().Msgf(output.FatalMessage)
 	}
 
 }
@@ -125,7 +137,7 @@ func formatJson(cmd *cobra.Command, output CommandOutput) {
 	l := logger.Get()
 
 	// Convert the CommandOutput struct to JSON
-	jsonOut, err := json.Marshal(output)
+	jsonOut, err := json.MarshalIndent(output, "", "  ")
 	if err != nil {
 		l.Error().Err(err).Msgf("Failed to serialize output as JSON")
 	}
@@ -138,13 +150,13 @@ func formatJson(cmd *cobra.Command, output CommandOutput) {
 		l.Warn().Msgf(string(jsonOut))
 	case ENUMCOMMANDOUTPUTRESULT_FAILURE:
 		// Log the error if exists
-		if output.Error != nil {
-			l.Error().Msgf(output.Error.Error())
+		if output.ErrorMessage != "" {
+			l.Error().Msgf(output.ErrorMessage)
 		}
 
 		// Log the fatal error if exists. This exits the program.
-		if output.Fatal != nil {
-			l.Fatal().Msgf(output.Fatal.Error())
+		if output.FatalMessage != "" {
+			l.Fatal().Msgf(output.FatalMessage)
 		}
 	default: //ENUMCOMMANDOUTPUTRESULT_SUCCESS, ENUMCOMMANDOUTPUTRESULT_NIL, ENUMCOMMANDOUTPUTRESULT_NOACTION_OK
 		l.Info().Msgf(string(jsonOut))

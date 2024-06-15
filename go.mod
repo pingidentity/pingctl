@@ -5,6 +5,7 @@ go 1.21.6
 require (
 	github.com/fatih/color v1.16.0
 	github.com/golangci/golangci-lint v1.55.2
+	github.com/hashicorp/go-uuid v1.0.3
 	github.com/patrickcping/pingone-go-sdk-v2 v0.11.8
 	github.com/patrickcping/pingone-go-sdk-v2/management v0.38.0
 	github.com/patrickcping/pingone-go-sdk-v2/mfa v0.18.3

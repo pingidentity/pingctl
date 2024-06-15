@@ -11,9 +11,9 @@ func main() {
 	err := rootCmd.Execute()
 	if err != nil {
 		output.Format(rootCmd, output.CommandOutput{
-			Error:   err,
-			Message: "Failed to execute pingctl",
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+			ErrorMessage: err.Error(),
+			Message:      "Failed to execute pingctl",
+			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 		})
 	}
 }

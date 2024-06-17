@@ -65,7 +65,7 @@ func (s *MultiService) Set(service string) error {
 	case ENUM_SERVICE_PROTECT:
 		(*s.services)[ENUM_SERVICE_PROTECT] = true
 	default:
-		return fmt.Errorf("unrecognized service '%s'. Must be one of: %s", service, MultiServiceValidValues())
+		return fmt.Errorf("unrecognized service '%s'. Must be one of: %s", service, strings.Join(MultiServiceValidValues(), ", "))
 	}
 	return nil
 }
@@ -84,6 +84,6 @@ func (s *MultiService) String() string {
 	return fmt.Sprintf("[ %s ]", strings.Join(enabledExportServices, ", "))
 }
 
-func MultiServiceValidValues() string {
-	return fmt.Sprintf("'%s', '%s', '%s', '%s'", ENUM_SERVICE_MFA, ENUM_SERVICE_PLATFORM, ENUM_SERVICE_PROTECT, ENUM_SERVICE_SSO)
+func MultiServiceValidValues() []string {
+	return []string{ENUM_SERVICE_PLATFORM, ENUM_SERVICE_SSO, ENUM_SERVICE_MFA, ENUM_SERVICE_PROTECT}
 }

@@ -121,7 +121,7 @@ func validateOutputFormat(viperKey string) error {
 		}
 		viper.Set(viperKey, outputFormat)
 	default:
-		return fmt.Errorf("failed to validate pingctl configuration: value for key '%s' is not a valid output format. Must use one of: %s", viperKey, customtypes.OutputFormatValidValues())
+		return fmt.Errorf("failed to validate pingctl configuration: value for key '%s' is not a valid output format. Must use one of: %s", viperKey, strings.Join(customtypes.OutputFormatValidValues(), ", "))
 	}
 	return nil
 }
@@ -138,7 +138,7 @@ func validatePingOneRegion(viperKey string) error {
 		}
 		viper.Set(viperKey, region)
 	default:
-		return fmt.Errorf("failed to validate pingctl configuration: value for key '%s' is not a valid PingOne region. Must use one of: %s", viperKey, customtypes.PingOneRegionValidValues())
+		return fmt.Errorf("failed to validate pingctl configuration: value for key '%s' is not a valid PingOne region. Must use one of: %s", viperKey, strings.Join(customtypes.PingOneRegionValidValues(), ", "))
 	}
 	return nil
 }

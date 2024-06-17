@@ -2,6 +2,7 @@ package customtypes
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/pflag"
 )
@@ -25,7 +26,7 @@ func (s *PingOneRegion) Set(region string) error {
 	case ENUM_PINGONE_REGION_AP, ENUM_PINGONE_REGION_CA, ENUM_PINGONE_REGION_EU, ENUM_PINGONE_REGION_NA:
 		*s = PingOneRegion(region)
 	default:
-		return fmt.Errorf("unrecognized PingOne Region: '%s'. Must be one of: %s", region, PingOneRegionValidValues())
+		return fmt.Errorf("unrecognized PingOne Region: '%s'. Must be one of: %s", region, strings.Join(PingOneRegionValidValues(), ", "))
 	}
 	return nil
 }
@@ -38,6 +39,6 @@ func (s *PingOneRegion) String() string {
 	return string(*s)
 }
 
-func PingOneRegionValidValues() string {
-	return fmt.Sprintf("'%s', '%s', '%s', '%s'", ENUM_PINGONE_REGION_AP, ENUM_PINGONE_REGION_CA, ENUM_PINGONE_REGION_EU, ENUM_PINGONE_REGION_NA)
+func PingOneRegionValidValues() []string {
+	return []string{ENUM_PINGONE_REGION_AP, ENUM_PINGONE_REGION_CA, ENUM_PINGONE_REGION_EU, ENUM_PINGONE_REGION_NA}
 }

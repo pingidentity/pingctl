@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/pingidentity/pingctl/cmd/config"
+	"github.com/pingidentity/pingctl/cmd/feedback"
 	"github.com/pingidentity/pingctl/cmd/platform"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -57,17 +59,17 @@ func NewRootCommand() *cobra.Command {
 
 	cmd.AddCommand(
 		platform.NewPlatformCommand(),
-		NewFeedbackCommand(),
+		feedback.NewFeedbackCommand(),
 		config.NewConfigCommand(),
 		// auth.NewAuthCommand(),
 	)
 
 	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Configuration file location\nDefault: $HOME/.pingctl/config.yaml")
-	cmd.PersistentFlags().Var(&outputFormat, string(viperconfig.RootOutputParamName), fmt.Sprintf("Specifies output format\nValid output options: %s", customtypes.OutputFormatValidValues()))
+	cmd.PersistentFlags().Var(&outputFormat, string(viperconfig.RootOutputParamName), fmt.Sprintf("Specifies output format\nValid output options: %s", strings.Join(customtypes.OutputFormatValidValues(), ", ")))
 	cmd.PersistentFlags().BoolVar(&colorizeOutput, string(viperconfig.RootColorParamName), true, "Use colorized output")
 
 	if err := viperconfig.BindPersistentFlags(cobraParamNames, cmd); err != nil {
-		output.Format(cmd, output.CommandOutput{
+		output.Format(output.CommandOutput{
 			Message:      "Error binding flag parameters. Flag values may not be recognized.",
 			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 			ErrorMessage: err.Error(),
@@ -75,12 +77,16 @@ func NewRootCommand() *cobra.Command {
 	}
 
 	if err := viperconfig.BindEnvVars(cobraParamNames); err != nil {
-		output.Format(cmd, output.CommandOutput{
+		output.Format(output.CommandOutput{
 			Message:      "Error binding environment varibales. Environment Variable values may not be recognized.",
 			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 			ErrorMessage: err.Error(),
 		})
 	}
+
+	// Make sure cobra is outputting to stdout and stderr
+	cmd.SetOut(os.Stdout)
+	cmd.SetErr(os.Stderr)
 
 	return cmd
 }
@@ -127,8 +133,7 @@ func RootPersistentPreRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 
 	// Validate viper config
-	err := viperconfig.ValidateViperConfig()
-	if err != nil {
+	if err := viperconfig.ValidateViperConfig(); err != nil {
 		return err
 	}
 

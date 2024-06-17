@@ -6,6 +6,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	l := logger.Get()
+
+	l.Debug().Msgf("Initializing Feedback Subcommand...")
+}
+
 func NewFeedbackCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "feedback",
@@ -13,12 +19,17 @@ func NewFeedbackCommand() *cobra.Command {
 		Long: `A command to provide the user information
 			on how to give feedback or get help with the tool
 			through the use of the GitHub repository's issue tracker.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			l := logger.Get()
+		RunE: FeedbackRunE,
+	}
 
-			l.Debug().Msgf("Feedback command called.")
+	return cmd
+}
 
-			feedbackMessage := `Thank you for participating in early adoption of the refreshed Ping Identity universal CLI!
+func FeedbackRunE(cmd *cobra.Command, args []string) error {
+	l := logger.Get()
+	l.Debug().Msgf("Feedback Subcommand called.")
+
+	feedbackMessage := `Thank you for participating in early adoption of the refreshed Ping Identity universal CLI!
 
 We appreciate your feedback and suggestions for improvement regarding your experiences with the CLI.
 
@@ -31,14 +42,10 @@ If you encounter any bugs while using the tool, please open an issue on the proj
 	https://github.com/pingidentity/pingctl/issues/new
 
 `
-			output.Format(cmd, output.CommandOutput{
-				Message: feedbackMessage,
-				Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
-			})
+	output.Format(cmd, output.CommandOutput{
+		Message: feedbackMessage,
+		Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
+	})
 
-			return nil
-		},
-	}
-
-	return cmd
+	return nil
 }

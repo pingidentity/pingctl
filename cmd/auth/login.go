@@ -1,8 +1,15 @@
 package auth
 
 import (
+	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
 )
+
+func init() {
+	l := logger.Get()
+
+	l.Debug().Msgf("Initializing Auth Login Subcommand...")
+}
 
 func NewLoginCommand() *cobra.Command {
 	cmd := &cobra.Command{

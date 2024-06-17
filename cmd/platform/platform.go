@@ -5,6 +5,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
+func init() {
+	l := logger.Get()
+
+	l.Debug().Msgf("Initializing Platform Subcommand...")
+}
+
 func NewPlatformCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "platform",
@@ -15,10 +21,4 @@ func NewPlatformCommand() *cobra.Command {
 	cmd.AddCommand(NewExportCommand())
 
 	return cmd
-}
-
-func init() {
-	l := logger.Get()
-
-	l.Debug().Msgf("Initializing Platform Subcommand...")
 }

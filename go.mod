@@ -5,6 +5,7 @@ go 1.21.6
 require (
 	github.com/fatih/color v1.16.0
 	github.com/golangci/golangci-lint v1.55.2
+	github.com/hashicorp/go-uuid v1.0.3
 	github.com/patrickcping/pingone-go-sdk-v2 v0.11.8
 	github.com/patrickcping/pingone-go-sdk-v2/management v0.38.0
 	github.com/patrickcping/pingone-go-sdk-v2/mfa v0.18.3
@@ -14,6 +15,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -194,7 +196,6 @@ require (
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/tools v0.4.6 // indirect
 	mvdan.cc/gofumpt v0.5.0 // indirect
 	mvdan.cc/interfacer v0.0.0-20180901003855-c20040233aed // indirect

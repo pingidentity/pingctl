@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -49,7 +50,7 @@ func ConfigGetRunE(cmd *cobra.Command, args []string) error {
 	// The only valid configuration keys are those that are already set in the
 	// configuration file. If the key is not recognized, return an error.
 	if !viper.InConfig(viperKey) {
-		validKeys := strings.Join(viperconfig.GetViperConfigKeys(), ", ")
+		validKeys := strings.Join(getValidGetKeys(), ", ")
 		return fmt.Errorf("unable to get configuration: value '%s' is not recognized as a valid configuration key. \nValid keys: %s", viperKey, validKeys)
 	}
 
@@ -108,4 +109,23 @@ func printConfigFromKey(cmd *cobra.Command, viperKey string) error {
 	})
 
 	return nil
+}
+
+func getValidGetKeys() []string {
+	// for each leaf key, add parent keys by splitting on the "." character
+	leafKeys := viperconfig.GetViperConfigKeys()
+	allkeys := []string{}
+	for _, key := range leafKeys {
+		keySplit := strings.Split(key, ".")
+		for i := 0; i < len(keySplit); i++ {
+			curKey := strings.Join(keySplit[:i+1], ".")
+			if !slices.Contains(allkeys, curKey) {
+				allkeys = append(allkeys, curKey)
+			}
+		}
+	}
+
+	slices.Sort(allkeys)
+
+	return allkeys
 }

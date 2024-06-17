@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/go-uuid"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
+	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/viperconfig"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -36,7 +37,7 @@ func ConfigSetRunE(cmd *cobra.Command, args []string) error {
 	l.Debug().Msgf("Config Get Subcommand Called.")
 
 	// Parse the key=value pair from the command line arguments
-	viperKey, value, err := parseSetArgs(args)
+	viperKey, value, err := parseSetArgs(args, cmd)
 	if err != nil {
 		return err
 	}
@@ -72,9 +73,16 @@ func ConfigSetRunE(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func parseSetArgs(args []string) (string, string, error) {
+func parseSetArgs(args []string, cmd *cobra.Command) (string, string, error) {
 	if len(args) == 0 {
 		return "", "", fmt.Errorf("failed to set configuration: no 'key=value' assignment given in set command")
+	}
+
+	if len(args) > 1 {
+		output.Format(cmd, output.CommandOutput{
+			Message: fmt.Sprintf("'pingctl config set' only sets one key-value pair per commands. Ignoring extra arguments: %s", strings.Join(args[1:], " ")),
+			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+		})
 	}
 
 	// Assume viper configuration key=value pair is args[0] and ignore any other input

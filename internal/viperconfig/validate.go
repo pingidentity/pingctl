@@ -16,7 +16,7 @@ func ValidateViperConfig() error {
 	}
 
 	// Go through all viper configuration keys,
-	// and set thier values by value type set in the common.ConfigOptions map
+	// and set their values by value type set in the common.ConfigOptions map
 	// This will validate the viper configuration heirarchy.
 	// NOTE: IF there are invalid values in the config file, but they are overwritten by
 	// an env var or flag, the invalid values will not be caught here.
@@ -62,7 +62,7 @@ func validateConfigFileKeys() error {
 	// Get all keys viper has loaded from config file.
 	// If a key found in the config file is not in the viperKeys list,
 	// it is an invalid key.
-	// Match against lowercase keys as Viper is case insesitive.
+	// Match against lowercase keys as Viper is case insensitive.
 	invalidKeys := []string{}
 	for _, key := range viper.AllKeys() {
 		keyToLower := strings.ToLower(key)

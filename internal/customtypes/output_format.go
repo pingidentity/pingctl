@@ -2,6 +2,7 @@ package customtypes
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/pflag"
 )
@@ -24,7 +25,7 @@ func (s *OutputFormat) Set(outputFormat string) error {
 	case ENUM_OUTPUT_FORMAT_TEXT, ENUM_OUTPUT_FORMAT_JSON:
 		*s = OutputFormat(outputFormat)
 	default:
-		return fmt.Errorf("unrecognized Output Format: '%s'. Must be one of: %s", outputFormat, OutputFormatValidValues())
+		return fmt.Errorf("unrecognized Output Format: '%s'. Must be one of: %s", outputFormat, strings.Join(OutputFormatValidValues(), ", "))
 	}
 	return nil
 }
@@ -37,6 +38,6 @@ func (s *OutputFormat) String() string {
 	return string(*s)
 }
 
-func OutputFormatValidValues() string {
-	return fmt.Sprintf("'%s', '%s'", ENUM_OUTPUT_FORMAT_TEXT, ENUM_OUTPUT_FORMAT_JSON)
+func OutputFormatValidValues() []string {
+	return []string{ENUM_OUTPUT_FORMAT_TEXT, ENUM_OUTPUT_FORMAT_JSON}
 }

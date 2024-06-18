@@ -1,121 +1,55 @@
 package config_test
 
 import (
-	"bytes"
 	"testing"
 
-	"github.com/pingidentity/pingctl/cmd"
-	"github.com/pingidentity/pingctl/internal/testutils"
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_command"
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 	"github.com/spf13/viper"
 )
 
 // Test Config Unset Command Executes without issue
 func TestConfigUnsetCmd_Execute(t *testing.T) {
-	// Create the command
-	rootCmd := cmd.NewRootCommand()
-
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	rootCmd.SetOut(&stdout)
-	rootCmd.SetErr(&stdout)
-
-	rootCmd.SetArgs([]string{"config", "unset", "pingctl.color"})
-
-	// Execute the command
-	err := rootCmd.Execute()
-	if err != nil {
-		testutils.PrintLogs(t)
-		t.Fatalf("Err: %q, Captured StdOut:\n%s", err, stdout.String())
-	}
+	err := testutils_command.ExecutePingctl("config", "unset", "pingctl.color")
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test Config Unset Command Fails when no arguments are provided
 func TestConfigUnsetCmd_NoArgs(t *testing.T) {
-	// Create the command
-	rootCmd := cmd.NewRootCommand()
-
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	rootCmd.SetOut(&stdout)
-	rootCmd.SetErr(&stdout)
-
-	rootCmd.SetArgs([]string{"config", "unset"})
-
-	// Execute the command
-	err := rootCmd.Execute()
-	if err == nil {
-		testutils.PrintLogs(t)
-		t.Fatalf("Expected error for providing no args, Captured StdOut: %q", stdout.String())
-	}
+	expectedErrorPattern := `^unable to unset configuration: no key given in unset command$`
+	err := testutils_command.ExecutePingctl("config", "unset")
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Config Unset Command Fails when an invalid key is provided
 func TestConfigUnsetCmd_InvalidKey(t *testing.T) {
-	// Create the command
-	rootCmd := cmd.NewRootCommand()
-
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	rootCmd.SetOut(&stdout)
-	rootCmd.SetErr(&stdout)
-
-	rootCmd.SetArgs([]string{"config", "unset", "pingctl.bogus"})
-
-	// Execute the command
-	err := rootCmd.Execute()
-	if err == nil {
-		testutils.PrintLogs(t)
-		t.Fatalf("Expected error for providing invalid key, Captured StdOut: %q", stdout.String())
-	}
+	expectedErrorPattern := `^unable to unset configuration: key 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`
+	err := testutils_command.ExecutePingctl("config", "unset", "pingctl.invalid")
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Config Unset Command Executes normally when too many arguments are provided
 func TestConfigUnsetCmd_TooManyArgs(t *testing.T) {
-	// Create the command
-	rootCmd := cmd.NewRootCommand()
-
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	rootCmd.SetOut(&stdout)
-	rootCmd.SetErr(&stdout)
-
-	rootCmd.SetArgs([]string{"config", "unset", "pingctl.color", "pingctl.bogus", "pingctl.bogus2"})
-
-	// Execute the command
-	err := rootCmd.Execute()
-	if err != nil {
-		testutils.PrintLogs(t)
-		t.Fatalf("Err: %s, Captured StdOut:\n%s", err.Error(), stdout.String())
-	}
+	err := testutils_command.ExecutePingctl("config", "unset", "pingctl.color", "pingctl.output")
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test Config Unset Command for key 'pingone.worker.clientId' updates viper configuration
 func TestConfigUnsetCmd_CheckViperConfig(t *testing.T) {
-	// Create the command
-	rootCmd := cmd.NewRootCommand()
+	viper.Set("pingone.worker.clientId", "12345678-1234-1234-1234-123456789012")
+
 	viperKey := "pingone.worker.clientId"
 	viperOldValue := viper.GetString(viperKey)
 
-	// Redirect stdout to a buffer to capture the output
-	var stdout bytes.Buffer
-	rootCmd.SetOut(&stdout)
-	rootCmd.SetErr(&stdout)
+	err := testutils_command.ExecutePingctl("config", "unset", viperKey)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 
-	rootCmd.SetArgs([]string{"config", "unset", viperKey})
-
-	// Execute the command
-	err := rootCmd.Execute()
-	if err != nil {
-		testutils.PrintLogs(t)
-		t.Fatalf("Err: %s, Captured StdOut:\n%s", err.Error(), stdout.String())
-	}
-
-	// Check the viper configuration
 	viperNewValue := viper.GetString(viperKey)
-	if viperNewValue == viperOldValue {
-		t.Fatalf("Expected viper configuration to be changed for key %s. Old: %s, New: %s", viperKey, viperOldValue, viperNewValue)
+	if viperOldValue == viperNewValue {
+		t.Errorf("Expected viper configuration value to be updated. Old: %s, New: %s", viperOldValue, viperNewValue)
 	}
-	if viper.GetString(viperKey) != "" {
-		t.Fatalf("Expected viper configuration to be empty string for key %s, got %s", viperKey, viperNewValue)
+
+	if viperNewValue != "" {
+		t.Errorf("Expected viper configuration value to be empty. Got: %s", viperNewValue)
 	}
 }

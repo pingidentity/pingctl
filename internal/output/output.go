@@ -8,7 +8,6 @@ import (
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/viperconfig"
-	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
@@ -39,13 +38,7 @@ const (
 	ENUMCOMMANDOUTPUTRESULT_FAILURE       CommandOutputResult = "Failure"
 )
 
-func Format(cmd *cobra.Command, output CommandOutput) {
-	l := logger.Get()
-
-	if cmd == nil {
-		l.Fatal().Msgf("Failed to output. Expected cmd to be set.")
-	}
-
+func Format(output CommandOutput) {
 	colorizeOutput := viper.GetBool(viperconfig.ConfigOptions[viperconfig.RootColorParamName].ViperConfigKey)
 
 	if !colorizeOutput {
@@ -66,19 +59,19 @@ func Format(cmd *cobra.Command, output CommandOutput) {
 
 	switch outputFormatString {
 	case customtypes.ENUM_OUTPUT_FORMAT_TEXT:
-		formatText(cmd, output)
+		formatText(output)
 	case customtypes.ENUM_OUTPUT_FORMAT_JSON:
-		formatJson(cmd, output)
+		formatJson(output)
 	default:
-		formatText(cmd, CommandOutput{
+		formatText(CommandOutput{
 			Message: fmt.Sprintf("Output format %q is not recognized. Defaulting to \"text\" output", outputFormat),
 			Result:  ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
 		})
-		formatText(cmd, output)
+		formatText(output)
 	}
 }
 
-func formatText(cmd *cobra.Command, output CommandOutput) {
+func formatText(output CommandOutput) {
 	l := logger.Get()
 
 	var resultFormat string
@@ -107,33 +100,33 @@ func formatText(cmd *cobra.Command, output CommandOutput) {
 	}
 
 	// Supply the user a formatted message and a result status if any.
-	cmd.Println(resultColor(resultFormat, output.Message, output.Result))
+	fmt.Println(resultColor(resultFormat, output.Message, output.Result))
 	l.Info().Msgf(resultColor(resultFormat, output.Message, output.Result))
 
 	// Output and log any additional key/value pairs supplied to the user.
 	if output.Fields != nil {
-		cmd.Println(cyan("Additional Information:"))
+		fmt.Println(cyan("Additional Information:"))
 		for k, v := range output.Fields {
-			cmd.Println(cyan("%s: %s", k, v))
+			fmt.Println(cyan("%s: %s", k, v))
 			l.Info().Msgf("%s: %s", k, v)
 		}
 	}
 
 	// Inform the user of an error and log the error
 	if output.ErrorMessage != "" {
-		cmd.Println(red("Error: %s", output.ErrorMessage))
+		fmt.Println(red("Error: %s", output.ErrorMessage))
 		l.Error().Msgf(output.ErrorMessage)
 	}
 
 	// Inform the user of a fatal error and log the fatal error. This exits the program.
 	if output.FatalMessage != "" {
-		cmd.Println(boldRed("Fatal: %s", output.FatalMessage))
+		fmt.Println(boldRed("Fatal: %s", output.FatalMessage))
 		l.Fatal().Msgf(output.FatalMessage)
 	}
 
 }
 
-func formatJson(cmd *cobra.Command, output CommandOutput) {
+func formatJson(output CommandOutput) {
 	l := logger.Get()
 
 	// Convert the CommandOutput struct to JSON
@@ -143,7 +136,7 @@ func formatJson(cmd *cobra.Command, output CommandOutput) {
 	}
 
 	// Output the JSON as uncolored string
-	cmd.Println(string(jsonOut))
+	fmt.Println(string(jsonOut))
 
 	switch output.Result {
 	case ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN:

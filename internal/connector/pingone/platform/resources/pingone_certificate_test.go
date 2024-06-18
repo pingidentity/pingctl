@@ -6,12 +6,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
-	"github.com/pingidentity/pingctl/internal/testutils"
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 )
 
 func TestCertificateExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
 	resource := resources.Certificate(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -19,14 +19,14 @@ func TestCertificateExport(t *testing.T) {
 		{
 			ResourceType: "pingone_certificate",
 			ResourceName: "common name",
-			ResourceID:   fmt.Sprintf("%s/b9eb2b6e-381e-4b1c-86d3-096d951787f4", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/b9eb2b6e-381e-4b1c-86d3-096d951787f4", testutils_helpers.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_certificate",
 			ResourceName: "terraform",
-			ResourceID:   fmt.Sprintf("%s/fa8f15d6-1c62-4db1-920e-d22f6dd68ba8", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/fa8f15d6-1c62-4db1-920e-d22f6dd68ba8", testutils_helpers.GetEnvironmentID()),
 		},
 	}
 
-	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

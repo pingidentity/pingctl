@@ -6,12 +6,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
-	"github.com/pingidentity/pingctl/internal/testutils"
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 )
 
 func TestAgreementExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
 	resource := resources.Agreement(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -19,14 +19,14 @@ func TestAgreementExport(t *testing.T) {
 		{
 			ResourceType: "pingone_agreement",
 			ResourceName: "Test",
-			ResourceID:   fmt.Sprintf("%s/37ab76b8-8eff-43ae-b499-a7dce9fe0e75", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/37ab76b8-8eff-43ae-b499-a7dce9fe0e75", testutils_helpers.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_agreement",
 			ResourceName: "Test2",
-			ResourceID:   fmt.Sprintf("%s/38c0c463-b13d-4d22-8da5-f9fd8093d594", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/38c0c463-b13d-4d22-8da5-f9fd8093d594", testutils_helpers.GetEnvironmentID()),
 		},
 	}
 
-	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

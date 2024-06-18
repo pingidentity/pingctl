@@ -3,6 +3,7 @@ package platform_internal
 import (
 	"context"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/go-uuid"
@@ -61,10 +62,11 @@ func Test_initApiClient_incompleteConfig(t *testing.T) {
 	viper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
 	viper.Set("pingone.region", "")
 
-	// Test the function
+	regex := regexp.MustCompile(`^failed to initialize pingone API client\. unrecognized pingone region: ''\. Must be one of: [A-Za-z\s,]+$`)
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
-	if err == nil {
-		t.Errorf("initApiClient() error = %v, want non-nil", err)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("initApiClient() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -76,10 +78,11 @@ func Test_initApiClient_invalidRegionConfig(t *testing.T) {
 	viper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
 	viper.Set("pingone.region", "invalid")
 
-	// Test the function
+	regex := regexp.MustCompile(`^failed to initialize pingone API client\. unrecognized pingone region: 'invalid'\. Must be one of: [A-Za-z\s,]+$`)
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
-	if err == nil {
-		t.Errorf("initApiClient() error = %v, want non-nil", err)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("initApiClient() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -91,10 +94,11 @@ func Test_initApiClient_invalidClientIdConfig(t *testing.T) {
 	viper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
 	viper.Set("pingone.region", os.Getenv("PINGCTL_PINGONE_REGION"))
 
-	// Test the function
+	regex := regexp.MustCompile(`^failed to initialize pingone API client\.\s+oauth2: "invalid_client" "Request denied: Invalid client credentials \(Correlation ID: [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\)"\s+configuration values used for client initialization:\s+worker client ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+worker environment ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+pingone region - [A-Za-z]+\s+worker client secret - \(use DEBUG or TRACE logging level to view the client secret in the error message\)$`)
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
-	if err == nil {
-		t.Errorf("initApiClient() error = %v, want non-nil", err)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("initApiClient() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -163,10 +167,11 @@ func Test_createOrValidateOutputDir_WithFile(t *testing.T) {
 		t.Fatalf("os.Create() error = %v", err)
 	}
 
-	// Test the function
+	regex := regexp.MustCompile(`^'platform export' output directory '[\/A-Za-z0-9_-]+' is not empty. Use --overwrite to overwrite existing export data$`)
 	err := createOrValidateOutputDir(outputDir, false)
-	if err == nil {
-		t.Errorf("createOrValidateOutputDir() error = %v, want non-nil", err)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("createOrValidateOutputDir() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 
 	// Remove the new directory
@@ -259,10 +264,11 @@ func Test_getExportEnvID_missingConfig(t *testing.T) {
 	viper.Set("pingone.export.environmentid", "")
 	viper.Set("pingone.worker.environmentid", "")
 
-	// Test the function
+	regex := regexp.MustCompile(`^failed to determine export environment ID$`)
 	_, err := getExportEnvID()
-	if err == nil {
-		t.Errorf("getExportEnvID() error = %v, want non-nil", err)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("getExportEnvID() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -310,13 +316,11 @@ func Test_validateExportEnvID_invalidEnvID(t *testing.T) {
 	// Get apiClient from helper function
 	apiClient := getApiClient(t)
 
-	// Set invalid export environment ID
-	exportEnvID := "12345678-1234-1234-1234-123456789012"
+	regex := regexp.MustCompile(`^ReadOneEnvironment Request for resource 'pingone_environment' was not successful\.\s+Response Code: 404 Not Found\s+Response Body: {{\s+"id" : "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}",\s+"code" : "NOT_FOUND",\s+"message" : "Unable to find environment with ID: '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'"\s+}}\s+Error: 404 Not Found$`)
+	err := validateExportEnvID(context.Background(), "12345678-1234-1234-1234-123456789012", apiClient)
 
-	// Test the function
-	err := validateExportEnvID(context.Background(), exportEnvID, apiClient)
-	if err == nil {
-		t.Errorf("validateExportEnvID() error = %v, want non-nil", err)
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("validateExportEnvID() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -325,20 +329,22 @@ func Test_validateExportEnvID_nilContext(t *testing.T) {
 	// Get apiClient from helper function
 	apiClient := getApiClient(t)
 
-	// Test the function
+	regex := regexp.MustCompile(`^failed to validate environment ID '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'. context is nil$`)
 	// nolint:staticcheck // ignore SA1012 this is a test
 	err := validateExportEnvID(nil, os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"), apiClient) //lint:ignore SA1012 this is a test
-	if err == nil {
-		t.Errorf("validateExportEnvID() error = %v, want non-nil", err)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("validateExportEnvID() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
 // Test validateExportEnvID function fails on nil API client
 func Test_validateExportEnvID_nilApiClient(t *testing.T) {
-	// Test the function
+	regex := regexp.MustCompile(`^failed to validate environment ID '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'. apiClient is nil$`)
 	err := validateExportEnvID(context.Background(), os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"), nil)
-	if err == nil {
-		t.Errorf("validateExportEnvID() error = %v, want non-nil", err)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("validateExportEnvID() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -484,10 +490,11 @@ func Test_exportConnectors_invalidOutputDir(t *testing.T) {
 		mfa.MFAConnector(context.Background(), apiClient, &apiClientId, exportEnvID),
 	}
 
-	// Test the function
+	regex := regexp.MustCompile(`^failed to export 'pingone-mfa' service: failed to create export file "/invalid/[a-z_]+\.tf"\. err: open /invalid/[a-z_]+\.tf: no such file or directory$`)
 	err := exportConnectors(&exportableConnectors, connector.ENUMEXPORTFORMAT_HCL, "/invalid", false)
-	if err == nil {
-		t.Errorf("exportConnectors() error = %v, want non-nil", err)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("exportConnectors() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -499,10 +506,11 @@ func Test_exportConnectors_nilExportableConnectors(t *testing.T) {
 		t.Fatalf("os.Mkdir() error = %v", err)
 	}
 
-	// Test the function
+	regex := regexp.MustCompile(`^failed to export services\. exportable connectors list is nil$`)
 	err := exportConnectors(nil, connector.ENUMEXPORTFORMAT_HCL, outputDir, false)
-	if err == nil {
-		t.Errorf("exportConnectors() error = %v, want non-nil", err)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("exportConnectors() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 
 	// Empty the directory

@@ -1,6 +1,7 @@
 package config_internal
 
 import (
+	"regexp"
 	"slices"
 	"testing"
 
@@ -35,9 +36,11 @@ func Test_RunInternalConfigGet_WithArgs_NotSet(t *testing.T) {
 
 // Test RunInternalConfigGet function with invalid key
 func Test_RunInternalConfigGet_InvalidKey(t *testing.T) {
-	args := []string{"pingctl.invalid"}
-	if err := RunInternalConfigGet(args); err == nil {
-		t.Errorf("Expected error running internal config get")
+	regex := regexp.MustCompile(`^unable to get configuration: value 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`)
+	err := RunInternalConfigGet([]string{"pingctl.invalid"})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("RunInternalConfigGet() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 

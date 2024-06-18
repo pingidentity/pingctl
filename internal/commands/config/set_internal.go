@@ -2,6 +2,7 @@ package config_internal
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -21,8 +22,10 @@ func RunInternalConfigSet(args []string) error {
 
 	// Check if the key is a valid viper configuration key
 	if !viperconfig.IsValidViperKey(viperKey) {
-		validKeys := strings.Join(viperconfig.GetViperConfigKeys(), ", ")
-		return fmt.Errorf("unable to unset configuration: key '%s' is not recognized as a valid configuration key. \nValid keys: %s", viperKey, validKeys)
+		validKeys := viperconfig.GetViperConfigKeys()
+		slices.Sort(validKeys)
+		validKeysStr := strings.Join(validKeys, ", ")
+		return fmt.Errorf("failed to set configuration: key '%s' is not recognized as a valid configuration key. Valid keys: %s", viperKey, validKeysStr)
 	}
 
 	// Make sure value is not empty, and suggest unset command if it is

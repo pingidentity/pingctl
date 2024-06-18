@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/testutils"
@@ -32,9 +33,11 @@ func TestConfigGetCmd_PartialKey(t *testing.T) {
 
 // Test Config Get Command fails when provided an invalid key
 func TestConfigGetCmd_InvalidKey(t *testing.T) {
+	regex := regexp.MustCompile(`^unable to get configuration: value 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`)
 	err := testutils.ExecutePingctl("config", "get", "pingctl.invalid")
-	if err == nil {
-		t.Errorf("Expected error executing config get command")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Config Get command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 

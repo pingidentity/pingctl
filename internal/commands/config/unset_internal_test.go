@@ -2,6 +2,7 @@ package config_internal
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/viperconfig"
@@ -10,17 +11,21 @@ import (
 
 // Test RunInternalConfigUnset function with empty args
 func Test_RunInternalConfigUnset_EmptyArgs(t *testing.T) {
-	args := []string{}
-	if err := RunInternalConfigUnset(args); err == nil {
-		t.Errorf("Expected error running internal config unset")
+	regex := regexp.MustCompile(`^unable to unset configuration: no key given in unset command$`)
+	err := RunInternalConfigUnset([]string{})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("RunInternalConfigUnset() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
 // Test RunInternalConfigUnset function with invalid key
 func Test_RunInternalConfigUnset_InvalidKey(t *testing.T) {
-	args := []string{"pingctl.invalid"}
-	if err := RunInternalConfigUnset(args); err == nil {
-		t.Errorf("Expected error running internal config unset")
+	regex := regexp.MustCompile(`^unable to unset configuration: key 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`)
+	err := RunInternalConfigUnset([]string{"pingctl.invalid"})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("RunInternalConfigUnset() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -80,9 +85,11 @@ func Test_RunInternalConfigUnset_TooManyArgs(t *testing.T) {
 
 // Test parseUnsetArgs function with empty args
 func Test_parseUnsetArgs_EmptyArgs(t *testing.T) {
-	args := []string{}
-	if _, err := parseUnsetArgs(args); err == nil {
-		t.Errorf("Expected error parsing unset args")
+	regex := regexp.MustCompile(`^unable to unset configuration: no key given in unset command$`)
+	_, err := parseUnsetArgs([]string{})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("parseUnsetArgs() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -104,8 +111,11 @@ func Test_parseUnsetArgs_TooManyArgs(t *testing.T) {
 
 // Test unsetValue function with invalid value type
 func Test_unsetValue_InvalidValueType(t *testing.T) {
-	if err := unsetValue("pingctl.color", "invalid"); err == nil {
-		t.Errorf("Expected error unsetting value")
+	regex := regexp.MustCompile(`^unable to unset configuration: variable type for key 'pingctl\.color' is not recognized$`)
+	err := unsetValue("pingctl.color", "invalid")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("unsetValue() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 

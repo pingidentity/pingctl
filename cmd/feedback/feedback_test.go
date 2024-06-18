@@ -1,6 +1,7 @@
 package feedback_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/testutils"
@@ -32,8 +33,10 @@ func TestFeedbackCmd_HelpFlag(t *testing.T) {
 
 // Test Feedback Command fails with invalid flag
 func TestFeedbackCmd_InvalidFlag(t *testing.T) {
+	regex := regexp.MustCompile(`^unknown flag: --invalid$`)
 	err := testutils.ExecutePingctl("feedback", "--invalid")
-	if err == nil {
-		t.Errorf("Expected error executing feedback command")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Platform command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }

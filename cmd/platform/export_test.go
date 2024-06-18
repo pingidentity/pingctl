@@ -2,6 +2,7 @@ package platform_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/testutils"
@@ -24,9 +25,11 @@ func TestPlatformExportCmd_Execute(t *testing.T) {
 
 // Test Platform Export Command fails when provided invalid flag
 func TestPlatformExportCmd_InvalidFlag(t *testing.T) {
+	regex := regexp.MustCompile(`^unknown flag: --invalid$`)
 	err := testutils.ExecutePingctl("platform", "export", "--invalid")
-	if err == nil {
-		t.Errorf("Expected error executing platform export command")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Platform Export command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -60,9 +63,11 @@ func TestPlatformExportCmd_ServiceFlag(t *testing.T) {
 
 // Test Platform Export Command --service flag with invalid service
 func TestPlatformExportCmd_ServiceFlagInvalidService(t *testing.T) {
+	regex := regexp.MustCompile(`^invalid argument "invalid" for "--service" flag: unrecognized service 'invalid'\. Must be one of: [a-z-\s,]+$`)
 	err := testutils.ExecutePingctl("platform", "export", "--service", "invalid")
-	if err == nil {
-		t.Errorf("Expected error executing platform export command")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Platform Export command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -81,11 +86,13 @@ func TestPlatformExportCmd_ExportFormatFlag(t *testing.T) {
 	}
 }
 
-// Test Platform Export Command --export-format flag with invalid format
+// Test Platform Export Command --export-format flag with invalid forma
 func TestPlatformExportCmd_ExportFormatFlagInvalidFormat(t *testing.T) {
+	regex := regexp.MustCompile(`^invalid argument "invalid" for "--export-format" flag: unrecognized export format 'invalid'\. Must be one of: [A-Z]+$`)
 	err := testutils.ExecutePingctl("platform", "export", "--export-format", "invalid")
-	if err == nil {
-		t.Errorf("Expected error executing platform export command")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Platform Export command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -106,9 +113,11 @@ func TestPlatformExportCmd_OutputDirectoryFlag(t *testing.T) {
 
 // Test Platform Export Command --output-directory flag with invalid directory
 func TestPlatformExportCmd_OutputDirectoryFlagInvalidDirectory(t *testing.T) {
+	regex := regexp.MustCompile(`^failed to create 'platform export' output directory '\/invalid': mkdir \/invalid: read-only file system$`)
 	err := testutils.ExecutePingctl("platform", "export", "--output-directory", "/invalid")
-	if err == nil {
-		t.Errorf("Expected error executing platform export command")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Platform Export command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -131,18 +140,22 @@ func TestPlatformExportCmd_OverwriteFlag(t *testing.T) {
 // where the directory already contains a file
 func TestPlatformExportCmd_OverwriteFlagFalseWithExistingDirectory(t *testing.T) {
 	outputDir := os.TempDir() + "/pingctlTestPlatformExportOverwriteFlagFalseWithExistingDirectory"
+
 	err := os.Mkdir(outputDir, 0755)
 	if err != nil {
 		t.Errorf("Error creating output directory: %v", err)
 	}
+
 	_, err = os.Create(outputDir + "/file")
 	if err != nil {
 		t.Errorf("Error creating file in output directory: %v", err)
 	}
 
+	regex := regexp.MustCompile(`^'platform export' output directory '[A-Za-z0-9_\-\/]+' is not empty\. Use --overwrite to overwrite existing export data$`)
 	err = testutils.ExecutePingctl("platform", "export", "--output-directory", outputDir, "--service", "pingone-protect", "--overwrite=false")
-	if err == nil {
-		t.Errorf("Expected error executing platform export command")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Platform Export command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 
 	// Empty output directory
@@ -184,6 +197,7 @@ func TestPlatformExportCmd_OverwriteFlagTrueWithExistingDirectory(t *testing.T) 
 // --pingone-region flag
 func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
 	outputDir := os.TempDir() + "/pingctlTestPlatformExportPingOneWorkerEnvironmentIdFlag"
+
 	err := testutils.ExecutePingctl("platform", "export",
 		"--output-directory", outputDir,
 		"--overwrite",
@@ -205,19 +219,11 @@ func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
 
 // Test Platform Export Command fails when not provided required pingone flags together
 func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlagRequiredTogether(t *testing.T) {
-	outputDir := os.TempDir() + "/pingctlTestPlatformExportPingOneWorkerEnvironmentIdFlagRequiredTogether"
+	regex := regexp.MustCompile(`^if any flags in the group \[pingone-worker-environment-id pingone-worker-client-id pingone-worker-client-secret pingone-region] are set they must all be set; missing \[pingone-region pingone-worker-client-id pingone-worker-client-secret]$`)
 	err := testutils.ExecutePingctl("platform", "export",
-		"--output-directory", outputDir,
-		"--overwrite",
-		"--service", "pingone-protect",
 		"--pingone-worker-environment-id", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
-	if err == nil {
-		t.Errorf("Expected error executing platform export command")
-	}
 
-	// Empty output directory
-	err = os.RemoveAll(outputDir)
-	if err != nil {
-		t.Errorf("Error removing output directory: %v", err)
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Platform Export command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }

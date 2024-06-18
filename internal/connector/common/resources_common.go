@@ -14,22 +14,11 @@ func HandleClientResponse(response *http.Response, err error, apiFunctionName st
 	l := logger.Get()
 	defer response.Body.Close()
 
-	if err != nil {
-		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
-		return err
+	if err != nil || response.StatusCode == 404 || response.StatusCode >= 300 {
+		l.Error().Err(err).Msgf("%s Request for resource '%s' was not successful. \nResponse Code: %s\nResponse Body: %s", apiFunctionName, resourceType, response.Status, response.Body)
+		return fmt.Errorf("%s Request for resource '%s' was not successful. \nResponse Code: %s\nResponse Body: %s\n Error: %v", apiFunctionName, resourceType, response.Status, response.Body, err)
 	}
 
-	if response.StatusCode == 404 {
-		l.Error().Msgf("%s Request was not successful. Resource(s) %s not found", apiFunctionName, resourceType)
-		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
-		return fmt.Errorf("failed to fetch %s resource(s) via %s()", resourceType, apiFunctionName)
-	}
-
-	if response.StatusCode >= 300 {
-		l.Error().Msgf("%s Request was not successful", apiFunctionName)
-		l.Error().Err(err).Msgf("%s Response Code: %s\nResponse Body: %s", apiFunctionName, response.Status, response.Body)
-		return fmt.Errorf("failed to fetch %s resources via %s()", resourceType, apiFunctionName)
-	}
 	return nil
 }
 

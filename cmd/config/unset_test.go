@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/testutils"
@@ -17,17 +18,21 @@ func TestConfigUnsetCmd_Execute(t *testing.T) {
 
 // Test Config Unset Command Fails when no arguments are provided
 func TestConfigUnsetCmd_NoArgs(t *testing.T) {
+	regex := regexp.MustCompile(`^unable to unset configuration: no key given in unset command$`)
 	err := testutils.ExecutePingctl("config", "unset")
-	if err == nil {
-		t.Errorf("Expected error for no arguments provided")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Config Unset command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
 // Test Config Unset Command Fails when an invalid key is provided
 func TestConfigUnsetCmd_InvalidKey(t *testing.T) {
+	regex := regexp.MustCompile(`^unable to unset configuration: key 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`)
 	err := testutils.ExecutePingctl("config", "unset", "pingctl.invalid")
-	if err == nil {
-		t.Errorf("Expected error for invalid key provided")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Config Unset command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 

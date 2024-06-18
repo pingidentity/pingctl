@@ -1,6 +1,7 @@
 package platform_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/testutils"
@@ -16,9 +17,11 @@ func TestPlatformCmd_Execute(t *testing.T) {
 
 // Test Platform Command fails when provided invalid flag
 func TestPlatformCmd_InvalidFlag(t *testing.T) {
+	regex := regexp.MustCompile(`^unknown flag: --invalid$`)
 	err := testutils.ExecutePingctl("platform", "--invalid")
-	if err == nil {
-		t.Errorf("Expected error executing platform command")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Platform command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 

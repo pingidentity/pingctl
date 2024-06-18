@@ -2,6 +2,7 @@ package config_internal
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/pingidentity/pingctl/internal/customtypes"
@@ -19,8 +20,10 @@ func RunInternalConfigUnset(args []string) error {
 
 	// Check if the key is a valid viper configuration key
 	if !viperconfig.IsValidViperKey(viperKey) {
-		validKeys := strings.Join(viperconfig.GetViperConfigKeys(), ", ")
-		return fmt.Errorf("unable to unset configuration: key '%s' is not recognized as a valid configuration key. \nValid keys: %s", viperKey, validKeys)
+		validKeys := viperconfig.GetViperConfigKeys()
+		slices.Sort(validKeys)
+		validKeysStr := strings.Join(validKeys, ", ")
+		return fmt.Errorf("unable to unset configuration: key '%s' is not recognized as a valid configuration key. Valid keys: %s", viperKey, validKeysStr)
 	}
 
 	valueType, ok := viperconfig.GetValueTypeFromViperKey(viperKey)

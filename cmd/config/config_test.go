@@ -1,6 +1,7 @@
 package config_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/testutils"
@@ -16,9 +17,11 @@ func TestConfigCmd_Execute(t *testing.T) {
 
 // Test Config Command fails when provided invalid flag
 func TestConfigCmd_InvalidFlag(t *testing.T) {
+	regex := regexp.MustCompile(`^unknown flag: --invalid$`)
 	err := testutils.ExecutePingctl("config", "--invalid")
-	if err == nil {
-		t.Errorf("Expected error executing config command")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("Config command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 

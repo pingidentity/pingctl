@@ -2,6 +2,7 @@ package config_internal
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/customtypes"
@@ -11,9 +12,11 @@ import (
 
 // Test RunInternalConfigSet function
 func Test_RunInternalConfigSet_NoArgs(t *testing.T) {
-	args := []string{}
-	if err := RunInternalConfigSet(args); err == nil {
-		t.Errorf("Expected error running internal config set")
+	regex := regexp.MustCompile(`^failed to set configuration: no 'key=value' assignment given in set command$`)
+	err := RunInternalConfigSet([]string{})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("RunInternalConfigSet() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -46,9 +49,11 @@ func Test_RunInternalConfigSet_WithArgs(t *testing.T) {
 
 // Test RunInternalConfigSet function with invalid key
 func Test_RunInternalConfigSet_InvalidKey(t *testing.T) {
-	args := []string{"pingctl.invalid=invalid"}
-	if err := RunInternalConfigSet(args); err == nil {
-		t.Errorf("Expected error running internal config set")
+	regex := regexp.MustCompile(`^failed to set configuration: key 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`)
+	err := RunInternalConfigSet([]string{"pingctl.invalid=invalid"})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("RunInternalConfigSet() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -81,41 +86,51 @@ func Test_RunInternalConfigSet_TooManyArgs(t *testing.T) {
 
 // Test RunInternalConfigSet function with empty value
 func Test_RunInternalConfigSet_EmptyValue(t *testing.T) {
-	args := []string{"pingone.worker.clientId="}
-	if err := RunInternalConfigSet(args); err == nil {
-		t.Errorf("Expected error running internal config set")
+	regex := regexp.MustCompile(`^failed to set configuration: value for key 'pingone\.worker\.clientId' is empty. Use 'pingctl config unset pingone\.worker\.clientId' to unset the key$`)
+	err := RunInternalConfigSet([]string{"pingone.worker.clientId="})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("RunInternalConfigSet() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
 // Test RunInternalConfigSet function with invalid value
 func Test_RunInternalConfigSet_InvalidValue(t *testing.T) {
-	args := []string{"pingone.worker.clientId=invalid"}
-	if err := RunInternalConfigSet(args); err == nil {
-		t.Errorf("Expected error running internal config set")
+	regex := regexp.MustCompile(`^failed to set configuration: value for key 'pingone\.worker\.clientId' must be a valid UUID$`)
+	err := RunInternalConfigSet([]string{"pingone.worker.clientId=invalid"})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("RunInternalConfigSet() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
 // Test RunInternalConfigSet function with invalid value type
 func Test_RunInternalConfigSet_InvalidValueType(t *testing.T) {
-	args := []string{"pingctl.color=notboolean"}
-	if err := RunInternalConfigSet(args); err == nil {
-		t.Errorf("Expected error running internal config set")
+	regex := regexp.MustCompile(`^failed to set configuration: value for key 'pingctl\.color' must be a boolean. Use 'true' or 'false'$`)
+	err := RunInternalConfigSet([]string{"pingctl.color=notboolean"})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("RunInternalConfigSet() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
 // Test parseSetArgs() function with no args
 func Test_parseSetArgs_NoArgs(t *testing.T) {
-	args := []string{}
-	if _, _, err := parseSetArgs(args); err == nil {
-		t.Errorf("Expected error parsing set args")
+	regex := regexp.MustCompile(`^failed to set configuration: no 'key=value' assignment given in set command$`)
+	_, _, err := parseSetArgs([]string{})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("parseSetArgs() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
 // Test parseSetArgs() function with invalid assignment format
 func Test_parseSetArgs_InvalidAssignmentFormat(t *testing.T) {
-	args := []string{"pingone.worker.clientId"}
-	if _, _, err := parseSetArgs(args); err == nil {
-		t.Errorf("Expected error parsing set args")
+	regex := regexp.MustCompile(`^failed to set configuration: invalid assignment format 'pingone\.worker\.clientId'. Expect 'key=value' format$`)
+	_, _, err := parseSetArgs([]string{"pingone.worker.clientId"})
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("parseSetArgs() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -144,15 +159,21 @@ func Test_setValue_ValidValue(t *testing.T) {
 
 // Test setValue() function with invalid value
 func Test_setValue_InvalidValue(t *testing.T) {
-	if err := setValue("pingone.worker.clientId", "invalid", viperconfig.ENUM_ID); err == nil {
-		t.Errorf("Expected error setting value")
+	regex := regexp.MustCompile(`^failed to set configuration: value for key 'pingone\.worker\.clientId' must be a valid UUID$`)
+	err := setValue("pingone.worker.clientId", "invalid", viperconfig.ENUM_ID)
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("setValue() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
 // Test setValue() function with invalid value type
 func Test_setValue_InvalidValueType(t *testing.T) {
-	if err := setValue("pingctl.color", "false", "invalid"); err == nil {
-		t.Errorf("Expected error setting value")
+	regex := regexp.MustCompile(`^unable to set configuration: variable type for key 'pingctl\.color' is not recognized$`)
+	err := setValue("pingctl.color", "false", "invalid")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("setValue() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -165,8 +186,11 @@ func Test_setBool_ValidValue(t *testing.T) {
 
 // Test setBool() function with invalid value
 func Test_setBool_InvalidValue(t *testing.T) {
-	if err := setBool("pingctl.color", "invalid"); err == nil {
-		t.Errorf("Expected error setting bool")
+	regex := regexp.MustCompile(`^failed to set configuration: value for key 'pingctl\.color' must be a boolean. Use 'true' or 'false'$`)
+	err := setBool("pingctl.color", "invalid")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("setBool() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -179,8 +203,11 @@ func Test_setUUID_ValidValue(t *testing.T) {
 
 // Test setUUID() function with invalid value
 func Test_setUUID_InvalidValue(t *testing.T) {
-	if err := setUUID("pingone.worker.clientId", "invalid"); err == nil {
-		t.Errorf("Expected error setting UUID")
+	regex := regexp.MustCompile(`^failed to set configuration: value for key 'pingone\.worker\.clientId' must be a valid UUID$`)
+	err := setUUID("pingone.worker.clientId", "invalid")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("setUUID() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -193,8 +220,11 @@ func Test_setOutputFormat_ValidValue(t *testing.T) {
 
 // Test setOutputFormat() function with invalid value
 func Test_setOutputFormat_InvalidValue(t *testing.T) {
-	if err := setOutputFormat("pingctl.output", "invalid"); err == nil {
-		t.Errorf("Expected error setting output format")
+	regex := regexp.MustCompile(`^failed to set configuration: unrecognized Output Format: 'invalid'\. Must be one of: [a-z\s,]+$`)
+	err := setOutputFormat("pingctl.output", "invalid")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("setOutputFormat() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }
 
@@ -207,7 +237,10 @@ func Test_setPingOneRegion_ValidValue(t *testing.T) {
 
 // Test setPingOneRegion() function with invalid value
 func Test_setPingOneRegion_InvalidValue(t *testing.T) {
-	if err := setPingOneRegion("pingone.region", "invalid"); err == nil {
-		t.Errorf("Expected error setting PingOne region")
+	regex := regexp.MustCompile(`^failed to set configuration: unrecognized PingOne Region: 'invalid'\. Must be one of: [A-Za-z\s,]+$`)
+	err := setPingOneRegion("pingone.region", "invalid")
+
+	if !regex.MatchString(err.Error()) {
+		t.Errorf("setPingOneRegion() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
 	}
 }

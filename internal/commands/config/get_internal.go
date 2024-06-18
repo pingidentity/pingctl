@@ -27,8 +27,8 @@ func RunInternalConfigGet(args []string) error {
 	// and their parent keys
 	validKeys := getValidGetKeys()
 	if !slices.Contains(validKeys, viperKey) {
-		validKeyStr := strings.Join(getValidGetKeys(), ", ")
-		return fmt.Errorf("unable to get configuration: value '%s' is not recognized as a valid configuration key. \nValid keys: %s", viperKey, validKeyStr)
+		validKeyStr := strings.Join(validKeys, ", ")
+		return fmt.Errorf("unable to get configuration: value '%s' is not recognized as a valid configuration key. Valid keys: %s", viperKey, validKeyStr)
 	}
 
 	// Check if the viper configuration key is set

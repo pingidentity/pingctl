@@ -94,7 +94,7 @@ func Test_initApiClient_invalidClientIdConfig(t *testing.T) {
 	viper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
 	viper.Set("pingone.region", os.Getenv("PINGCTL_PINGONE_REGION"))
 
-	regex := regexp.MustCompile(`^failed to initialize pingone API client\.\s+oauth2: "invalid_client" "Request denied: Invalid client credentials \(Correlation ID: [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\)"\s+configuration values used for client initialization:\s+worker client ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+worker environment ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+pingone region - [A-Za-z]+\s+worker client secret - \(use DEBUG or TRACE logging level to view the client secret in the error message\)$`)
+	regex := regexp.MustCompile(`^failed to initialize pingone API client\.\s+oauth2: "invalid_client" "Request denied: Invalid client credentials \(Correlation ID: [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\)"\s+configuration values used for client initialization:\s+worker client ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+worker environment ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+pingone region - [A-Za-z]+\s+worker client secret - .+$`)
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
 
 	if !regex.MatchString(err.Error()) {

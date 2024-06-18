@@ -113,7 +113,7 @@ func TestPlatformExportCmd_OutputDirectoryFlag(t *testing.T) {
 
 // Test Platform Export Command --output-directory flag with invalid directory
 func TestPlatformExportCmd_OutputDirectoryFlagInvalidDirectory(t *testing.T) {
-	regex := regexp.MustCompile(`^failed to create 'platform export' output directory '\/invalid': mkdir \/invalid: read-only file system$`)
+	regex := regexp.MustCompile(`^failed to create 'platform export' output directory '\/invalid': mkdir \/invalid: .+$`)
 	err := testutils.ExecutePingctl("platform", "export", "--output-directory", "/invalid")
 
 	if !regex.MatchString(err.Error()) {

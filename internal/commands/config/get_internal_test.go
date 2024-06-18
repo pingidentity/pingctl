@@ -1,79 +1,69 @@
 package config_internal
 
 import (
-	"regexp"
 	"slices"
 	"testing"
 
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 	"github.com/spf13/viper"
 )
 
 // Test RunInternalConfigGet function
 func Test_RunInternalConfigGet_NoArgs(t *testing.T) {
-	args := []string{}
-	if err := RunInternalConfigGet(args); err != nil {
-		t.Errorf("Error running internal config get: %s", err.Error())
-	}
+	expectedErrorPattern := "" //No error expected
+	err := RunInternalConfigGet([]string{})
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test RunInternalConfigGet function with args that are set
 func Test_RunInternalConfigGet_WithArgs(t *testing.T) {
 	viper.Set("pingone.worker.clientId", "test-client-id")
 
-	args := []string{"pingone.worker.clientId"}
-	if err := RunInternalConfigGet(args); err != nil {
-		t.Errorf("Error running internal config get: %s", err.Error())
-	}
+	expectedErrorPattern := "" //No error expected
+	err := RunInternalConfigGet([]string{"pingone.worker.clientId"})
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test RunInternalConfigGet function with args that are not set
 func Test_RunInternalConfigGet_WithArgs_NotSet(t *testing.T) {
-	args := []string{"pingone.worker.clientId"}
-	if err := RunInternalConfigGet(args); err != nil {
-		t.Errorf("Error running internal config get: %s", err.Error())
-	}
+	expectedErrorPattern := "" //No error expected
+	err := RunInternalConfigGet([]string{"pingone.worker.clientId"})
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test RunInternalConfigGet function with invalid key
 func Test_RunInternalConfigGet_InvalidKey(t *testing.T) {
-	regex := regexp.MustCompile(`^unable to get configuration: value 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`)
+	expectedErrorPattern := `^unable to get configuration: value 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`
 	err := RunInternalConfigGet([]string{"pingctl.invalid"})
-
-	if !regex.MatchString(err.Error()) {
-		t.Errorf("RunInternalConfigGet() error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
-	}
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test RunInternalConfigGet function with too many args
 func Test_RunInternalConfigGet_TooManyArgs(t *testing.T) {
-	args := []string{"pingone.worker.clientId", "pingone.worker.clientSecret"}
-	if err := RunInternalConfigGet(args); err != nil {
-		t.Errorf("Error running internal config get: %s", err.Error())
-	}
+	expectedErrorPattern := "" //No error expected
+	err := RunInternalConfigGet([]string{"pingone.worker.clientId", "pingone.worker.clientSecret"})
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test parseGetArgs function
 func Test_parseGetArgs(t *testing.T) {
-	args := []string{"pingone.worker.clientId"}
-	if _, err := parseGetArgs(args); err != nil {
-		t.Errorf("Error parsing get args: %s", err.Error())
-	}
+	expectedErrorPattern := "" //No error expected
+	_, err := parseGetArgs([]string{"pingone.worker.clientId"})
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test parseGetArgs function with no args
 func Test_parseGetArgs_NoArgs(t *testing.T) {
-	args := []string{}
-	if _, err := parseGetArgs(args); err != nil {
-		t.Errorf("Error parsing get args: %s", err.Error())
-	}
+	expectedErrorPattern := "" //No error expected
+	_, err := parseGetArgs([]string{})
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test parseGetArgs function with too many args
 func Test_parseGetArgs_TooManyArgs(t *testing.T) {
-	args := []string{"pingone.worker.clientId", "pingone.worker.clientSecret"}
-	if _, err := parseGetArgs(args); err != nil {
-		t.Errorf("Error parsing get args: %s", err.Error())
-	}
+	expectedErrorPattern := "" //No error expected
+	_, err := parseGetArgs([]string{"pingone.worker.clientId", "pingone.worker.clientSecret"})
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test PrintConfig() function

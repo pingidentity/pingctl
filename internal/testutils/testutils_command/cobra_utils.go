@@ -1,4 +1,4 @@
-package testutils
+package testutils_command
 
 import (
 	"bytes"

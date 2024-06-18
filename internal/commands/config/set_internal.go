@@ -88,7 +88,7 @@ func setValue(viperKey, value string, valueType viperconfig.ConfigType) error {
 		viper.Set(viperKey, string(value))
 		return nil
 	default:
-		return fmt.Errorf("unable to set configuration: variable type for key '%s' is not recognized", viperKey)
+		return fmt.Errorf("failed to set configuration: variable type for key '%s' is not recognized", viperKey)
 	}
 }
 

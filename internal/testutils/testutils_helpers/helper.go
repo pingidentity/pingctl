@@ -1,8 +1,9 @@
-package testutils
+package testutils_helpers
 
 import (
 	"context"
 	"os"
+	"regexp"
 	"sync"
 	"testing"
 
@@ -129,6 +130,27 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 
 		if !importBlock.Equals(expectedImportBlock) {
 			t.Errorf("Expected import block \n%s\n Got import block \n%s", expectedImportBlock.String(), importBlock.String())
+		}
+	}
+}
+
+func CheckExpectedError(t *testing.T, err error, errMessagePattern string) {
+	t.Helper()
+
+	if err == nil && errMessagePattern != "" {
+		t.Errorf("Error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, errMessagePattern)
+		return
+	}
+
+	if err != nil && errMessagePattern == "" {
+		t.Errorf("Expected no error, but got error: %v", err)
+		return
+	}
+
+	if err != nil {
+		regex := regexp.MustCompile(errMessagePattern)
+		if !regex.MatchString(err.Error()) {
+			t.Errorf("Error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, errMessagePattern)
 		}
 	}
 }

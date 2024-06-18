@@ -6,12 +6,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
-	"github.com/pingidentity/pingctl/internal/testutils"
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 )
 
 func TestFormExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
 	resource := resources.Form(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -19,9 +19,9 @@ func TestFormExport(t *testing.T) {
 		{
 			ResourceType: "pingone_form",
 			ResourceName: "Test Form",
-			ResourceID:   fmt.Sprintf("%s/837c2f09-f8dc-41e9-b2f2-5f7bf1efded1", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/837c2f09-f8dc-41e9-b2f2-5f7bf1efded1", testutils_helpers.GetEnvironmentID()),
 		},
 	}
 
-	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

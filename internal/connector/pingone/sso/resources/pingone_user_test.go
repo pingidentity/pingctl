@@ -6,12 +6,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/sso/resources"
-	"github.com/pingidentity/pingctl/internal/testutils"
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 )
 
 func TestUserExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
 	resource := resources.User(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -19,19 +19,19 @@ func TestUserExport(t *testing.T) {
 		{
 			ResourceType: "pingone_user",
 			ResourceName: "test_user",
-			ResourceID:   fmt.Sprintf("%s/8012b4a3-1874-42d3-803d-76d4a378335c", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/8012b4a3-1874-42d3-803d-76d4a378335c", testutils_helpers.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_user",
 			ResourceName: "test_user2",
-			ResourceID:   fmt.Sprintf("%s/7570f416-5503-4eb0-9fc3-9a485bddd411", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/7570f416-5503-4eb0-9fc3-9a485bddd411", testutils_helpers.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_user",
 			ResourceName: "testing",
-			ResourceID:   fmt.Sprintf("%s/68cb3634-0ed4-4044-85d1-576eb3a55360", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/68cb3634-0ed4-4044-85d1-576eb3a55360", testutils_helpers.GetEnvironmentID()),
 		},
 	}
 
-	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

@@ -6,12 +6,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/mfa/resources"
-	"github.com/pingidentity/pingctl/internal/testutils"
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 )
 
 func TestMFAApplicationPushCredentialExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
 	resource := resources.MFAApplicationPushCredential(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -19,19 +19,19 @@ func TestMFAApplicationPushCredentialExport(t *testing.T) {
 		{
 			ResourceType: "pingone_mfa_application_push_credential",
 			ResourceName: "Test MFA_APNS",
-			ResourceID:   fmt.Sprintf("%s/11cfc8c7-ec0c-43ff-b49a-64f5e243f932/7847f8a4-f81e-4994-a095-b4d579deaf52", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/11cfc8c7-ec0c-43ff-b49a-64f5e243f932/7847f8a4-f81e-4994-a095-b4d579deaf52", testutils_helpers.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_mfa_application_push_credential",
 			ResourceName: "Test MFA_FCM",
-			ResourceID:   fmt.Sprintf("%s/11cfc8c7-ec0c-43ff-b49a-64f5e243f932/e22e0f8f-ed88-4bdd-a914-5a93202083d0", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/11cfc8c7-ec0c-43ff-b49a-64f5e243f932/e22e0f8f-ed88-4bdd-a914-5a93202083d0", testutils_helpers.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_mfa_application_push_credential",
 			ResourceName: "Test MFA_HMS",
-			ResourceID:   fmt.Sprintf("%s/11cfc8c7-ec0c-43ff-b49a-64f5e243f932/e609b3a8-b112-4062-8031-e9ff0d87c9e9", testutils.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/11cfc8c7-ec0c-43ff-b49a-64f5e243f932/e609b3a8-b112-4062-8031-e9ff0d87c9e9", testutils_helpers.GetEnvironmentID()),
 		},
 	}
 
-	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

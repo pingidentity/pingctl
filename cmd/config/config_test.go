@@ -1,39 +1,32 @@
 package config_test
 
 import (
-	"regexp"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/testutils"
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_command"
+	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 )
 
 // Test Config Command Executes without issue
 func TestConfigCmd_Execute(t *testing.T) {
-	err := testutils.ExecutePingctl("config")
-	if err != nil {
-		t.Errorf("Error executing config command: %s", err.Error())
-	}
+	expectedErrorPattern := "" //No error expected
+	err := testutils_command.ExecutePingctl("config")
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test Config Command fails when provided invalid flag
 func TestConfigCmd_InvalidFlag(t *testing.T) {
-	regex := regexp.MustCompile(`^unknown flag: --invalid$`)
-	err := testutils.ExecutePingctl("config", "--invalid")
-
-	if !regex.MatchString(err.Error()) {
-		t.Errorf("Config command error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, regex.String())
-	}
+	expectedErrorPattern := `^unknown flag: --invalid$`
+	err := testutils_command.ExecutePingctl("config", "--invalid")
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }
 
 // Test Config Command --help, -h flag
 func TestConfigCmd_HelpFlag(t *testing.T) {
-	err := testutils.ExecutePingctl("config", "--help")
-	if err != nil {
-		t.Errorf("Error executing config command: %s", err.Error())
-	}
+	expectedErrorPattern := "" //No error expected
+	err := testutils_command.ExecutePingctl("config", "--help")
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 
-	err = testutils.ExecutePingctl("config", "-h")
-	if err != nil {
-		t.Errorf("Error executing config command: %s", err.Error())
-	}
+	err = testutils_command.ExecutePingctl("config", "-h")
+	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
 }

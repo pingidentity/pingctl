@@ -2,6 +2,7 @@ package customtypes
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -40,5 +41,13 @@ func (s *PingOneRegion) String() string {
 }
 
 func PingOneRegionValidValues() []string {
-	return []string{ENUM_PINGONE_REGION_AP, ENUM_PINGONE_REGION_CA, ENUM_PINGONE_REGION_EU, ENUM_PINGONE_REGION_NA}
+	pingoneRegions := []string{
+		ENUM_PINGONE_REGION_AP,
+		ENUM_PINGONE_REGION_CA,
+		ENUM_PINGONE_REGION_EU,
+		ENUM_PINGONE_REGION_NA}
+
+	slices.Sort(pingoneRegions)
+
+	return pingoneRegions
 }

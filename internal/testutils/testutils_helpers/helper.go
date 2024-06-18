@@ -134,23 +134,23 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 	}
 }
 
-func CheckExpectedError(t *testing.T, err error, errMessagePattern string) {
+func CheckExpectedError(t *testing.T, err error, errMessagePattern *string) {
 	t.Helper()
 
-	if err == nil && errMessagePattern != "" {
-		t.Errorf("Error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, errMessagePattern)
+	if err == nil && errMessagePattern != nil {
+		t.Errorf("Error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, *errMessagePattern)
 		return
 	}
 
-	if err != nil && errMessagePattern == "" {
+	if err != nil && errMessagePattern == nil {
 		t.Errorf("Expected no error, but got error: %v", err)
 		return
 	}
 
 	if err != nil {
-		regex := regexp.MustCompile(errMessagePattern)
+		regex := regexp.MustCompile(*errMessagePattern)
 		if !regex.MatchString(err.Error()) {
-			t.Errorf("Error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, errMessagePattern)
+			t.Errorf("Error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, *errMessagePattern)
 		}
 	}
 }

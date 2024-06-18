@@ -64,7 +64,7 @@ func Test_initApiClient_incompleteConfig(t *testing.T) {
 
 	expectedErrorPattern := `^failed to initialize pingone API client\. unrecognized pingone region: ''\. Must be one of: [A-Za-z\s,]+$`
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test initApiClient function fails on invalid region configuration
@@ -77,7 +77,7 @@ func Test_initApiClient_invalidRegionConfig(t *testing.T) {
 
 	expectedErrorPattern := `^failed to initialize pingone API client\. unrecognized pingone region: 'invalid'\. Must be one of: [A-Za-z\s,]+$`
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test initApiClient function fails on client ID configuration
@@ -90,16 +90,15 @@ func Test_initApiClient_invalidClientIdConfig(t *testing.T) {
 
 	expectedErrorPattern := `^failed to initialize pingone API client\.\s+oauth2: "invalid_client" "Request denied: Invalid client credentials \(Correlation ID: [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\)"\s+configuration values used for client initialization:\s+worker client ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+worker environment ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+pingone region - [A-Za-z]+\s+worker client secret - .+$`
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test fixEmptyOutputDirVar function with outputDir non-empty
 func Test_fixEmptyOutputDirVar_WithOutputDir(t *testing.T) {
 	oldOutputDir := os.TempDir()
 
-	expectedErrorPattern := "" // No error expected
 	newOutputDir, err := fixEmptyOutputDirVar(oldOutputDir)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 
 	if newOutputDir != oldOutputDir {
 		t.Errorf("fixEmptyOutputDirVar() newOutputDir = '%s', want '%s'", newOutputDir, oldOutputDir)
@@ -108,9 +107,8 @@ func Test_fixEmptyOutputDirVar_WithOutputDir(t *testing.T) {
 
 // Test fixEmptyOutputDirVar function with outputDir empty
 func Test_fixEmptyOutputDirVar_WithoutOutputDir(t *testing.T) {
-	expectedErrorPattern := "" // No error expected
 	newOutputDir, err := fixEmptyOutputDirVar("")
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 
 	if newOutputDir == "" {
 		t.Errorf("fixEmptyOutputDirVar() newOutputDir = '%s', want non-empty", newOutputDir)
@@ -127,9 +125,8 @@ func Test_createOrValidateOutputDir(t *testing.T) {
 		t.Fatalf("os.Mkdir() error = %v", err)
 	}
 
-	expectedErrorPattern := "" // No error expected
 	err := createOrValidateOutputDir(outputDir, false)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 
 	// Remove the new directory
 	if err := os.RemoveAll(outputDir); err != nil {
@@ -157,7 +154,7 @@ func Test_createOrValidateOutputDir_WithFile(t *testing.T) {
 
 	expectedErrorPattern := `^'platform export' output directory '[\/A-Za-z0-9_-]+' is not empty\. Use --overwrite to overwrite existing export data$`
 	err := createOrValidateOutputDir(outputDir, false)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 
 	// Remove the new directory
 	if err := os.RemoveAll(outputDir); err != nil {
@@ -183,9 +180,8 @@ func Test_createOrValidateOutputDir_WithFile_Overwrite(t *testing.T) {
 		t.Fatalf("os.Create() error = %v", err)
 	}
 
-	expectedErrorPattern := "" // No error expected
 	err := createOrValidateOutputDir(outputDir, true)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 
 	// Remove the new directory
 	if err := os.RemoveAll(outputDir); err != nil {
@@ -200,9 +196,8 @@ func Test_createOrValidateOutputDir_WithoutDir(t *testing.T) {
 	// Create a directory in the temp directory
 	outputDir := os.TempDir() + "/pingctlTestCreateOrValidateOutputDirWithoutDir"
 
-	expectedErrorPattern := "" // No error expected
 	err := createOrValidateOutputDir(outputDir, false)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 
 	// Validate the directory was created
 	if _, err := os.Stat(outputDir); err != nil {
@@ -221,9 +216,8 @@ func Test_getExportEnvID(t *testing.T) {
 	oldExportEnvID := "12345678-1234-1234-1234-123456789012"
 	viper.Set("pingone.export.environmentid", oldExportEnvID)
 
-	expectedErrorPattern := "" // No error expected
 	newExportEnvID, err := getExportEnvID()
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 
 	// Check envID is not empty
 	if newExportEnvID == "" {
@@ -244,7 +238,7 @@ func Test_getExportEnvID_missingConfig(t *testing.T) {
 
 	expectedErrorPattern := `^failed to determine export environment ID$`
 	_, err := getExportEnvID()
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test getExportEnvID function defaults to worker environment ID
@@ -254,9 +248,8 @@ func Test_getExportEnvID_defaultToWorkerEnvID(t *testing.T) {
 	oldWorkerEnvID := "12345678-1234-1234-1234-123456789012"
 	viper.Set("pingone.worker.environmentid", oldWorkerEnvID)
 
-	expectedErrorPattern := "" // No error expected
 	newExportEnvID, err := getExportEnvID()
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 
 	// Check envID is not empty
 	if newExportEnvID == "" {
@@ -277,9 +270,8 @@ func Test_validateExportEnvID(t *testing.T) {
 	// Get apiClient from helper function
 	apiClient := getApiClient(t)
 
-	expectedErrorPattern := "" // No error expected
 	err := validateExportEnvID(context.Background(), os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"), apiClient)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test validateExportEnvID function fails on invalid export environment ID
@@ -289,7 +281,7 @@ func Test_validateExportEnvID_invalidEnvID(t *testing.T) {
 
 	expectedErrorPattern := `^ReadOneEnvironment Request for resource 'pingone_environment' was not successful\.\s+Response Code: 404 Not Found\s+Response Body: {{\s+"id" : "[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}",\s+"code" : "NOT_FOUND",\s+"message" : "Unable to find environment with ID: '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'"\s+}}\s+Error: 404 Not Found$`
 	err := validateExportEnvID(context.Background(), "12345678-1234-1234-1234-123456789012", apiClient)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test validateExportEnvID function fails on nil context
@@ -300,14 +292,14 @@ func Test_validateExportEnvID_nilContext(t *testing.T) {
 	expectedErrorPattern := `^failed to validate environment ID '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'. context is nil$`
 	// nolint:staticcheck // ignore SA1012 this is a test
 	err := validateExportEnvID(nil, os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"), apiClient) //lint:ignore SA1012 this is a test
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test validateExportEnvID function fails on nil API client
 func Test_validateExportEnvID_nilApiClient(t *testing.T) {
 	expectedErrorPattern := `^failed to validate environment ID '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'. apiClient is nil$`
 	err := validateExportEnvID(context.Background(), os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"), nil)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test getExportableConnectors function
@@ -323,9 +315,7 @@ func Test_getExportableConnectors(t *testing.T) {
 	multiService := customtypes.NewMultiService()
 	numServices := len(*multiService.GetServices())
 
-	expectedErrorPattern := "" // No error expected
 	exportableConnectors := getExportableConnectors(exportEnvID, apiClientId, context.Background(), multiService, apiClient)
-	testutils_helpers.CheckExpectedError(t, nil, expectedErrorPattern)
 
 	// Check the number of exportable connectors
 	if len(*exportableConnectors) == 0 {
@@ -348,9 +338,7 @@ func Test_getExportableConnectors_noServices(t *testing.T) {
 	apiClientId := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID")
 	exportEnvID := os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
 
-	expectedErrorPattern := "" // No error expected
 	exportableConnectors := getExportableConnectors(exportEnvID, apiClientId, context.Background(), nil, apiClient)
-	testutils_helpers.CheckExpectedError(t, nil, expectedErrorPattern)
 
 	// Check the number of exportable connectors
 	if len(*exportableConnectors) != 0 {
@@ -374,9 +362,7 @@ func Test_getExportableConnectors_oneService(t *testing.T) {
 		t.Errorf("multiService.Set() error = %v", err)
 	}
 
-	expectedErrorPattern := "" // No error expected
 	exportableConnectors := getExportableConnectors(exportEnvID, apiClientId, context.Background(), multiService, apiClient)
-	testutils_helpers.CheckExpectedError(t, nil, expectedErrorPattern)
 
 	// Check the number of exportable connectors
 	if len(*exportableConnectors) != 1 {
@@ -414,9 +400,8 @@ func Test_exportConnectors(t *testing.T) {
 		t.Fatalf("os.Mkdir() error = %v", err)
 	}
 
-	expectedErrorPattern := "" // No error expected
 	err := exportConnectors(&exportableConnectors, connector.ENUMEXPORTFORMAT_HCL, outputDir, false)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 
 	// MFA connector has 4 resources
 	// Check the number of files in the directory
@@ -449,7 +434,7 @@ func Test_exportConnectors_invalidOutputDir(t *testing.T) {
 
 	expectedErrorPattern := `^failed to export 'pingone-mfa' service: failed to create export file "/invalid/[a-z_]+\.tf"\. err: open /invalid/[a-z_]+\.tf: no such file or directory$`
 	err := exportConnectors(&exportableConnectors, connector.ENUMEXPORTFORMAT_HCL, "/invalid", false)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test exportConnectors function fails on nil exportable connectors
@@ -462,7 +447,7 @@ func Test_exportConnectors_nilExportableConnectors(t *testing.T) {
 
 	expectedErrorPattern := `^failed to export services\. exportable connectors list is nil$`
 	err := exportConnectors(nil, connector.ENUMEXPORTFORMAT_HCL, outputDir, false)
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 
 	// Empty the directory
 	if err := os.RemoveAll(outputDir); err != nil {

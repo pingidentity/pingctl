@@ -10,60 +10,53 @@ import (
 
 // Test RunInternalConfigGet function
 func Test_RunInternalConfigGet_NoArgs(t *testing.T) {
-	expectedErrorPattern := "" //No error expected
 	err := RunInternalConfigGet([]string{})
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test RunInternalConfigGet function with args that are set
 func Test_RunInternalConfigGet_WithArgs(t *testing.T) {
 	viper.Set("pingone.worker.clientId", "test-client-id")
 
-	expectedErrorPattern := "" //No error expected
 	err := RunInternalConfigGet([]string{"pingone.worker.clientId"})
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test RunInternalConfigGet function with args that are not set
 func Test_RunInternalConfigGet_WithArgs_NotSet(t *testing.T) {
-	expectedErrorPattern := "" //No error expected
 	err := RunInternalConfigGet([]string{"pingone.worker.clientId"})
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test RunInternalConfigGet function with invalid key
 func Test_RunInternalConfigGet_InvalidKey(t *testing.T) {
 	expectedErrorPattern := `^unable to get configuration: value 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`
 	err := RunInternalConfigGet([]string{"pingctl.invalid"})
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test RunInternalConfigGet function with too many args
 func Test_RunInternalConfigGet_TooManyArgs(t *testing.T) {
-	expectedErrorPattern := "" //No error expected
 	err := RunInternalConfigGet([]string{"pingone.worker.clientId", "pingone.worker.clientSecret"})
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test parseGetArgs function
 func Test_parseGetArgs(t *testing.T) {
-	expectedErrorPattern := "" //No error expected
 	_, err := parseGetArgs([]string{"pingone.worker.clientId"})
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test parseGetArgs function with no args
 func Test_parseGetArgs_NoArgs(t *testing.T) {
-	expectedErrorPattern := "" //No error expected
 	_, err := parseGetArgs([]string{})
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test parseGetArgs function with too many args
 func Test_parseGetArgs_TooManyArgs(t *testing.T) {
-	expectedErrorPattern := "" //No error expected
 	_, err := parseGetArgs([]string{"pingone.worker.clientId", "pingone.worker.clientSecret"})
-	testutils_helpers.CheckExpectedError(t, err, expectedErrorPattern)
+	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test PrintConfig() function

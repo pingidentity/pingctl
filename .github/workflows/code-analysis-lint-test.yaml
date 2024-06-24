@@ -76,7 +76,7 @@ jobs:
           go-version-file: "go.mod"
           cache: true
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v6
         with:
           # Require: The version of golangci-lint to use.
           # When `install-mode` is `binary` (default) the value can be v1.2 or v1.2.3 or `latest` to use the latest version.
@@ -127,6 +127,10 @@ jobs:
       PINGCTL_PINGONE_WORKER_CLIENT_SECRET: ${{ secrets.PINGCTL_PINGONE_WORKER_CLIENT_SECRET }}
       PINGCTL_PINGONE_REGION: ${{ secrets.PINGCTL_PINGONE_REGION }}
       PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID: ${{ secrets.PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID }}
+      PINGONE_CLIENT_ID: ${{ secrets.PINGONE_CLIENT_ID }}
+      PINGONE_CLIENT_SECRET: ${{ secrets.PINGONE_CLIENT_SECRET }}
+      PINGONE_ENVIRONMENT_ID: ${{ secrets.PINGONE_ENVIRONMENT_ID }}
+      PINGONE_REGION: ${{ secrets.PINGONE_REGION }}
       PINGCTL_LOG_LEVEL: ${{ vars.PINGCTL_LOG_LEVEL }}
       PINGCTL_LOG_PATH: ${{ vars.PINGCTL_LOG_PATH }}
     steps:

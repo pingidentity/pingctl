@@ -3,18 +3,18 @@ module github.com/pingidentity/pingctl
 go 1.21.6
 
 require (
-	github.com/fatih/color v1.16.0
+	github.com/fatih/color v1.17.0
 	github.com/golangci/golangci-lint v1.55.2
 	github.com/hashicorp/go-uuid v1.0.3
-	github.com/patrickcping/pingone-go-sdk-v2 v0.11.8
-	github.com/patrickcping/pingone-go-sdk-v2/management v0.38.0
-	github.com/patrickcping/pingone-go-sdk-v2/mfa v0.18.3
-	github.com/patrickcping/pingone-go-sdk-v2/risk v0.14.1
+	github.com/patrickcping/pingone-go-sdk-v2 v0.12.1
+	github.com/patrickcping/pingone-go-sdk-v2/management v0.41.0
+	github.com/patrickcping/pingone-go-sdk-v2/mfa v0.19.0
+	github.com/patrickcping/pingone-go-sdk-v2/risk v0.15.1
 	github.com/pavius/impi v0.0.3
-	github.com/rs/zerolog v1.32.0
-	github.com/spf13/cobra v1.8.0
+	github.com/rs/zerolog v1.33.0
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
-	github.com/spf13/viper v1.18.2
+	github.com/spf13/viper v1.19.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -88,7 +88,7 @@ require (
 	github.com/gostaticanalysis/comment v1.4.2 // indirect
 	github.com/gostaticanalysis/forcetypeassert v0.1.0 // indirect
 	github.com/gostaticanalysis/nilerr v0.1.1 // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -127,11 +127,10 @@ require (
 	github.com/nishanths/predeclared v0.2.2 // indirect
 	github.com/nunnatsa/ginkgolinter v0.14.1 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/patrickcping/pingone-go-sdk-v2/agreementmanagement v0.3.1 // indirect
-	github.com/patrickcping/pingone-go-sdk-v2/authorize v0.4.1 // indirect
-	github.com/patrickcping/pingone-go-sdk-v2/credentials v0.6.2 // indirect
-	github.com/patrickcping/pingone-go-sdk-v2/verify v0.4.1 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.0 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/authorize v0.5.0 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/credentials v0.8.0 // indirect
+	github.com/patrickcping/pingone-go-sdk-v2/verify v0.5.0 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/polyfloyd/go-errorlint v1.4.5 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
@@ -144,7 +143,7 @@ require (
 	github.com/quasilyte/stdinfo v0.0.0-20220114132959-f7386bf02567 // indirect
 	github.com/ryancurrah/gomodguard v1.3.0 // indirect
 	github.com/ryanrolds/sqlclosecheck v0.5.1 // indirect
-	github.com/sagikazarmark/locafero v0.4.0 // indirect
+	github.com/sagikazarmark/locafero v0.6.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sanposhiho/wastedassign/v2 v2.0.7 // indirect
 	github.com/sashamelentyev/interfacebloat v1.1.0 // indirect
@@ -185,14 +184,14 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
-	golang.org/x/exp v0.0.0-20240409090435-93d18d7e34b8 // indirect
+	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20230307190834-24139beb5833 // indirect
-	golang.org/x/mod v0.17.0 // indirect
-	golang.org/x/oauth2 v0.19.0 // indirect
+	golang.org/x/mod v0.18.0 // indirect
+	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.20.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/tools v0.22.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

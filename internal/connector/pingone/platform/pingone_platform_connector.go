@@ -78,6 +78,10 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 	return common.WriteFiles(exportableResources, format, outputDir, c.ConnectorServiceName(), overwriteExport)
 }
 
+func (c *PingonePlatformConnector) ExportSingle(format, outputDir string, overwriteExport bool, resource connector.ExportableResource) error {
+	return common.WriteFiles([]connector.ExportableResource{resource}, format, outputDir, c.ConnectorServiceName(), overwriteExport)
+}
+
 func (c *PingonePlatformConnector) ConnectorServiceName() string {
 	return serviceName
 }

@@ -119,7 +119,7 @@ func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, e
 		t.Fatalf("Expected %d import blocks, got %d", expectedNumberOfBlocks, actualNumberOfBlocks)
 	}
 
-	// Make sure the importblocks match the expected import blocks
+	// Make sure the import blocks match the expected import blocks
 	for _, importBlock := range *importBlocks {
 		expectedImportBlock, ok := expectedImportBlocksMap[importBlock.ResourceName]
 

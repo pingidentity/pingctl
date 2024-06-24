@@ -72,6 +72,10 @@ func (c *PingoneSSOConnector) Export(format, outputDir string, overwriteExport b
 	return common.WriteFiles(exportableResources, format, outputDir, c.ConnectorServiceName(), overwriteExport)
 }
 
+func (c *PingoneSSOConnector) ExportSingle(format, outputDir string, overwriteExport bool, resource connector.ExportableResource) error {
+	return common.WriteFiles([]connector.ExportableResource{resource}, format, outputDir, c.ConnectorServiceName(), overwriteExport)
+}
+
 func (c *PingoneSSOConnector) ConnectorServiceName() string {
 	return serviceName
 }

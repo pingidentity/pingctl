@@ -4,7 +4,6 @@ import (
 	"slices"
 )
 
-// Cobra Param Name consts
 type ConfigCobraParam string
 
 const (

@@ -62,7 +62,7 @@ func RunInternalExport(cmd *cobra.Command, outputDir, exportFormat string, overw
 
 func initApiClient(ctx context.Context, version string) (apiClient *sdk.Client, apiClientId string, err error) {
 	l := logger.Get()
-	l.Debug().Msgf("Initialising API client..")
+	l.Debug().Msgf("Initializing API client..")
 
 	// Make sure the API client can be initialized with the required parameters
 	if !viper.IsSet(viperconfig.ConfigOptions[viperconfig.ExportPingoneWorkerClientIdParamName].ViperConfigKey) ||

@@ -49,6 +49,10 @@ func (c *PingoneProtectConnector) Export(format, outputDir string, overwriteExpo
 	return common.WriteFiles(exportableResources, format, outputDir, c.ConnectorServiceName(), overwriteExport)
 }
 
+func (c *PingoneProtectConnector) ExportSingle(format, outputDir string, overwriteExport bool, resource connector.ExportableResource) error {
+	return common.WriteFiles([]connector.ExportableResource{resource}, format, outputDir, c.ConnectorServiceName(), overwriteExport)
+}
+
 func (c *PingoneProtectConnector) ConnectorServiceName() string {
 	return serviceName
 }

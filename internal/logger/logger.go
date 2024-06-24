@@ -48,7 +48,7 @@ func Get() zerolog.Logger {
 
 		var output io.Writer
 
-		// Handle logfile creation when PINGCTL_LOG_PATH is defined
+		// Handle log file creation when PINGCTL_LOG_PATH is defined
 		if logPathEnv != "" && logLevel != zerolog.Disabled {
 
 			var err error

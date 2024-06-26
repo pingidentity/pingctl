@@ -133,6 +133,7 @@ jobs:
       PINGONE_REGION: ${{ secrets.PINGONE_REGION }}
       PINGCTL_LOG_LEVEL: ${{ vars.PINGCTL_LOG_LEVEL }}
       PINGCTL_LOG_PATH: ${{ vars.PINGCTL_LOG_PATH }}
+      PINGCTL_PINGONE_PROVIDER_VERSION: ${{ vars.PINGCTL_PINGONE_PROVIDER_VERSION }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

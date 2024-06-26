@@ -8,25 +8,15 @@ import (
 )
 
 // Test --generate-config-out for the RiskPolicy resource
-func TestProtectConnectorTerraformPlanRiskPolicyResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestRiskPolicyTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the RiskPolicy resource
 	riskPolicyResource := resources.RiskPolicy(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the RiskPolicy resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, riskPolicyResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, riskPolicyResource, nil)
 }
 
 // Test --generate-config-out for the RiskPredictor resource
-func TestProtectConnectorTerraformPlanRiskPredictorResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestRiskPredictorTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the RiskPredictor resource
 	riskPredictorResource := resources.RiskPredictor(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the RiskPredictor resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, riskPredictorResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, riskPredictorResource, nil)
 }

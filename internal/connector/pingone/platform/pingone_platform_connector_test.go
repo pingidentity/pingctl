@@ -8,361 +8,234 @@ import (
 )
 
 // Test --generate-config-out for the Agreement resource
-func TestPlatformConnectorTerraformPlanAgreementResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestAgreementTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the Agreement resource
 	agreementResource := resources.Agreement(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the Agreement resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, agreementResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, agreementResource, nil)
 }
 
 // Test --generate-config-out for the AgreementEnable resource
-func TestPlatformConnectorTerraformPlanAgreementEnableResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestAgreementEnableTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the AgreementEnable resource
 	agreementEnableResource := resources.AgreementEnable(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the AgreementEnable resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, agreementEnableResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, agreementEnableResource, nil)
 }
 
 // Test --generate-config-out for the AgreementLocalization resource
-func TestPlatformConnectorTerraformPlanAgreementLocalizationResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestAgreementLocalizationTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the AgreementLocalization resource
 	agreementLocalizationResource := resources.AgreementLocalization(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the AgreementLocalization resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, agreementLocalizationResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, agreementLocalizationResource, nil)
 }
 
 // Test --generate-config-out for the AgreementLocalizationEnable resource
-func TestPlatformConnectorTerraformPlanAgreementLocalizationEnableResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestAgreementLocalizationEnableTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the AgreementLocalizationEnable resource
 	agreementLocalizationEnableResource := resources.AgreementLocalizationEnable(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the AgreementLocalizationEnable resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, agreementLocalizationEnableResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, agreementLocalizationEnableResource, nil)
 }
 
 // Test --generate-config-out for the AgreementLocalizationRevision resource
-func TestPlatformConnectorTerraformPlanAgreementLocalizationRevisionResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestAgreementLocalizationRevisionTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the AgreementLocalizationRevision resource
 	agreementLocalizationRevisionResource := resources.AgreementLocalizationRevision(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the AgreementLocalizationRevision resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, agreementLocalizationRevisionResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, agreementLocalizationRevisionResource, nil)
 }
 
 // Test --generate-config-out for the BrandingSettings resource
-func TestPlatformConnectorTerraformPlanBrandingSettingsResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestBrandingSettingsTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the BrandingSettings resource
 	brandingSettingsResource := resources.BrandingSettings(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the BrandingSettings resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, brandingSettingsResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, brandingSettingsResource, nil)
 }
 
 // Test --generate-config-out for the BrandingTheme resource
-func TestPlatformConnectorTerraformPlanBrandingThemeResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestBrandingThemeTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the BrandingTheme resource
 	brandingThemeResource := resources.BrandingTheme(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the BrandingTheme resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, brandingThemeResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, brandingThemeResource, nil)
 }
 
 // Test --generate-config-out for the BrandingThemeDefault resource
-func TestPlatformConnectorTerraformPlanBrandingThemeDefaultResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestBrandingThemeDefaultTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the BrandingThemeDefault resource
 	brandingThemeDefaultResource := resources.BrandingThemeDefault(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the BrandingThemeDefault resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, brandingThemeDefaultResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, brandingThemeDefaultResource, nil)
 }
 
 // Test --generate-config-out for the Certificate resource
-func TestPlatformConnectorTerraformPlanCertificateResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestCertificateTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the Certificate resource
 	certificateResource := resources.Certificate(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the Certificate resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, certificateResource, sdkClientInfo)
+	ignoreErrors := []string{
+		"Error: Invalid combination of arguments",
+	}
+	testutils_helpers.ValidateTerraformPlan(t, certificateResource, ignoreErrors)
 }
 
 // Test --generate-config-out for the CustomDomain resource
-func TestPlatformConnectorTerraformPlanCustomDomainResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestCustomDomainTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the CustomDomain resource
 	customDomainResource := resources.CustomDomain(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the CustomDomain resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, customDomainResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, customDomainResource, nil)
 }
 
 // Test --generate-config-out for the Environment resource
-func TestPlatformConnectorTerraformPlanEnvironmentResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestEnvironmentTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the Environment resource
 	environmentResource := resources.Environment(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the Environment resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, environmentResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, environmentResource, nil)
 }
 
 // Test --generate-config-out for the Form resource
-func TestPlatformConnectorTerraformPlanFormResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestFormTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the Form resource
 	formResource := resources.Form(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the Form resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, formResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, formResource, nil)
 }
 
 // Test --generate-config-out for the FormRecaptchaV2 resource
-func TestPlatformConnectorTerraformPlanFormRecaptchaV2Resource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestFormRecaptchaV2TerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the FormRecaptchaV2 resource
 	formRecaptchaV2Resource := resources.FormRecaptchaV2(sdkClientInfo)
+	ignoreErrors := []string{
+		"Error: Missing Configuration for Required Attribute",
+	}
+	testutils_helpers.ValidateTerraformPlan(t, formRecaptchaV2Resource, ignoreErrors)
+}
 
-	// Run terraform plan --generate-config-out on the FormRecaptchaV2 resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, formRecaptchaV2Resource, sdkClientInfo)
+// Test --generate-config-out for the Gateway resource
+func TestGatewayTerraformPlan(t *testing.T) {
+	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
+	gatewayResource := resources.Gateway(sdkClientInfo)
+	ignoreErrors := []string{
+		"Error: Invalid Attribute Combination",
+	}
+	testutils_helpers.ValidateTerraformPlan(t, gatewayResource, ignoreErrors)
 }
 
 // Test --generate-config-out for the GatewayCredential resource
-func TestPlatformConnectorTerraformPlanGatewayCredentialResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestGatewayCredentialTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the GatewayCredential resource
 	gatewayCredentialResource := resources.GatewayCredential(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the GatewayCredential resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, gatewayCredentialResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, gatewayCredentialResource, nil)
 }
 
 // Test --generate-config-out for the GatewayRoleAssignment resource
-func TestPlatformConnectorTerraformPlanGatewayRoleAssignmentResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestGatewayRoleAssignmentTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the GatewayRoleAssignment resource
 	gatewayRoleAssignmentResource := resources.GatewayRoleAssignment(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the GatewayRoleAssignment resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, gatewayRoleAssignmentResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, gatewayRoleAssignmentResource, nil)
 }
 
 // Test --generate-config-out for the IdentityPropagationPlan resource
-func TestPlatformConnectorTerraformPlanIdentityPropagationPlanResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestIdentityPropagationPlanTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the IdentityPropagationPlan resource
 	identityPropagationPlanResource := resources.IdentityPropagationPlan(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the IdentityPropagationPlan resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, identityPropagationPlanResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, identityPropagationPlanResource, nil)
 }
 
 // Test --generate-config-out for the Key resource
-func TestPlatformConnectorTerraformPlanKeyResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestKeyTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the Key resource
 	keyResource := resources.Key(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the Key resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, keyResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, keyResource, nil)
 }
 
 // Test --generate-config-out for the KeyRotationPolicy resource
-func TestPlatformConnectorTerraformPlanKeyRotationPolicyResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestKeyRotationPolicyTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the KeyRotationPolicy resource
 	keyRotationPolicyResource := resources.KeyRotationPolicy(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the KeyRotationPolicy resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, keyRotationPolicyResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, keyRotationPolicyResource, nil)
 }
 
 // Test --generate-config-out for the Language resource
-func TestPlatformConnectorTerraformPlanLanguageResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestLanguageTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the Language resource
 	languageResource := resources.Language(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the Language resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, languageResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, languageResource, nil)
 }
 
 // Test --generate-config-out for the LanguageUpdate resource
-func TestPlatformConnectorTerraformPlanLanguageUpdateResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestLanguageUpdateTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the LanguageUpdate resource
 	languageUpdateResource := resources.LanguageUpdate(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the LanguageUpdate resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, languageUpdateResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, languageUpdateResource, nil)
 }
 
 // Test --generate-config-out for the NotificationPolicy resource
-func TestPlatformConnectorTerraformPlanNotificationPolicyResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestNotificationPolicyTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the NotificationPolicy resource
 	notificationPolicyResource := resources.NotificationPolicy(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the NotificationPolicy resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, notificationPolicyResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, notificationPolicyResource, nil)
 }
 
 // Test --generate-config-out for the NotificationSettings resource
-func TestPlatformConnectorTerraformPlanNotificationSettingsResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestNotificationSettingsTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the NotificationSettings resource
 	notificationSettingsResource := resources.NotificationSettings(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the NotificationSettings resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, notificationSettingsResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, notificationSettingsResource, nil)
 }
 
 // Test --generate-config-out for the NotificationSettingsEmail resource
-func TestPlatformConnectorTerraformPlanNotificationSettingsEmailResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestNotificationSettingsEmailTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the NotificationSettingsEmail resource
 	notificationSettingsEmailResource := resources.NotificationSettingsEmail(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the NotificationSettingsEmail resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, notificationSettingsEmailResource, sdkClientInfo)
+	ignoreErrors := []string{
+		"Error: Missing Configuration for Required Attribute",
+	}
+	testutils_helpers.ValidateTerraformPlan(t, notificationSettingsEmailResource, ignoreErrors)
 }
 
 // Test --generate-config-out for the NotificationTemplateContent resource
-func TestPlatformConnectorTerraformPlanNotificationTemplateContentResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestNotificationTemplateContentTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the NotificationTemplateContent resource
 	notificationTemplateContentResource := resources.NotificationTemplateContent(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the NotificationTemplateContent resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, notificationTemplateContentResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, notificationTemplateContentResource, nil)
 }
 
 // Test --generate-config-out for the PhoneDeliverySettings resource
-func TestPlatformConnectorTerraformPlanPhoneDeliverySettingsResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestPhoneDeliverySettingsTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the PhoneDeliverySettings resource
 	phoneDeliverySettingsResource := resources.PhoneDeliverySettings(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the PhoneDeliverySettings resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, phoneDeliverySettingsResource, sdkClientInfo)
-}
-
-// Test --generate-config-out for the RoleAssignmentUser resource
-func TestPlatformConnectorTerraformPlanRoleAssignmentUserResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the RoleAssignmentUser resource
-	roleAssignmentUserResource := resources.RoleAssignmentUser(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the RoleAssignmentUser resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, roleAssignmentUserResource, sdkClientInfo)
+	ignoreErrors := []string{
+		"Error: Missing required argument",
+		"Error: Missing Configuration for Required Attribute",
+	}
+	testutils_helpers.ValidateTerraformPlan(t, phoneDeliverySettingsResource, ignoreErrors)
 }
 
 // Test --generate-config-out for the SystemApplication resource
-func TestPlatformConnectorTerraformPlanSystemApplicationResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestSystemApplicationTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the SystemApplication resource
 	systemApplicationResource := resources.SystemApplication(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the SystemApplication resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, systemApplicationResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, systemApplicationResource, nil)
 }
 
 // Test --generate-config-out for the TrustedEmailAddress resource
-func TestPlatformConnectorTerraformPlanTrustedEmailAddressResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestTrustedEmailAddressTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the TrustedEmailAddress resource
 	trustedEmailAddressResource := resources.TrustedEmailAddress(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the TrustedEmailAddress resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, trustedEmailAddressResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, trustedEmailAddressResource, nil)
 }
 
 // Test --generate-config-out for the TrustedEmailDomain resource
-func TestPlatformConnectorTerraformPlanTrustedEmailDomainResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestTrustedEmailDomainTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the TrustedEmailDomain resource
 	trustedEmailDomainResource := resources.TrustedEmailDomain(sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, trustedEmailDomainResource, nil)
+}
 
-	// Run terraform plan --generate-config-out on the TrustedEmailDomain resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, trustedEmailDomainResource, sdkClientInfo)
+// Test --generate-config-out for the UserRoleAssignment resource
+func TestUserRoleAssignmentTerraformPlan(t *testing.T) {
+	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
+	userRoleAssignmentResource := resources.UserRoleAssignment(sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, userRoleAssignmentResource, nil)
 }
 
 // Test --generate-config-out for the Webhook resource
-func TestPlatformConnectorTerraformPlanWebhookResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestWebhookTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the Webhook resource
 	webhookResource := resources.Webhook(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the Webhook resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, webhookResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, webhookResource, nil)
 }

@@ -27,11 +27,9 @@ func Test_RunInternalConfigUnset_InvalidKey(t *testing.T) {
 func Test_RunInternalConfigUnset_ValidKey(t *testing.T) {
 	// This is the happy path, so we need a valid config file to write to
 	// Create a valid config file
-	configDir := os.TempDir() + "/pingctlTestRunInternalConfigUnsetValidKey"
+	configDir := t.TempDir()
 	configFile := configDir + "/config.yaml"
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		t.Errorf("Error creating config directory: %s", err.Error())
-	}
+
 	if _, err := os.Create(configFile); err != nil {
 		t.Errorf("Error creating config file: %s", err.Error())
 	}
@@ -41,22 +39,15 @@ func Test_RunInternalConfigUnset_ValidKey(t *testing.T) {
 
 	err := RunInternalConfigUnset([]string{"pingctl.color"})
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Clean up
-	if err := os.RemoveAll(configDir); err != nil {
-		t.Errorf("Error removing config directory: %s", err.Error())
-	}
 }
 
 // Test RunInternalConfigUnset function with too many args
 func Test_RunInternalConfigUnset_TooManyArgs(t *testing.T) {
 	// This is the happy path, so we need a valid config file to write to
 	// Create a valid config file
-	configDir := os.TempDir() + "/pingctlTestRunInternalConfigUnsetTooManyArgs"
+	configDir := t.TempDir()
 	configFile := configDir + "/config.yaml"
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		t.Errorf("Error creating config directory: %s", err.Error())
-	}
+
 	if _, err := os.Create(configFile); err != nil {
 		t.Errorf("Error creating config file: %s", err.Error())
 	}
@@ -66,11 +57,6 @@ func Test_RunInternalConfigUnset_TooManyArgs(t *testing.T) {
 
 	err := RunInternalConfigUnset([]string{"pingctl.color", "pingctl.arg", "pingctl.arg2"})
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Clean up
-	if err := os.RemoveAll(configDir); err != nil {
-		t.Errorf("Error removing config directory: %s", err.Error())
-	}
 }
 
 // Test parseUnsetArgs function with empty args

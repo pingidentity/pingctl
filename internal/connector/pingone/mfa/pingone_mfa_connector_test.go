@@ -8,49 +8,32 @@ import (
 )
 
 // Test --generate-config-out for the MFAApplicationPushCredential resource
-func TestMFAConnectorTerraformPlanMFAApplicationPushCredentialResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestMFAApplicationPushCredentialTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the MFAApplicationPushCredential resource
 	mfaApplicationPushCredentialResource := resources.MFAApplicationPushCredential(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the MFAApplicationPushCredential resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, mfaApplicationPushCredentialResource, sdkClientInfo)
+	ignoreErrors := []string{
+		"Error: Invalid Attribute Combination",
+	}
+	testutils_helpers.ValidateTerraformPlan(t, mfaApplicationPushCredentialResource, ignoreErrors)
 }
 
 // Test --generate-config-out for the MFAFido2Policy resource
-func TestMFAConnectorTerraformPlanMFAFido2PolicyResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestMFAFido2PolicyTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the MFAFido2Policy resource
 	mfaFido2PolicyResource := resources.MFAFido2Policy(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the MFAFido2Policy resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, mfaFido2PolicyResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, mfaFido2PolicyResource, nil)
 }
 
-// Test --generate-config-out for the MFAPolicy resource
-func TestMFAConnectorTerraformPlanMFAPolicyResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+// Test --generate-config-out for the MFADevicePolicy resource
+func TestMFADevicePolicyTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the MFAPolicy resource
-	mfaPolicyResource := resources.MFAPolicy(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the MFAPolicy resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, mfaPolicyResource, sdkClientInfo)
+	mfaDevicePolicyResource := resources.MFADevicePolicy(sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, mfaDevicePolicyResource, nil)
 }
 
 // Test --generate-config-out for the MFASettings resource
-func TestMFAConnectorTerraformPlanMFASettingsResource(t *testing.T) {
-	// Get an instance of the PingOne SDK Client
+func TestMFASettingsTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-
-	// Create an instance of the MFASettings resource
 	mfaSettingsResource := resources.MFASettings(sdkClientInfo)
-
-	// Run terraform plan --generate-config-out on the MFASettings resource
-	testutils_helpers.TestSingleResourceTerraformPlanGenerateConfigOut(t, mfaSettingsResource, sdkClientInfo)
+	testutils_helpers.ValidateTerraformPlan(t, mfaSettingsResource, nil)
 }

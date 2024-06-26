@@ -11,21 +11,21 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneRoleAssignmentUserResource{}
+	_ connector.ExportableResource = &PingoneUserRoleAssignmentResource{}
 )
 
-type PingoneRoleAssignmentUserResource struct {
+type PingoneUserRoleAssignmentResource struct {
 	clientInfo *connector.SDKClientInfo
 }
 
-// Utility method for creating a PingoneRoleAssignmentUserResource
-func RoleAssignmentUser(clientInfo *connector.SDKClientInfo) *PingoneRoleAssignmentUserResource {
-	return &PingoneRoleAssignmentUserResource{
+// Utility method for creating a PingoneUserRoleAssignmentResource
+func UserRoleAssignment(clientInfo *connector.SDKClientInfo) *PingoneUserRoleAssignmentResource {
+	return &PingoneUserRoleAssignmentResource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingoneRoleAssignmentUserResource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingoneUserRoleAssignmentResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
@@ -118,6 +118,6 @@ func (r *PingoneRoleAssignmentUserResource) ExportAll() (*[]connector.ImportBloc
 	return &importBlocks, nil
 }
 
-func (r *PingoneRoleAssignmentUserResource) ResourceType() string {
-	return "pingone_role_assignment_user"
+func (r *PingoneUserRoleAssignmentResource) ResourceType() string {
+	return "pingone_user_role_assignment"
 }

@@ -51,7 +51,7 @@ func TestOutputFormat_OutputFormatValidValues(t *testing.T) {
 	}
 
 	for _, expectedValue := range expectedValues {
-		if !slices.Contains(expectedValues, expectedValue) {
+		if !slices.Contains(validValues, expectedValue) {
 			t.Errorf("Expected value '%s' is not in %v", expectedValue, validValues)
 		}
 	}

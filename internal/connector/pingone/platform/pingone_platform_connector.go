@@ -71,7 +71,6 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.SystemApplication(&c.clientInfo),
 		resources.TrustedEmailAddress(&c.clientInfo),
 		resources.TrustedEmailDomain(&c.clientInfo),
-		resources.UserRoleAssignment(&c.clientInfo),
 		resources.Webhook(&c.clientInfo),
 	}
 

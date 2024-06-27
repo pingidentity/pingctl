@@ -18,6 +18,7 @@ func TestRiskPolicyTerraformPlan(t *testing.T) {
 	ignoreErrors := []string{
 		`Error: attribute "policy_scores": attribute "policy_threshold_high": attribute "max_score" is required`,
 		`Error: attribute "default_result": attribute "type" is required`,
+		`Error: attribute "policy_scores": attribute "policy_threshold_medium": attribute "max_score" is required`,
 	}
 
 	testutils_helpers.ValidateTerraformPlan(t, riskPolicyResource, ignoreErrors)

@@ -55,7 +55,7 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.Environment(&c.clientInfo),
 		resources.Form(&c.clientInfo),
 		resources.FormRecaptchaV2(&c.clientInfo),
-		// resources.Gateway(&c.clientInfo),
+		resources.Gateway(&c.clientInfo),
 		resources.GatewayCredential(&c.clientInfo),
 		resources.GatewayRoleAssignment(&c.clientInfo),
 		resources.IdentityPropagationPlan(&c.clientInfo),
@@ -68,14 +68,14 @@ func (c *PingonePlatformConnector) Export(format, outputDir string, overwriteExp
 		resources.NotificationSettingsEmail(&c.clientInfo),
 		resources.NotificationTemplateContent(&c.clientInfo),
 		resources.PhoneDeliverySettings(&c.clientInfo),
-		resources.RoleAssignmentUser(&c.clientInfo),
 		resources.SystemApplication(&c.clientInfo),
 		resources.TrustedEmailAddress(&c.clientInfo),
 		resources.TrustedEmailDomain(&c.clientInfo),
+		resources.UserRoleAssignment(&c.clientInfo),
 		resources.Webhook(&c.clientInfo),
 	}
 
-	return common.WriteFiles(exportableResources, format, outputDir, c.ConnectorServiceName(), overwriteExport)
+	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)
 }
 
 func (c *PingonePlatformConnector) ConnectorServiceName() string {

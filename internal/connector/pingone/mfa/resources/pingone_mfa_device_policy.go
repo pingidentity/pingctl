@@ -10,21 +10,21 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingoneMFAPolicyResource{}
+	_ connector.ExportableResource = &PingoneMFADevicePolicyResource{}
 )
 
-type PingoneMFAPolicyResource struct {
+type PingoneMFADevicePolicyResource struct {
 	clientInfo *connector.SDKClientInfo
 }
 
-// Utility method for creating a PingoneMFAPolicyResource
-func MFAPolicy(clientInfo *connector.SDKClientInfo) *PingoneMFAPolicyResource {
-	return &PingoneMFAPolicyResource{
+// Utility method for creating a PingoneMFADevicePolicyResource
+func MFADevicePolicy(clientInfo *connector.SDKClientInfo) *PingoneMFADevicePolicyResource {
+	return &PingoneMFADevicePolicyResource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingoneMFAPolicyResource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingoneMFADevicePolicyResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
@@ -65,6 +65,6 @@ func (r *PingoneMFAPolicyResource) ExportAll() (*[]connector.ImportBlock, error)
 	return &importBlocks, nil
 }
 
-func (r *PingoneMFAPolicyResource) ResourceType() string {
-	return "pingone_mfa_policy"
+func (r *PingoneMFADevicePolicyResource) ResourceType() string {
+	return "pingone_mfa_device_policy"
 }

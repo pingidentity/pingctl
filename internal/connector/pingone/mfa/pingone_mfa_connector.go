@@ -44,11 +44,11 @@ func (c *PingoneMFAConnector) Export(format, outputDir string, overwriteExport b
 	exportableResources := []connector.ExportableResource{
 		resources.MFAApplicationPushCredential(&c.clientInfo),
 		resources.MFAFido2Policy(&c.clientInfo),
-		resources.MFAPolicy(&c.clientInfo),
+		resources.MFADevicePolicy(&c.clientInfo),
 		resources.MFASettings(&c.clientInfo),
 	}
 
-	return common.WriteFiles(exportableResources, format, outputDir, c.ConnectorServiceName(), overwriteExport)
+	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)
 }
 
 func (c *PingoneMFAConnector) ConnectorServiceName() string {

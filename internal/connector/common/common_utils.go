@@ -10,7 +10,7 @@ import (
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
-func WriteFiles(exportableResources []connector.ExportableResource, format, outputDir string, service string, overwriteExport bool) error {
+func WriteFiles(exportableResources []connector.ExportableResource, format, outputDir string, overwriteExport bool) error {
 	l := logger.Get()
 
 	// Parse the HCL import block template

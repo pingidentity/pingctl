@@ -2,6 +2,7 @@ package customtypes
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -39,5 +40,12 @@ func (s *OutputFormat) String() string {
 }
 
 func OutputFormatValidValues() []string {
-	return []string{ENUM_OUTPUT_FORMAT_TEXT, ENUM_OUTPUT_FORMAT_JSON}
+	outputFormats := []string{
+		ENUM_OUTPUT_FORMAT_TEXT,
+		ENUM_OUTPUT_FORMAT_JSON,
+	}
+
+	slices.Sort(outputFormats)
+
+	return outputFormats
 }

@@ -2,6 +2,7 @@ package customtypes
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/spf13/pflag"
@@ -45,6 +46,8 @@ func (s *MultiService) GetServices() *[]string {
 		}
 	}
 
+	slices.Sort(enabledExportServices)
+
 	return &enabledExportServices
 }
 
@@ -81,9 +84,20 @@ func (s *MultiService) String() string {
 		return "[]"
 	}
 
-	return fmt.Sprintf("[ %s ]", strings.Join(enabledExportServices, ", "))
+	slices.Sort(enabledExportServices)
+
+	return strings.Join(enabledExportServices, ", ")
 }
 
 func MultiServiceValidValues() []string {
-	return []string{ENUM_SERVICE_PLATFORM, ENUM_SERVICE_SSO, ENUM_SERVICE_MFA, ENUM_SERVICE_PROTECT}
+	allServices := []string{
+		ENUM_SERVICE_MFA,
+		ENUM_SERVICE_PLATFORM,
+		ENUM_SERVICE_PROTECT,
+		ENUM_SERVICE_SSO,
+	}
+
+	slices.Sort(allServices)
+
+	return allServices
 }

@@ -98,18 +98,18 @@ func printConfigFromKey(viperKey string) error {
 func getValidGetKeys() []string {
 	// for each leaf key, add parent keys by splitting on the "." character
 	leafKeys := viperconfig.GetViperConfigKeys()
-	allkeys := []string{}
+	allKeys := []string{}
 	for _, key := range leafKeys {
 		keySplit := strings.Split(key, ".")
 		for i := 0; i < len(keySplit); i++ {
 			curKey := strings.Join(keySplit[:i+1], ".")
-			if !slices.Contains(allkeys, curKey) {
-				allkeys = append(allkeys, curKey)
+			if !slices.Contains(allKeys, curKey) {
+				allKeys = append(allKeys, curKey)
 			}
 		}
 	}
 
-	slices.Sort(allkeys)
+	slices.Sort(allKeys)
 
-	return allkeys
+	return allKeys
 }

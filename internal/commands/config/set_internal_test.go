@@ -20,11 +20,9 @@ func Test_RunInternalConfigSet_NoArgs(t *testing.T) {
 func Test_RunInternalConfigSet_WithArgs(t *testing.T) {
 	// This is the happy path, so we need a valid config file to write to
 	// Create a valid config file
-	configDir := os.TempDir() + "/pingctlTestRunInternalConfigSetWithArgs"
+	configDir := t.TempDir()
 	configFile := configDir + "/config.yaml"
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		t.Errorf("Error creating config directory: %s", err.Error())
-	}
+
 	if _, err := os.Create(configFile); err != nil {
 		t.Errorf("Error creating config file: %s", err.Error())
 	}
@@ -34,11 +32,6 @@ func Test_RunInternalConfigSet_WithArgs(t *testing.T) {
 
 	err := RunInternalConfigSet([]string{"pingone.worker.clientId=12345678-1234-1234-1234-123456789012"})
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Clean up
-	if err := os.RemoveAll(configDir); err != nil {
-		t.Errorf("Error removing config directory: %s", err.Error())
-	}
 }
 
 // Test RunInternalConfigSet function with invalid key
@@ -52,11 +45,9 @@ func Test_RunInternalConfigSet_InvalidKey(t *testing.T) {
 func Test_RunInternalConfigSet_TooManyArgs(t *testing.T) {
 	// This is the happy path, so we need a valid config file to write to
 	// Create a valid config file
-	configDir := os.TempDir() + "/pingctlTestRunInternalConfigSetTooManyArgs"
+	configDir := t.TempDir()
 	configFile := configDir + "/config.yaml"
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		t.Errorf("Error creating config directory: %s", err.Error())
-	}
+
 	if _, err := os.Create(configFile); err != nil {
 		t.Errorf("Error creating config file: %s", err.Error())
 	}
@@ -66,11 +57,6 @@ func Test_RunInternalConfigSet_TooManyArgs(t *testing.T) {
 
 	err := RunInternalConfigSet([]string{"pingone.worker.clientId=12345678-1234-1234-1234-123456789012", "pingone.worker.environmentId=12345678-1234-1234-1234-123456789012"})
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Clean up
-	if err := os.RemoveAll(configDir); err != nil {
-		t.Errorf("Error removing config directory: %s", err.Error())
-	}
 }
 
 // Test RunInternalConfigSet function with empty value

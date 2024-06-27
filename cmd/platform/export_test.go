@@ -10,16 +10,10 @@ import (
 
 // Test Platform Export Command Executes without issue
 func TestPlatformExportCmd_Execute(t *testing.T) {
-	outputDir := os.TempDir() + "/pingctlTestPlatformExportExecute"
+	outputDir := t.TempDir()
 
 	err := testutils_command.ExecutePingctl("platform", "export", "--output-directory", outputDir, "--overwrite")
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Empty output directory
-	err = os.RemoveAll(outputDir)
-	if err != nil {
-		t.Errorf("Error removing output directory: %v", err)
-	}
 }
 
 // Test Platform Export Command fails when provided invalid flag
@@ -40,16 +34,10 @@ func TestPlatformExportCmd_HelpFlag(t *testing.T) {
 
 // Test Platform Export Command --service flag
 func TestPlatformExportCmd_ServiceFlag(t *testing.T) {
-	outputDir := os.TempDir() + "/pingctlTestPlatformExportServiceFlag"
+	outputDir := t.TempDir()
 
 	err := testutils_command.ExecutePingctl("platform", "export", "--output-directory", outputDir, "--overwrite", "--service", "pingone-protect")
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Empty output directory
-	err = os.RemoveAll(outputDir)
-	if err != nil {
-		t.Errorf("Error removing output directory: %v", err)
-	}
 }
 
 // Test Platform Export Command --service flag with invalid service
@@ -61,16 +49,10 @@ func TestPlatformExportCmd_ServiceFlagInvalidService(t *testing.T) {
 
 // Test Platform Export Command --export-format flag
 func TestPlatformExportCmd_ExportFormatFlag(t *testing.T) {
-	outputDir := os.TempDir() + "/pingctlTestPlatformExportExportFormatFlag"
+	outputDir := t.TempDir()
 
 	err := testutils_command.ExecutePingctl("platform", "export", "--output-directory", outputDir, "--export-format", "HCL", "--overwrite", "--service", "pingone-protect")
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Empty output directory
-	err = os.RemoveAll(outputDir)
-	if err != nil {
-		t.Errorf("Error removing output directory: %v", err)
-	}
 }
 
 // Test Platform Export Command --export-format flag with invalid format
@@ -82,16 +64,10 @@ func TestPlatformExportCmd_ExportFormatFlagInvalidFormat(t *testing.T) {
 
 // Test Platform Export Command --output-directory flag
 func TestPlatformExportCmd_OutputDirectoryFlag(t *testing.T) {
-	outputDir := os.TempDir() + "/pingctlTestPlatformExportOutputDirectoryFlag"
+	outputDir := t.TempDir()
 
 	err := testutils_command.ExecutePingctl("platform", "export", "--output-directory", outputDir, "--overwrite", "--service", "pingone-protect")
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Empty output directory
-	err = os.RemoveAll(outputDir)
-	if err != nil {
-		t.Errorf("Error removing output directory: %v", err)
-	}
 }
 
 // Test Platform Export Command --output-directory flag with invalid directory
@@ -103,29 +79,18 @@ func TestPlatformExportCmd_OutputDirectoryFlagInvalidDirectory(t *testing.T) {
 
 // Test Platform Export Command --overwrite flag
 func TestPlatformExportCmd_OverwriteFlag(t *testing.T) {
-	outputDir := os.TempDir() + "/pingctlTestPlatformExportOverwriteFlag"
+	outputDir := t.TempDir()
 
 	err := testutils_command.ExecutePingctl("platform", "export", "--output-directory", outputDir, "--overwrite", "--service", "pingone-protect")
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Empty output directory
-	err = os.RemoveAll(outputDir)
-	if err != nil {
-		t.Errorf("Error removing output directory: %v", err)
-	}
 }
 
 // Test Platform Export Command --overwrite flag false with existing directory
 // where the directory already contains a file
 func TestPlatformExportCmd_OverwriteFlagFalseWithExistingDirectory(t *testing.T) {
-	outputDir := os.TempDir() + "/pingctlTestPlatformExportOverwriteFlagFalseWithExistingDirectory"
+	outputDir := t.TempDir()
 
-	err := os.Mkdir(outputDir, 0755)
-	if err != nil {
-		t.Errorf("Error creating output directory: %v", err)
-	}
-
-	_, err = os.Create(outputDir + "/file")
+	_, err := os.Create(outputDir + "/file")
 	if err != nil {
 		t.Errorf("Error creating file in output directory: %v", err)
 	}
@@ -133,35 +98,20 @@ func TestPlatformExportCmd_OverwriteFlagFalseWithExistingDirectory(t *testing.T)
 	expectedErrorPattern := `^'platform export' output directory '[A-Za-z0-9_\-\/]+' is not empty\. Use --overwrite to overwrite existing export data$`
 	err = testutils_command.ExecutePingctl("platform", "export", "--output-directory", outputDir, "--service", "pingone-protect", "--overwrite=false")
 	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
-
-	// Empty output directory
-	err = os.RemoveAll(outputDir)
-	if err != nil {
-		t.Errorf("Error removing output directory: %v", err)
-	}
 }
 
 // Test Platform Export Command --overwrite flag true with existing directory
 // where the directory already contains a file
 func TestPlatformExportCmd_OverwriteFlagTrueWithExistingDirectory(t *testing.T) {
-	outputDir := os.TempDir() + "/pingctlTestPlatformExportOverwriteFlagTrueWithExistingDirectory"
-	err := os.Mkdir(outputDir, 0755)
-	if err != nil {
-		t.Errorf("Error creating output directory: %v", err)
-	}
-	_, err = os.Create(outputDir + "/file")
+	outputDir := t.TempDir()
+
+	_, err := os.Create(outputDir + "/file")
 	if err != nil {
 		t.Errorf("Error creating file in output directory: %v", err)
 	}
 
 	err = testutils_command.ExecutePingctl("platform", "export", "--output-directory", outputDir, "--service", "pingone-protect", "--overwrite")
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Empty output directory
-	err = os.RemoveAll(outputDir)
-	if err != nil {
-		t.Errorf("Error removing output directory: %v", err)
-	}
 }
 
 // Test Platform Export Command with
@@ -170,7 +120,7 @@ func TestPlatformExportCmd_OverwriteFlagTrueWithExistingDirectory(t *testing.T) 
 // --pingone-worker-client-secret flag
 // --pingone-region flag
 func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
-	outputDir := os.TempDir() + "/pingctlTestPlatformExportPingOneWorkerEnvironmentIdFlag"
+	outputDir := t.TempDir()
 
 	err := testutils_command.ExecutePingctl("platform", "export",
 		"--output-directory", outputDir,
@@ -181,12 +131,6 @@ func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
 		"--pingone-worker-client-secret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"),
 		"--pingone-region", os.Getenv("PINGCTL_PINGONE_REGION"))
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Empty output directory
-	err = os.RemoveAll(outputDir)
-	if err != nil {
-		t.Errorf("Error removing output directory: %v", err)
-	}
 }
 
 // Test Platform Export Command fails when not provided required pingone flags together

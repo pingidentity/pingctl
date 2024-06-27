@@ -95,7 +95,7 @@ func Test_initApiClient_invalidClientIdConfig(t *testing.T) {
 
 // Test fixEmptyOutputDirVar function with outputDir non-empty
 func Test_fixEmptyOutputDirVar_WithOutputDir(t *testing.T) {
-	oldOutputDir := os.TempDir()
+	oldOutputDir := t.TempDir()
 
 	newOutputDir, err := fixEmptyOutputDirVar(oldOutputDir)
 	testutils_helpers.CheckExpectedError(t, err, nil)
@@ -119,19 +119,10 @@ func Test_fixEmptyOutputDirVar_WithoutOutputDir(t *testing.T) {
 // - Empty directory that exists is valid, and should not return an error
 func Test_createOrValidateOutputDir(t *testing.T) {
 	// Create a directory in the temp directory
-	outputDir := os.TempDir() + "/pingctlTestCreateOrValidateOutputDir"
-
-	if err := os.Mkdir(outputDir, 0755); err != nil {
-		t.Fatalf("os.Mkdir() error = %v", err)
-	}
+	outputDir := t.TempDir()
 
 	err := createOrValidateOutputDir(outputDir, false)
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Remove the new directory
-	if err := os.RemoveAll(outputDir); err != nil {
-		t.Fatalf("os.RemoveAll() error = %v", err)
-	}
 }
 
 // Test createOrValidateOutputDir function
@@ -140,11 +131,7 @@ func Test_createOrValidateOutputDir(t *testing.T) {
 // - Validate that the function returns an error with overwrite set to false
 func Test_createOrValidateOutputDir_WithFile(t *testing.T) {
 	// Create a directory in the temp directory
-	outputDir := os.TempDir() + "/pingctlTestCreateOrValidateOutputDirWithFile"
-
-	if err := os.Mkdir(outputDir, 0755); err != nil {
-		t.Fatalf("os.Mkdir() error = %v", err)
-	}
+	outputDir := t.TempDir()
 
 	// Create a file in the new directory
 	file := outputDir + "/file"
@@ -155,11 +142,6 @@ func Test_createOrValidateOutputDir_WithFile(t *testing.T) {
 	expectedErrorPattern := `^'platform export' output directory '[\/A-Za-z0-9_-]+' is not empty\. Use --overwrite to overwrite existing export data$`
 	err := createOrValidateOutputDir(outputDir, false)
 	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
-
-	// Remove the new directory
-	if err := os.RemoveAll(outputDir); err != nil {
-		t.Fatalf("os.RemoveAll() error = %v", err)
-	}
 }
 
 // Test createOrValidateOutputDir function
@@ -168,11 +150,7 @@ func Test_createOrValidateOutputDir_WithFile(t *testing.T) {
 // - Validate that the function does not return an error with overwrite set to true
 func Test_createOrValidateOutputDir_WithFile_Overwrite(t *testing.T) {
 	// Create a directory in the temp directory
-	outputDir := os.TempDir() + "/pingctlTestCreateOrValidateOutputDirWithFileOverwrite"
-
-	if err := os.Mkdir(outputDir, 0755); err != nil {
-		t.Fatalf("os.Mkdir() error = %v", err)
-	}
+	outputDir := t.TempDir()
 
 	// Create a file in the new directory
 	file := outputDir + "/file"
@@ -182,11 +160,6 @@ func Test_createOrValidateOutputDir_WithFile_Overwrite(t *testing.T) {
 
 	err := createOrValidateOutputDir(outputDir, true)
 	testutils_helpers.CheckExpectedError(t, err, nil)
-
-	// Remove the new directory
-	if err := os.RemoveAll(outputDir); err != nil {
-		t.Fatalf("os.RemoveAll() error = %v", err)
-	}
 }
 
 // Test createOrValidateOutputDir function
@@ -395,10 +368,7 @@ func Test_exportConnectors(t *testing.T) {
 	}
 
 	// Create a directory in the temp directory
-	outputDir := os.TempDir() + "/pingctlTestExportConnectors"
-	if err := os.Mkdir(outputDir, 0755); err != nil {
-		t.Fatalf("os.Mkdir() error = %v", err)
-	}
+	outputDir := t.TempDir()
 
 	err := exportConnectors(&exportableConnectors, connector.ENUMEXPORTFORMAT_HCL, outputDir, false)
 	testutils_helpers.CheckExpectedError(t, err, nil)
@@ -411,11 +381,6 @@ func Test_exportConnectors(t *testing.T) {
 	}
 	if len(files) != 4 {
 		t.Errorf("exportConnectors() num files = %v, want 4", len(files))
-	}
-
-	// Empty the directory
-	if err := os.RemoveAll(outputDir); err != nil {
-		t.Fatalf("os.RemoveAll() error = %v", err)
 	}
 }
 
@@ -440,17 +405,9 @@ func Test_exportConnectors_invalidOutputDir(t *testing.T) {
 // Test exportConnectors function fails on nil exportable connectors
 func Test_exportConnectors_nilExportableConnectors(t *testing.T) {
 	// Create a directory in the temp directory
-	outputDir := os.TempDir() + "/pingctlTestExportConnectorsNilExportableConnectors"
-	if err := os.Mkdir(outputDir, 0755); err != nil {
-		t.Fatalf("os.Mkdir() error = %v", err)
-	}
+	outputDir := t.TempDir()
 
 	expectedErrorPattern := `^failed to export services\. exportable connectors list is nil$`
 	err := exportConnectors(nil, connector.ENUMEXPORTFORMAT_HCL, outputDir, false)
 	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
-
-	// Empty the directory
-	if err := os.RemoveAll(outputDir); err != nil {
-		t.Fatalf("os.RemoveAll() error = %v", err)
-	}
 }

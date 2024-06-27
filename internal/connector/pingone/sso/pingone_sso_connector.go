@@ -65,11 +65,10 @@ func (c *PingoneSSOConnector) Export(format, outputDir string, overwriteExport b
 		resources.SchemaAttribute(&c.clientInfo),
 		resources.SignOnPolicy(&c.clientInfo),
 		resources.SignOnPolicyAction(&c.clientInfo),
-		resources.User(&c.clientInfo),
 		resources.UserGroupAssignment(&c.clientInfo),
 	}
 
-	return common.WriteFiles(exportableResources, format, outputDir, c.ConnectorServiceName(), overwriteExport)
+	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)
 }
 
 func (c *PingoneSSOConnector) ConnectorServiceName() string {

@@ -19,7 +19,7 @@ func TestLanguageExport(t *testing.T) {
 		{
 			ResourceType: "pingone_language",
 			ResourceName: "Afar",
-			ResourceID:   fmt.Sprintf("%s/07aa34bb-e2b4-43f7-a09d-b7cee6615c95", testutils_helpers.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/c5f97303-c5c1-459a-b8ee-3fcb183eb52a", testutils_helpers.GetEnvironmentID()),
 		},
 	}
 

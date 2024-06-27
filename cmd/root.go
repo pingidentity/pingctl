@@ -78,7 +78,7 @@ func NewRootCommand() *cobra.Command {
 
 	if err := viperconfig.BindEnvVars(cobraParamNames); err != nil {
 		output.Format(output.CommandOutput{
-			Message:      "Error binding environment varibales. Environment Variable values may not be recognized.",
+			Message:      "Error binding environment variables. Environment Variable values may not be recognized.",
 			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 			ErrorMessage: err.Error(),
 		})

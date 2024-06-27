@@ -42,7 +42,8 @@ func (r *PingoneResourceScopeResource) ExportAll() (*[]connector.ImportBlock, er
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	for _, resource := range embedded.GetResources() {
+	for _, resourceInner := range embedded.GetResources() {
+		resource := resourceInner.Resource
 		resourceId, resourceIdOk := resource.GetIdOk()
 		resourceName, resourceNameOk := resource.GetNameOk()
 		resourceType, resourceTypeOk := resource.GetTypeOk()

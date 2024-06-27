@@ -46,7 +46,7 @@ func NewExportCommand() *cobra.Command {
 
 	// Add flags that are not tracked in the viper configuration file
 	cmd.Flags().Var(&exportFormat, "export-format", fmt.Sprintf("Specifies export format\nAllowed: %q", connector.ENUMEXPORTFORMAT_HCL))
-	cmd.Flags().Var(&multiService, "service", fmt.Sprintf("Specifies service(s) to export. Allowed: %s", multiService.String()))
+	cmd.Flags().Var(&multiService, "service", fmt.Sprintf("Specifies service(s) to export. Allowed services: %s", multiService.String()))
 	cmd.Flags().StringVar(&outputDir, "output-directory", "", "Specifies output directory for export (Default: Present working directory)")
 	cmd.Flags().BoolVar(&overwriteExport, "overwrite", false, "Overwrite existing generated exports if set.")
 
@@ -70,7 +70,7 @@ func NewExportCommand() *cobra.Command {
 
 	if err := viperconfig.BindEnvVars(cobraParamNames); err != nil {
 		output.Format(output.CommandOutput{
-			Message:      "Error binding environment varibales. Environment Variable values may not be recognized.",
+			Message:      "Error binding environment variables. Environment Variable values may not be recognized.",
 			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
 			ErrorMessage: err.Error(),
 		})

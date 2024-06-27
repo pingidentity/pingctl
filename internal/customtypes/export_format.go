@@ -2,6 +2,7 @@ package customtypes
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/pingidentity/pingctl/internal/connector"
@@ -34,5 +35,11 @@ func (s *ExportFormat) String() string {
 }
 
 func ExportFormatValidValues() []string {
-	return []string{connector.ENUMEXPORTFORMAT_HCL}
+	exportFormats := []string{
+		connector.ENUMEXPORTFORMAT_HCL,
+	}
+
+	slices.Sort(exportFormats)
+
+	return exportFormats
 }

@@ -29,10 +29,10 @@ func (r *PingoneIdentityProviderAttributeResource) ExportAll() (*[]connector.Imp
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
 
-	apiExecuteIdpsFunc := r.clientInfo.ApiClient.ManagementAPIClient.IdentityProvidersApi.ReadAllIdentityProviders(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
-	apiapiExecuteIdpsFuncFunctionName := "ReadAllIdentityProviders"
+	idpsApiExecuteFunc := r.clientInfo.ApiClient.ManagementAPIClient.IdentityProvidersApi.ReadAllIdentityProviders(r.clientInfo.Context, r.clientInfo.ExportEnvironmentID).Execute
+	idpsApiFunctionName := "ReadAllIdentityProviders"
 
-	embedded, err := common.GetManagementEmbedded(apiExecuteIdpsFunc, apiapiExecuteIdpsFuncFunctionName, r.ResourceType())
+	embedded, err := common.GetManagementEmbedded(idpsApiExecuteFunc, idpsApiFunctionName, r.ResourceType())
 	if err != nil {
 		return nil, err
 	}

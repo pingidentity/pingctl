@@ -42,7 +42,8 @@ func (r *PingoneResourceAttributeResource) ExportAll() (*[]connector.ImportBlock
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	for _, resource := range embedded.GetResources() {
+	for _, resourceInner := range embedded.GetResources() {
+		resource := resourceInner.Resource
 		resourceId, resourceIdOk := resource.GetIdOk()
 		resourceName, resourceNameOk := resource.GetNameOk()
 		resourceType, resourceTypeOk := resource.GetTypeOk()
@@ -68,7 +69,7 @@ func (r *PingoneResourceAttributeResource) ExportAll() (*[]connector.ImportBlock
 
 				if resourceAttributeTypeOk {
 					switch {
-					// Any CORE attribute is required and cannot be overriden
+					// Any CORE attribute is required and cannot be overridden
 					case *resourceAttributeType == management.ENUMRESOURCEATTRIBUTETYPE_CORE:
 						// Handle the special case where a CUSTOM resource can override the sub attribute
 						if *resourceType != management.ENUMRESOURCETYPE_CUSTOM {

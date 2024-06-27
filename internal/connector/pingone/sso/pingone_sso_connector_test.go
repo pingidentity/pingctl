@@ -171,13 +171,6 @@ func TestSignOnPolicyActionTerraformPlan(t *testing.T) {
 	testutils_helpers.ValidateTerraformPlan(t, signOnPolicyActionResource, ignoreErrors)
 }
 
-// Test --generate-config-out for the User resource
-func TestUserTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	userResource := resources.User(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, userResource, nil)
-}
-
 // Test --generate-config-out for the UserGroupAssignment resource
 func TestUserGroupAssignmentTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)

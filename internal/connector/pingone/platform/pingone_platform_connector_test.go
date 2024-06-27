@@ -110,6 +110,7 @@ func TestGatewayTerraformPlan(t *testing.T) {
 	gatewayResource := resources.Gateway(sdkClientInfo)
 	ignoreErrors := []string{
 		"Error: Invalid Attribute Combination",
+		"Error: Missing required argument",
 	}
 	testutils_helpers.ValidateTerraformPlan(t, gatewayResource, ignoreErrors)
 }

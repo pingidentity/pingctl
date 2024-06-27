@@ -65,7 +65,6 @@ func (c *PingoneSSOConnector) Export(format, outputDir string, overwriteExport b
 		resources.SchemaAttribute(&c.clientInfo),
 		resources.SignOnPolicy(&c.clientInfo),
 		resources.SignOnPolicyAction(&c.clientInfo),
-		resources.User(&c.clientInfo),
 		resources.UserGroupAssignment(&c.clientInfo),
 	}
 

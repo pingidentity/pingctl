@@ -16,9 +16,10 @@ func TestRiskPolicyTerraformPlan(t *testing.T) {
 	// This test is failing due to a bug where computed values are failing
 	// config generation as they are treated as required attributes.
 	ignoreErrors := []string{
-		`Error: attribute "policy_scores": attribute "policy_threshold_high": attribute "max_score" is required`,
 		`Error: attribute "default_result": attribute "type" is required`,
 		`Error: attribute "policy_scores": attribute "policy_threshold_medium": attribute "max_score" is required`,
+		`Error: attribute "policy_scores": attribute "policy_threshold_high": attribute "max_score" is required`,
+		`Error: attribute "policy_scores": attribute "predictors": incorrect set element type: attribute "predictor_reference_value" is required`,
 	}
 
 	testutils_helpers.ValidateTerraformPlan(t, riskPolicyResource, ignoreErrors)

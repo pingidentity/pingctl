@@ -2,6 +2,7 @@ package viperconfig
 
 import (
 	"slices"
+	"strings"
 )
 
 type ConfigCobraParam string
@@ -105,12 +106,14 @@ func GetEnvVars() []string {
 func IsValidViperKey(viperKey string) bool {
 	// The only valid configuration keys are those returned by GetViperConfigKeys()
 	validViperKeys := GetViperConfigKeys()
-	return slices.Contains(validViperKeys, viperKey)
+	return slices.ContainsFunc(validViperKeys, func(v string) bool {
+		return strings.EqualFold(v, viperKey)
+	})
 }
 
 func GetValueTypeFromViperKey(viperKey string) (ConfigType, bool) {
 	for _, configOption := range ConfigOptions {
-		if configOption.ViperConfigKey == viperKey {
+		if strings.EqualFold(viperKey, configOption.ViperConfigKey) {
 			return configOption.VariableType, true
 		}
 	}

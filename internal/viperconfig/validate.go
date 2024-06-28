@@ -133,8 +133,10 @@ func validatePingOneRegion(viperKey string) error {
 		viper.Set(viperKey, valuePingoneRegion)
 	case string:
 		region := customtypes.PingOneRegion("")
-		if err := region.Set(valuePingoneRegion); err != nil {
-			return fmt.Errorf("failed to validate pingctl configuration: %s", err.Error())
+		if valuePingoneRegion != "" { // Allow empty string for pingone region validation
+			if err := region.Set(valuePingoneRegion); err != nil {
+				return fmt.Errorf("failed to validate pingctl configuration: %s", err.Error())
+			}
 		}
 		viper.Set(viperKey, region)
 	default:

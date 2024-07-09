@@ -61,17 +61,17 @@ func NewExportCommand() *cobra.Command {
 
 	// Bind the newly created flags to viper configuration file
 	if err := viperconfig.BindFlags(cobraParamNames, cmd); err != nil {
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message:      "Error binding export command flag parameters. Flag values may not be recognized.",
-			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+			Result:       output.ENUM_RESULT_FAILURE,
 			ErrorMessage: err.Error(),
 		})
 	}
 
 	if err := viperconfig.BindEnvVars(cobraParamNames); err != nil {
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message:      "Error binding environment variables. Environment Variable values may not be recognized.",
-			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+			Result:       output.ENUM_RESULT_FAILURE,
 			ErrorMessage: err.Error(),
 		})
 	}

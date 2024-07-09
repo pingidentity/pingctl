@@ -20,8 +20,8 @@ If you encounter any bugs while using the tool, please open an issue on the proj
 
 // Print the feedback message
 func PrintFeedbackMessage() {
-	output.Format(output.CommandOutput{
+	output.Print(output.Opts{
 		Message: FeedbackMessage,
-		Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
+		Result:  output.ENUM_RESULT_NIL,
 	})
 }

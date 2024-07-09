@@ -59,9 +59,9 @@ func parseSetArgs(args []string) (string, string, error) {
 	}
 
 	if len(args) > 1 {
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message: fmt.Sprintf("'pingctl config set' only sets one key-value pair per command. Ignoring extra arguments: %s", strings.Join(args[1:], " ")),
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+			Result:  output.ENUM_RESULT_NOACTION_WARN,
 		})
 	}
 

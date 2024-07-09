@@ -35,8 +35,8 @@ func RunInternalConfigGet(args []string) error {
 
 	// Check if the viper configuration key is set
 	if !viper.IsSet(viperKey) {
-		output.Format(output.CommandOutput{
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+		output.Print(output.Opts{
+			Result:  output.ENUM_RESULT_NOACTION_WARN,
 			Message: fmt.Sprintf("Configuration key '%s' is not set", viperKey),
 		})
 		return nil
@@ -59,9 +59,9 @@ func parseGetArgs(args []string) (string, error) {
 	}
 
 	if len(args) > 1 {
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message: fmt.Sprintf("'pingctl config get' only gets one key per command. Ignoring extra arguments: %s", strings.Join(args[1:], " ")),
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+			Result:  output.ENUM_RESULT_NOACTION_WARN,
 		})
 	}
 
@@ -75,8 +75,8 @@ func PrintConfig() error {
 	if err != nil {
 		return fmt.Errorf("failed to yaml marshal viper configuration: %s", err.Error())
 	}
-	output.Format(output.CommandOutput{
-		Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
+	output.Print(output.Opts{
+		Result:  output.ENUM_RESULT_NIL,
 		Message: string(yaml),
 	})
 
@@ -89,8 +89,8 @@ func printConfigFromKey(viperKey string) error {
 	if err != nil {
 		return fmt.Errorf("failed to yaml marshal viper configuration: %s", err.Error())
 	}
-	output.Format(output.CommandOutput{
-		Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
+	output.Print(output.Opts{
+		Result:  output.ENUM_RESULT_NIL,
 		Message: string(yaml),
 	})
 

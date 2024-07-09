@@ -53,9 +53,9 @@ func RunInternalExport(cmd *cobra.Command, outputDir, exportFormat string, overw
 		return err
 	}
 
-	output.Format(output.CommandOutput{
+	output.Print(output.Opts{
 		Message: fmt.Sprintf("Export to directory '%s' complete.", outputDir),
-		Result:  output.ENUMCOMMANDOUTPUTRESULT_SUCCESS,
+		Result:  output.ENUM_RESULT_SUCCESS,
 	})
 	return nil
 }
@@ -146,9 +146,9 @@ func fixEmptyOutputDirVar(outputDir string) (newOutputDir string, err error) {
 		// Append "export" to the output directory as export needs an empty directory to write to
 		outputDir = filepath.Join(outputDir, "export")
 
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message: fmt.Sprintf("Defaulting 'platform export' command output directory to '%s'", outputDir),
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+			Result:  output.ENUM_RESULT_NOACTION_WARN,
 		})
 	}
 
@@ -163,9 +163,9 @@ func createOrValidateOutputDir(outputDir string, overwriteExport bool) (err erro
 	l.Debug().Msgf("Validating export output directory '%s'", outputDir)
 	_, err = os.Stat(outputDir)
 	if err != nil {
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message: fmt.Sprintf("failed to find 'platform export' output directory. creating new output directory at filepath '%s'", outputDir),
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+			Result:  output.ENUM_RESULT_NOACTION_WARN,
 		})
 
 		err = os.MkdirAll(outputDir, os.ModePerm)
@@ -173,9 +173,9 @@ func createOrValidateOutputDir(outputDir string, overwriteExport bool) (err erro
 			return fmt.Errorf("failed to create 'platform export' output directory '%s': %s", outputDir, err.Error())
 		}
 
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message: fmt.Sprintf("new 'platform export' output directory '%s' created", outputDir),
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_SUCCESS,
+			Result:  output.ENUM_RESULT_SUCCESS,
 		})
 	} else {
 		// Check if the output directory is empty
@@ -207,9 +207,9 @@ func getExportEnvID() (exportEnvID string, err error) {
 			return "", fmt.Errorf("failed to determine export environment ID")
 		}
 
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message: "No target export environment ID specified. Defaulting export environment ID to the Worker App environment ID.",
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+			Result:  output.ENUM_RESULT_NOACTION_WARN,
 		})
 	}
 
@@ -274,9 +274,9 @@ func exportConnectors(exportableConnectors *[]connector.Exportable, exportFormat
 
 	// Loop through user defined exportable connectors and export them
 	for _, connector := range *exportableConnectors {
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message: fmt.Sprintf("Exporting %s service...", connector.ConnectorServiceName()),
-			Result:  output.ENUMCOMMANDOUTPUTRESULT_NIL,
+			Result:  output.ENUM_RESULT_NIL,
 		})
 
 		err := connector.Export(string(exportFormat), outputDir, overwriteExport)

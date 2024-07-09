@@ -69,17 +69,17 @@ func NewRootCommand() *cobra.Command {
 	cmd.PersistentFlags().BoolVar(&colorizeOutput, string(viperconfig.RootColorParamName), true, "Use colorized output")
 
 	if err := viperconfig.BindPersistentFlags(cobraParamNames, cmd); err != nil {
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message:      "Error binding flag parameters. Flag values may not be recognized.",
-			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+			Result:       output.ENUM_RESULT_FAILURE,
 			ErrorMessage: err.Error(),
 		})
 	}
 
 	if err := viperconfig.BindEnvVars(cobraParamNames); err != nil {
-		output.Format(output.CommandOutput{
+		output.Print(output.Opts{
 			Message:      "Error binding environment variables. Environment Variable values may not be recognized.",
-			Result:       output.ENUMCOMMANDOUTPUTRESULT_FAILURE,
+			Result:       output.ENUM_RESULT_FAILURE,
 			ErrorMessage: err.Error(),
 		})
 	}

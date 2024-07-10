@@ -7,8 +7,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
-	"github.com/pingidentity/pingctl/internal/viperconfig"
-	"github.com/spf13/viper"
+	"github.com/pingidentity/pingctl/internal/profiles"
 )
 
 var (
@@ -39,7 +38,16 @@ const (
 )
 
 func Print(output Opts) {
-	colorizeOutput := viper.GetBool(viperconfig.ConfigOptions[viperconfig.RootColorParamName].ViperConfigKey)
+	profileViper := profiles.GetProfileViper()
+	var colorizeOutput bool
+	var outputFormat interface{}
+	if profileViper != nil {
+		colorizeOutput = profiles.GetProfileViper().GetBool(profiles.ColorOption.ViperKey)
+		outputFormat = profiles.GetProfileViper().Get(profiles.OutputOption.ViperKey)
+	} else {
+		colorizeOutput = true
+		outputFormat = customtypes.ENUM_OUTPUT_FORMAT_TEXT
+	}
 
 	if !colorizeOutput {
 		color.NoColor = true
@@ -48,7 +56,6 @@ func Print(output Opts) {
 	// Get the output format from viper configuration
 	// If output format is loaded from file, it is of type string
 	// if output is loaded from parameter or "config set" it is of type common.OutputFormat
-	outputFormat := viper.Get(viperconfig.ConfigOptions[viperconfig.RootOutputParamName].ViperConfigKey)
 	var outputFormatString string
 	switch format := outputFormat.(type) {
 	case customtypes.OutputFormat:

@@ -1,16 +1,17 @@
 package config_test
 
 import (
+	"os"
 	"testing"
 
+	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/pingidentity/pingctl/internal/testutils/testutils_command"
 	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
-	"github.com/spf13/viper"
 )
 
 // Test Config Unset Command Executes without issue
 func TestConfigUnsetCmd_Execute(t *testing.T) {
-	err := testutils_command.ExecutePingctl("config", "unset", "pingctl.color")
+	err := testutils_command.ExecutePingctl("config", "unset", profiles.ColorOption.ViperKey)
 	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
@@ -30,21 +31,19 @@ func TestConfigUnsetCmd_InvalidKey(t *testing.T) {
 
 // Test Config Unset Command Executes normally when too many arguments are provided
 func TestConfigUnsetCmd_TooManyArgs(t *testing.T) {
-	err := testutils_command.ExecutePingctl("config", "unset", "pingctl.color", "pingctl.output")
+	err := testutils_command.ExecutePingctl("config", "unset", profiles.ColorOption.ViperKey, profiles.OutputOption.ViperKey)
 	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
 // Test Config Unset Command for key 'pingone.worker.clientId' updates viper configuration
 func TestConfigUnsetCmd_CheckViperConfig(t *testing.T) {
-	viper.Set("pingone.worker.clientId", "12345678-1234-1234-1234-123456789012")
-
-	viperKey := "pingone.worker.clientId"
-	viperOldValue := viper.GetString(viperKey)
+	viperKey := profiles.WorkerClientIDOption.ViperKey
+	viperOldValue := os.Getenv(profiles.WorkerClientIDOption.EnvVar)
 
 	err := testutils_command.ExecutePingctl("config", "unset", viperKey)
 	testutils_helpers.CheckExpectedError(t, err, nil)
 
-	viperNewValue := viper.GetString(viperKey)
+	viperNewValue := profiles.GetProfileViper().GetString(viperKey)
 	if viperOldValue == viperNewValue {
 		t.Errorf("Expected viper configuration value to be updated. Old: %s, New: %s", viperOldValue, viperNewValue)
 	}

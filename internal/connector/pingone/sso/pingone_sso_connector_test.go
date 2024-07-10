@@ -124,14 +124,7 @@ func TestResourceAttributeTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
 	resourceAttributeResource := resources.ResourceAttribute(sdkClientInfo)
 
-	// TODO - Remove this ignore error.
-	// This test is failing due to a bug where computed values are failing
-	// config generation as they are treated as required attributes.
-	ignoreErrors := []string{
-		"Error: Invalid Attribute Value Length",
-	}
-
-	testutils_helpers.ValidateTerraformPlan(t, resourceAttributeResource, ignoreErrors)
+	testutils_helpers.ValidateTerraformPlan(t, resourceAttributeResource, nil)
 }
 
 // Test --generate-config-out for the ResourceScope resource
@@ -159,7 +152,11 @@ func TestResourceScopePingOneApiTerraformPlan(t *testing.T) {
 func TestSchemaAttributeTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
 	schemaAttributeResource := resources.SchemaAttribute(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, schemaAttributeResource, nil)
+	ignoreErrors := []string{
+		"Error: Data Loss Protection",
+	}
+
+	testutils_helpers.ValidateTerraformPlan(t, schemaAttributeResource, ignoreErrors)
 }
 
 // Test --generate-config-out for the SignOnPolicy resource

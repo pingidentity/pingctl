@@ -8,8 +8,7 @@ import (
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
-	"github.com/pingidentity/pingctl/internal/output"
-	"github.com/pingidentity/pingctl/internal/viperconfig"
+	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/spf13/cobra"
 )
 
@@ -20,14 +19,6 @@ var (
 	pingoneRegion   customtypes.PingOneRegion
 	outputDir       string
 	overwriteExport bool
-
-	cobraParamNames = []viperconfig.ConfigCobraParam{
-		viperconfig.ExportPingoneExportEnvironmentIdParamName,
-		viperconfig.ExportPingoneWorkerEnvironmentIdParamName,
-		viperconfig.ExportPingoneWorkerClientIdParamName,
-		viperconfig.ExportPingoneWorkerClientSecretParamName,
-		viperconfig.ExportPingoneRegionParamName,
-	}
 )
 
 func init() {
@@ -51,30 +42,42 @@ func NewExportCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&overwriteExport, "overwrite", false, "Overwrite existing generated exports if set.")
 
 	// Add flags that are bound to configuration file keys
-	cmd.Flags().String(string(viperconfig.ExportPingoneWorkerEnvironmentIdParamName), "", "The ID of the PingOne environment that contains the worker token client used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
-	cmd.Flags().String(string(viperconfig.ExportPingoneExportEnvironmentIdParamName), "", "The ID of the PingOne environment to export. (Default: The PingOne worker environment ID)\nAlso configurable via environment variable PINGCTL_PINGONE_EXPORT_ENVIRONMENT_ID")
-	cmd.Flags().String(string(viperconfig.ExportPingoneWorkerClientIdParamName), "", "The ID of the worker app (also the client ID) used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_ID")
-	cmd.Flags().String(string(viperconfig.ExportPingoneWorkerClientSecretParamName), "", "The client secret of the worker app used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_SECRET")
-	cmd.Flags().Var(&pingoneRegion, string(viperconfig.ExportPingoneRegionParamName), fmt.Sprintf("The region of the service. Allowed: %s\nAlso configurable via environment variable PINGCTL_PINGONE_REGION", strings.Join(customtypes.PingOneRegionValidValues(), ", ")))
+	cmd.Flags().String(profiles.WorkerEnvironmentIDOption.CobraParamName, "", "The ID of the PingOne environment that contains the worker token client used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+	profiles.AddFlagBinding(profiles.Binding{
+		Option: profiles.WorkerEnvironmentIDOption,
+		Flag:   cmd.Flags().Lookup(profiles.WorkerEnvironmentIDOption.CobraParamName),
+	})
+	profiles.AddEnvVarBinding(profiles.WorkerEnvironmentIDOption)
 
-	cmd.MarkFlagsRequiredTogether(string(viperconfig.ExportPingoneWorkerEnvironmentIdParamName), string(viperconfig.ExportPingoneWorkerClientIdParamName), string(viperconfig.ExportPingoneWorkerClientSecretParamName), string(viperconfig.ExportPingoneRegionParamName))
+	cmd.Flags().String(profiles.ExportEnvironmentIDOption.CobraParamName, "", "The ID of the PingOne environment to export. (Default: The PingOne worker environment ID)\nAlso configurable via environment variable PINGCTL_PINGONE_EXPORT_ENVIRONMENT_ID")
+	profiles.AddFlagBinding(profiles.Binding{
+		Option: profiles.ExportEnvironmentIDOption,
+		Flag:   cmd.Flags().Lookup(profiles.ExportEnvironmentIDOption.CobraParamName),
+	})
+	profiles.AddEnvVarBinding(profiles.ExportEnvironmentIDOption)
 
-	// Bind the newly created flags to viper configuration file
-	if err := viperconfig.BindFlags(cobraParamNames, cmd); err != nil {
-		output.Print(output.Opts{
-			Message:      "Error binding export command flag parameters. Flag values may not be recognized.",
-			Result:       output.ENUM_RESULT_FAILURE,
-			ErrorMessage: err.Error(),
-		})
-	}
+	cmd.Flags().String(profiles.WorkerClientIDOption.CobraParamName, "", "The ID of the worker app (also the client ID) used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_ID")
+	profiles.AddFlagBinding(profiles.Binding{
+		Option: profiles.WorkerClientIDOption,
+		Flag:   cmd.Flags().Lookup(profiles.WorkerClientIDOption.CobraParamName),
+	})
+	profiles.AddEnvVarBinding(profiles.WorkerClientIDOption)
 
-	if err := viperconfig.BindEnvVars(cobraParamNames); err != nil {
-		output.Print(output.Opts{
-			Message:      "Error binding environment variables. Environment Variable values may not be recognized.",
-			Result:       output.ENUM_RESULT_FAILURE,
-			ErrorMessage: err.Error(),
-		})
-	}
+	cmd.Flags().String(profiles.WorkerClientSecretOption.CobraParamName, "", "The client secret of the worker app used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_CLIENT_SECRET")
+	profiles.AddFlagBinding(profiles.Binding{
+		Option: profiles.WorkerClientSecretOption,
+		Flag:   cmd.Flags().Lookup(profiles.WorkerClientSecretOption.CobraParamName),
+	})
+	profiles.AddEnvVarBinding(profiles.WorkerClientSecretOption)
+
+	cmd.Flags().Var(&pingoneRegion, profiles.RegionOption.CobraParamName, fmt.Sprintf("The region of the service. Allowed: %s\nAlso configurable via environment variable PINGCTL_PINGONE_REGION", strings.Join(customtypes.PingOneRegionValidValues(), ", ")))
+	profiles.AddFlagBinding(profiles.Binding{
+		Option: profiles.RegionOption,
+		Flag:   cmd.Flags().Lookup(profiles.RegionOption.CobraParamName),
+	})
+	profiles.AddEnvVarBinding(profiles.RegionOption)
+
+	cmd.MarkFlagsRequiredTogether(profiles.WorkerEnvironmentIDOption.CobraParamName, profiles.WorkerClientIDOption.CobraParamName, profiles.WorkerClientSecretOption.CobraParamName, profiles.RegionOption.CobraParamName)
 
 	return cmd
 }

@@ -9,6 +9,8 @@ import (
 
 	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
+	"github.com/pingidentity/pingctl/internal/profiles"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -153,4 +155,16 @@ func CheckExpectedError(t *testing.T, err error, errMessagePattern *string) {
 			t.Errorf("Error message did not match expected regex\n\nerror message: '%v'\n\nregex pattern %s", err, *errMessagePattern)
 		}
 	}
+}
+
+func InitVipers(t *testing.T) {
+	t.Helper()
+	// Give main viper instance a file location to write to
+	mainViper := profiles.GetMainViper()
+	mainViper.SetConfigFile(t.TempDir() + "/config.yaml")
+
+	// Set up valid viper configuration
+	profileViper := viper.GetViper()
+	profileViper.Set(profiles.ColorOption.ViperKey, true)
+	profiles.SetProfileViperWithViper(profileViper)
 }

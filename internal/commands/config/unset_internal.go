@@ -7,8 +7,7 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/output"
-	"github.com/pingidentity/pingctl/internal/viperconfig"
-	"github.com/spf13/viper"
+	"github.com/pingidentity/pingctl/internal/profiles"
 )
 
 func RunInternalConfigUnset(args []string) error {
@@ -19,24 +18,26 @@ func RunInternalConfigUnset(args []string) error {
 	}
 
 	// Check if the key is a valid viper configuration key
-	if !viperconfig.IsValidViperKey(viperKey) {
-		validKeys := viperconfig.GetViperConfigKeys()
+	validKeys := profiles.ProfileKeys()
+	if !slices.ContainsFunc(validKeys, func(v string) bool {
+		return strings.EqualFold(v, viperKey)
+	}) {
 		slices.Sort(validKeys)
 		validKeysStr := strings.Join(validKeys, ", ")
 		return fmt.Errorf("unable to unset configuration: key '%s' is not recognized as a valid configuration key. Valid keys: %s", viperKey, validKeysStr)
 	}
 
-	valueType, ok := viperconfig.GetValueTypeFromViperKey(viperKey)
+	valueType, ok := profiles.OptionTypeFromViperKey(viperKey)
 	if !ok {
 		return fmt.Errorf("failed to unset configuration: value type for key %s unrecognized", viperKey)
 	}
 
-	if err := unsetValue(viperKey, valueType); err != nil {
+	if err := UnsetValue(viperKey, valueType); err != nil {
 		return err
 	}
 
-	if err := viper.WriteConfig(); err != nil {
-		return fmt.Errorf("failed to write pingctl configuration to file '%s': %s", viper.ConfigFileUsed(), err.Error())
+	if err := profiles.SaveProfileViperToFile(); err != nil {
+		return err
 	}
 
 	if err := PrintConfig(); err != nil {
@@ -62,18 +63,18 @@ func parseUnsetArgs(args []string) (string, error) {
 	return args[0], nil
 }
 
-func unsetValue(viperKey string, valueType viperconfig.ConfigType) error {
+func UnsetValue(viperKey string, valueType profiles.OptionType) error {
 	switch valueType {
-	case viperconfig.ENUM_BOOL:
-		viper.Set(viperKey, false)
-	case viperconfig.ENUM_ID:
-		viper.Set(viperKey, string(""))
-	case viperconfig.ENUM_OUTPUT_FORMAT:
-		viper.Set(viperKey, customtypes.OutputFormat(""))
-	case viperconfig.ENUM_PINGONE_REGION:
-		viper.Set(viperKey, customtypes.PingOneRegion(""))
-	case viperconfig.ENUM_STRING:
-		viper.Set(viperKey, string(""))
+	case profiles.ENUM_BOOL:
+		profiles.GetProfileViper().Set(viperKey, false)
+	case profiles.ENUM_ID:
+		profiles.GetProfileViper().Set(viperKey, string(""))
+	case profiles.ENUM_OUTPUT_FORMAT:
+		profiles.GetProfileViper().Set(viperKey, customtypes.OutputFormat(""))
+	case profiles.ENUM_PINGONE_REGION:
+		profiles.GetProfileViper().Set(viperKey, customtypes.PingOneRegion(""))
+	case profiles.ENUM_STRING:
+		profiles.GetProfileViper().Set(viperKey, string(""))
 	default:
 		return fmt.Errorf("unable to unset configuration: variable type for key '%s' is not recognized", viperKey)
 	}

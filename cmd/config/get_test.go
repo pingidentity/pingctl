@@ -3,6 +3,7 @@ package config_test
 import (
 	"testing"
 
+	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/pingidentity/pingctl/internal/testutils/testutils_command"
 	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 )
@@ -15,7 +16,7 @@ func TestConfigGetCmd_Execute(t *testing.T) {
 
 // Test Config Get Command Executes when provided a full key
 func TestConfigGetCmd_FullKey(t *testing.T) {
-	err := testutils_command.ExecutePingctl("config", "get", "pingone.worker.clientId")
+	err := testutils_command.ExecutePingctl("config", "get", profiles.WorkerClientIDOption.ViperKey)
 	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
@@ -34,6 +35,6 @@ func TestConfigGetCmd_InvalidKey(t *testing.T) {
 
 // Test Config Get Command Executes normally when too many arguments are provided
 func TestConfigGetCmd_TooManyArgs(t *testing.T) {
-	err := testutils_command.ExecutePingctl("config", "get", "pingctl.color", "pingctl.output")
+	err := testutils_command.ExecutePingctl("config", "get", profiles.ColorOption.ViperKey, profiles.OutputOption.ViperKey)
 	testutils_helpers.CheckExpectedError(t, err, nil)
 }

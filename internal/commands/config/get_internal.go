@@ -6,12 +6,19 @@ import (
 	"strings"
 
 	"github.com/pingidentity/pingctl/internal/output"
-	"github.com/pingidentity/pingctl/internal/viperconfig"
-	"github.com/spf13/viper"
+	"github.com/pingidentity/pingctl/internal/profiles"
 	"gopkg.in/yaml.v3"
 )
 
 func RunInternalConfigGet(args []string) error {
+	// Write the profile configuration to file,
+	// even though no configuration change is happening here
+	// This handles the edge case where the config.yaml file was generated for
+	// the first time, but no configuration changes were made and parameters/env vars were used
+	if err := profiles.SaveProfileViperToFile(); err != nil {
+		return err
+	}
+
 	viperKey, err := parseGetArgs(args)
 	if err != nil {
 		return err
@@ -23,9 +30,9 @@ func RunInternalConfigGet(args []string) error {
 		return nil
 	}
 
-	// The only valid configuration keys are those defined in viperconfig,
+	// The only valid configuration keys are those defined in profiles/types.go,
 	// and their parent keys
-	validKeys := getValidGetKeys()
+	validKeys := profiles.ExpandedProfileKeys()
 	if !slices.ContainsFunc(validKeys, func(v string) bool {
 		return strings.EqualFold(v, viperKey)
 	}) {
@@ -34,7 +41,7 @@ func RunInternalConfigGet(args []string) error {
 	}
 
 	// Check if the viper configuration key is set
-	if !viper.IsSet(viperKey) {
+	if !profiles.GetProfileViper().IsSet(viperKey) {
 		output.Print(output.Opts{
 			Result:  output.ENUM_RESULT_NOACTION_WARN,
 			Message: fmt.Sprintf("Configuration key '%s' is not set", viperKey),
@@ -71,9 +78,9 @@ func parseGetArgs(args []string) (string, error) {
 
 func PrintConfig() error {
 	// Print the updated configuration
-	yaml, err := yaml.Marshal(viper.AllSettings())
+	yaml, err := yaml.Marshal(profiles.GetProfileViper().AllSettings())
 	if err != nil {
-		return fmt.Errorf("failed to yaml marshal viper configuration: %s", err.Error())
+		return fmt.Errorf("failed to yaml marshal pingctl configuration: %s", err.Error())
 	}
 	output.Print(output.Opts{
 		Result:  output.ENUM_RESULT_NIL,
@@ -85,7 +92,7 @@ func PrintConfig() error {
 
 func printConfigFromKey(viperKey string) error {
 	// Print the updated configuration
-	yaml, err := yaml.Marshal(viper.Get(viperKey))
+	yaml, err := yaml.Marshal(profiles.GetProfileViper().Get(viperKey))
 	if err != nil {
 		return fmt.Errorf("failed to yaml marshal viper configuration: %s", err.Error())
 	}
@@ -95,23 +102,4 @@ func printConfigFromKey(viperKey string) error {
 	})
 
 	return nil
-}
-
-func getValidGetKeys() []string {
-	// for each leaf key, add parent keys by splitting on the "." character
-	leafKeys := viperconfig.GetViperConfigKeys()
-	allKeys := []string{}
-	for _, key := range leafKeys {
-		keySplit := strings.Split(key, ".")
-		for i := 0; i < len(keySplit); i++ {
-			curKey := strings.Join(keySplit[:i+1], ".")
-			if !slices.Contains(allKeys, curKey) {
-				allKeys = append(allKeys, curKey)
-			}
-		}
-	}
-
-	slices.Sort(allKeys)
-
-	return allKeys
 }

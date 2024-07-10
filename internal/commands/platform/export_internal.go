@@ -17,10 +17,9 @@ import (
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
-	"github.com/pingidentity/pingctl/internal/viperconfig"
+	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func RunInternalExport(cmd *cobra.Command, outputDir, exportFormat string, overwriteExport bool, multiService *customtypes.MultiService) (err error) {
@@ -64,11 +63,13 @@ func initApiClient(ctx context.Context, version string) (apiClient *sdk.Client, 
 	l := logger.Get()
 	l.Debug().Msgf("Initializing API client..")
 
+	profileViper := profiles.GetProfileViper()
+
 	// Make sure the API client can be initialized with the required parameters
-	if !viper.IsSet(viperconfig.ConfigOptions[viperconfig.ExportPingoneWorkerClientIdParamName].ViperConfigKey) ||
-		!viper.IsSet(viperconfig.ConfigOptions[viperconfig.ExportPingoneWorkerClientSecretParamName].ViperConfigKey) ||
-		!viper.IsSet(viperconfig.ConfigOptions[viperconfig.ExportPingoneWorkerEnvironmentIdParamName].ViperConfigKey) ||
-		!viper.IsSet(viperconfig.ConfigOptions[viperconfig.ExportPingoneRegionParamName].ViperConfigKey) {
+	if !profileViper.IsSet(profiles.WorkerEnvironmentIDOption.ViperKey) ||
+		!profileViper.IsSet(profiles.RegionOption.ViperKey) ||
+		!profileViper.IsSet(profiles.WorkerClientIDOption.ViperKey) ||
+		!profileViper.IsSet(profiles.WorkerClientSecretOption.ViperKey) {
 		return nil, "", fmt.Errorf(`failed to initialize pingone API client.
 		one of worker environment ID, worker client ID, worker client secret,
 		and/or pingone region is not set.
@@ -76,10 +77,10 @@ func initApiClient(ctx context.Context, version string) (apiClient *sdk.Client, 
 		or the tool's configuration file (default: $HOME/.pingctl/config.yaml)`)
 	}
 
-	apiClientId = viper.GetString(viperconfig.ConfigOptions[viperconfig.ExportPingoneWorkerClientIdParamName].ViperConfigKey)
-	clientSecret := viper.GetString(viperconfig.ConfigOptions[viperconfig.ExportPingoneWorkerClientSecretParamName].ViperConfigKey)
-	environmentID := viper.GetString(viperconfig.ConfigOptions[viperconfig.ExportPingoneWorkerEnvironmentIdParamName].ViperConfigKey)
-	region := viper.Get(viperconfig.ConfigOptions[viperconfig.ExportPingoneRegionParamName].ViperConfigKey)
+	apiClientId = profileViper.GetString(profiles.WorkerClientIDOption.ViperKey)
+	clientSecret := profileViper.GetString(profiles.WorkerClientSecretOption.ViperKey)
+	environmentID := profileViper.GetString(profiles.WorkerEnvironmentIDOption.ViperKey)
+	region := profileViper.Get(profiles.RegionOption.ViperKey)
 
 	var regionStr string
 	switch regionVal := region.(type) {
@@ -197,10 +198,12 @@ func createOrValidateOutputDir(outputDir string, overwriteExport bool) (err erro
 }
 
 func getExportEnvID() (exportEnvID string, err error) {
+	profileViper := profiles.GetProfileViper()
+
 	// Find the env ID to export. Default to worker env id if not provided by user.
-	exportEnvID = viper.GetString(viperconfig.ConfigOptions[viperconfig.ExportPingoneExportEnvironmentIdParamName].ViperConfigKey)
+	exportEnvID = profileViper.GetString(profiles.ExportEnvironmentIDOption.ViperKey)
 	if exportEnvID == "" {
-		exportEnvID = viper.GetString(viperconfig.ConfigOptions[viperconfig.ExportPingoneWorkerEnvironmentIdParamName].ViperConfigKey)
+		exportEnvID = profileViper.GetString(profiles.WorkerEnvironmentIDOption.ViperKey)
 
 		// if the exportEnvID is still empty, this is a problem. Return error.
 		if exportEnvID == "" {

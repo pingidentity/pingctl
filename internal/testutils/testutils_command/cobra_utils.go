@@ -34,7 +34,7 @@ func createConfigFile(t *testing.T) string {
 	t.Helper()
 
 	configFilepath := t.TempDir() + "/config.yaml"
-	if err := os.WriteFile(configFilepath, []byte(configFileContents), os.ModePerm); err != nil {
+	if err := os.WriteFile(configFilepath, []byte(configFileContents), 0600); err != nil {
 		t.Fatalf("Failed to create config file: %s", err)
 	}
 

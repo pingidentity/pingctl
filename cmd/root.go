@@ -18,15 +18,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+const (
+	defaultProfileName string = "default"
+)
+
 var (
-	cfgFile     string
-	profileName string
+	cfgFile        string
+	defaultCfgFile string
+	profileName    string
 
 	// Custom pflag.Value types
 	outputFormat customtypes.OutputFormat = customtypes.OutputFormat(customtypes.ENUM_OUTPUT_FORMAT_TEXT)
-
-	defaultCfgFile     string
-	defaultProfileName string = "default"
 )
 
 func init() {
@@ -173,7 +175,7 @@ func initDefaultConfigFile() {
 
 	// Make sure the default config file exists, and if not, seed a new file
 	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
-		l.Debug().Msgf("Default configuration file does not exists. Seeding a new file at location: %s", cfgFile)
+		l.Debug().Msgf("Default configuration file does not exist. Seeding a new file at location: %s", cfgFile)
 
 		// MkdirAll does nothing if directories already exist. Create needed directories for config file location.
 		err := os.MkdirAll(filepath.Dir(cfgFile), os.ModePerm)

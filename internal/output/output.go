@@ -7,8 +7,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
-	"github.com/pingidentity/pingctl/internal/viperconfig"
-	"github.com/spf13/viper"
+	"github.com/pingidentity/pingctl/internal/profiles"
 )
 
 var (
@@ -20,26 +19,35 @@ var (
 	yellow  = color.New(color.FgYellow).SprintfFunc()
 )
 
-type CommandOutputResult string
+type Result string
 
-type CommandOutput struct {
+type Opts struct {
 	Fields       map[string]interface{}
 	Message      string
 	ErrorMessage string
 	FatalMessage string
-	Result       CommandOutputResult
+	Result       Result
 }
 
 const (
-	ENUMCOMMANDOUTPUTRESULT_NIL           CommandOutputResult = ""
-	ENUMCOMMANDOUTPUTRESULT_SUCCESS       CommandOutputResult = "Success"
-	ENUMCOMMANDOUTPUTRESULT_NOACTION_OK   CommandOutputResult = "No Action (OK)"
-	ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN CommandOutputResult = "No Action (Warning)"
-	ENUMCOMMANDOUTPUTRESULT_FAILURE       CommandOutputResult = "Failure"
+	ENUM_RESULT_NIL           Result = ""
+	ENUM_RESULT_SUCCESS       Result = "Success"
+	ENUM_RESULT_NOACTION_OK   Result = "No Action (OK)"
+	ENUM_RESULT_NOACTION_WARN Result = "No Action (Warning)"
+	ENUM_RESULT_FAILURE       Result = "Failure"
 )
 
-func Format(output CommandOutput) {
-	colorizeOutput := viper.GetBool(viperconfig.ConfigOptions[viperconfig.RootColorParamName].ViperConfigKey)
+func Print(output Opts) {
+	profileViper := profiles.GetProfileViper()
+	var colorizeOutput bool
+	var outputFormat interface{}
+	if profileViper != nil {
+		colorizeOutput = profiles.GetProfileViper().GetBool(profiles.ColorOption.ViperKey)
+		outputFormat = profiles.GetProfileViper().Get(profiles.OutputOption.ViperKey)
+	} else {
+		colorizeOutput = true
+		outputFormat = customtypes.ENUM_OUTPUT_FORMAT_TEXT
+	}
 
 	if !colorizeOutput {
 		color.NoColor = true
@@ -48,7 +56,6 @@ func Format(output CommandOutput) {
 	// Get the output format from viper configuration
 	// If output format is loaded from file, it is of type string
 	// if output is loaded from parameter or "config set" it is of type common.OutputFormat
-	outputFormat := viper.Get(viperconfig.ConfigOptions[viperconfig.RootOutputParamName].ViperConfigKey)
 	var outputFormatString string
 	switch format := outputFormat.(type) {
 	case customtypes.OutputFormat:
@@ -59,39 +66,39 @@ func Format(output CommandOutput) {
 
 	switch outputFormatString {
 	case customtypes.ENUM_OUTPUT_FORMAT_TEXT:
-		formatText(output)
+		printText(output)
 	case customtypes.ENUM_OUTPUT_FORMAT_JSON:
-		formatJson(output)
+		printJson(output)
 	default:
-		formatText(CommandOutput{
+		printText(Opts{
 			Message: fmt.Sprintf("Output format %q is not recognized. Defaulting to \"text\" output", outputFormat),
-			Result:  ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN,
+			Result:  ENUM_RESULT_NOACTION_WARN,
 		})
-		formatText(output)
+		printText(output)
 	}
 }
 
-func formatText(output CommandOutput) {
+func printText(opts Opts) {
 	l := logger.Get()
 
 	var resultFormat string
 	var resultColor func(format string, a ...interface{}) string
 
 	// Determine message color and format based on status
-	switch output.Result {
-	case ENUMCOMMANDOUTPUTRESULT_SUCCESS:
+	switch opts.Result {
+	case ENUM_RESULT_SUCCESS:
 		resultFormat = "%s - %s"
 		resultColor = green
-	case ENUMCOMMANDOUTPUTRESULT_NOACTION_OK:
+	case ENUM_RESULT_NOACTION_OK:
 		resultFormat = "%s - %s"
 		resultColor = green
-	case ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN:
+	case ENUM_RESULT_NOACTION_WARN:
 		resultFormat = "%s - %s"
 		resultColor = yellow
-	case ENUMCOMMANDOUTPUTRESULT_FAILURE:
+	case ENUM_RESULT_FAILURE:
 		resultFormat = "%s - %s"
 		resultColor = red
-	case ENUMCOMMANDOUTPUTRESULT_NIL:
+	case ENUM_RESULT_NIL:
 		resultFormat = "%s%s"
 		resultColor = white
 	default:
@@ -100,37 +107,37 @@ func formatText(output CommandOutput) {
 	}
 
 	// Supply the user a formatted message and a result status if any.
-	fmt.Println(resultColor(resultFormat, output.Message, output.Result))
-	l.Info().Msgf(resultColor(resultFormat, output.Message, output.Result))
+	fmt.Println(resultColor(resultFormat, opts.Message, opts.Result))
+	l.Info().Msgf(resultColor(resultFormat, opts.Message, opts.Result))
 
 	// Output and log any additional key/value pairs supplied to the user.
-	if output.Fields != nil {
+	if opts.Fields != nil {
 		fmt.Println(cyan("Additional Information:"))
-		for k, v := range output.Fields {
+		for k, v := range opts.Fields {
 			fmt.Println(cyan("%s: %s", k, v))
 			l.Info().Msgf("%s: %s", k, v)
 		}
 	}
 
 	// Inform the user of an error and log the error
-	if output.ErrorMessage != "" {
-		fmt.Println(red("Error: %s", output.ErrorMessage))
-		l.Error().Msgf(output.ErrorMessage)
+	if opts.ErrorMessage != "" {
+		fmt.Println(red("Error: %s", opts.ErrorMessage))
+		l.Error().Msgf(opts.ErrorMessage)
 	}
 
 	// Inform the user of a fatal error and log the fatal error. This exits the program.
-	if output.FatalMessage != "" {
-		fmt.Println(boldRed("Fatal: %s", output.FatalMessage))
-		l.Fatal().Msgf(output.FatalMessage)
+	if opts.FatalMessage != "" {
+		fmt.Println(boldRed("Fatal: %s", opts.FatalMessage))
+		l.Fatal().Msgf(opts.FatalMessage)
 	}
 
 }
 
-func formatJson(output CommandOutput) {
+func printJson(opts Opts) {
 	l := logger.Get()
 
 	// Convert the CommandOutput struct to JSON
-	jsonOut, err := json.MarshalIndent(output, "", "  ")
+	jsonOut, err := json.MarshalIndent(opts, "", "  ")
 	if err != nil {
 		l.Error().Err(err).Msgf("Failed to serialize output as JSON")
 	}
@@ -138,20 +145,20 @@ func formatJson(output CommandOutput) {
 	// Output the JSON as uncolored string
 	fmt.Println(string(jsonOut))
 
-	switch output.Result {
-	case ENUMCOMMANDOUTPUTRESULT_NOACTION_WARN:
+	switch opts.Result {
+	case ENUM_RESULT_NOACTION_WARN:
 		l.Warn().Msgf(string(jsonOut))
-	case ENUMCOMMANDOUTPUTRESULT_FAILURE:
+	case ENUM_RESULT_FAILURE:
 		// Log the error if exists
-		if output.ErrorMessage != "" {
-			l.Error().Msgf(output.ErrorMessage)
+		if opts.ErrorMessage != "" {
+			l.Error().Msgf(opts.ErrorMessage)
 		}
 
 		// Log the fatal error if exists. This exits the program.
-		if output.FatalMessage != "" {
-			l.Fatal().Msgf(output.FatalMessage)
+		if opts.FatalMessage != "" {
+			l.Fatal().Msgf(opts.FatalMessage)
 		}
-	default: //ENUMCOMMANDOUTPUTRESULT_SUCCESS, ENUMCOMMANDOUTPUTRESULT_NIL, ENUMCOMMANDOUTPUTRESULT_NOACTION_OK
+	default: //ENUM_RESULT_SUCCESS, ENUM_RESULT_NIL, ENUM_RESULT_NOACTION_OK
 		l.Info().Msgf(string(jsonOut))
 	}
 

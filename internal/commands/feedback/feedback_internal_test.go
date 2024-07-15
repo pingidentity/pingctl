@@ -8,7 +8,6 @@ func ExamplePrintFeedbackMessage() {
 	feedback_internal.PrintFeedbackMessage()
 
 	//Output:
-	//Output format %!q(<nil>) is not recognized. Defaulting to "text" output - No Action (Warning)
 	//Thank you for participating in early adoption of the refreshed Ping Identity universal CLI!
 	//
 	//We appreciate your feedback and suggestions for improvement regarding your experiences with the CLI.

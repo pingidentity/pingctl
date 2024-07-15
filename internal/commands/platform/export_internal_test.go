@@ -10,6 +10,7 @@ import (
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/mfa"
 	"github.com/pingidentity/pingctl/internal/customtypes"
+	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 	"github.com/spf13/viper"
 )
@@ -18,11 +19,13 @@ import (
 func getApiClient(t *testing.T) *sdk.Client {
 	t.Helper()
 
-	// Set viper configuration needed to initialize the API client
-	viper.Set("pingone.worker.clientid", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"))
-	viper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
-	viper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
-	viper.Set("pingone.region", os.Getenv("PINGCTL_PINGONE_REGION"))
+	// Create valid profile viper
+	profileViper := viper.New()
+	profileViper.Set("pingone.worker.clientid", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"))
+	profileViper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
+	profileViper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
+	profileViper.Set("pingone.region", os.Getenv("PINGCTL_PINGONE_REGION"))
+	profiles.SetProfileViperWithViper(profileViper)
 
 	// Initialize the API client
 	apiClient, apiClientId, err := initApiClient(context.Background(), "v1.2.3")
@@ -56,11 +59,13 @@ func Test_initApiClient(t *testing.T) {
 
 // Test initApiClient function fails on incomplete configuration
 func Test_initApiClient_incompleteConfig(t *testing.T) {
-	// Set incomplete viper configuration
-	viper.Set("pingone.worker.clientid", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"))
-	viper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
-	viper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
-	viper.Set("pingone.region", "")
+	// Create invalid profile viper
+	profileViper := viper.New()
+	profileViper.Set("pingone.worker.clientid", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"))
+	profileViper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
+	profileViper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
+	profileViper.Set("pingone.region", "")
+	profiles.SetProfileViperWithViper(profileViper)
 
 	expectedErrorPattern := `^failed to initialize pingone API client\. unrecognized pingone region: ''\. Must be one of: [A-Za-z\s,]+$`
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
@@ -69,11 +74,13 @@ func Test_initApiClient_incompleteConfig(t *testing.T) {
 
 // Test initApiClient function fails on invalid region configuration
 func Test_initApiClient_invalidRegionConfig(t *testing.T) {
-	// Set invalid viper configuration
-	viper.Set("pingone.worker.clientid", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"))
-	viper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
-	viper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
-	viper.Set("pingone.region", "invalid")
+	// Create invalid profile viper
+	profileViper := viper.New()
+	profileViper.Set("pingone.worker.clientid", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"))
+	profileViper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
+	profileViper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
+	profileViper.Set("pingone.region", "invalid")
+	profiles.SetProfileViperWithViper(profileViper)
 
 	expectedErrorPattern := `^failed to initialize pingone API client\. unrecognized pingone region: 'invalid'\. Must be one of: [A-Za-z\s,]+$`
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
@@ -82,11 +89,13 @@ func Test_initApiClient_invalidRegionConfig(t *testing.T) {
 
 // Test initApiClient function fails on client ID configuration
 func Test_initApiClient_invalidClientIdConfig(t *testing.T) {
-	// Set invalid viper configuration
-	viper.Set("pingone.worker.clientid", "12345678-1234-1234-1234-123456789012")
-	viper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
-	viper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
-	viper.Set("pingone.region", os.Getenv("PINGCTL_PINGONE_REGION"))
+	// Create invalid profile viper
+	profileViper := viper.New()
+	profileViper.Set("pingone.worker.clientid", "12345678-1234-1234-1234-123456789012")
+	profileViper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
+	profileViper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
+	profileViper.Set("pingone.region", os.Getenv("PINGCTL_PINGONE_REGION"))
+	profiles.SetProfileViperWithViper(profileViper)
 
 	expectedErrorPattern := `^failed to initialize pingone API client\.\s+oauth2: "invalid_client" "Request denied: Invalid client credentials \(Correlation ID: [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\)"\s+configuration values used for client initialization:\s+worker client ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+worker environment ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+pingone region - [A-Za-z]+\s+worker client secret - .+$`
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
@@ -187,7 +196,10 @@ func Test_createOrValidateOutputDir_WithoutDir(t *testing.T) {
 func Test_getExportEnvID(t *testing.T) {
 	// Set viper configuration needed to get the export environment ID
 	oldExportEnvID := "12345678-1234-1234-1234-123456789012"
-	viper.Set("pingone.export.environmentid", oldExportEnvID)
+
+	profileViper := viper.New()
+	profileViper.Set("pingone.export.environmentid", oldExportEnvID)
+	profiles.SetProfileViperWithViper(profileViper)
 
 	newExportEnvID, err := getExportEnvID()
 	testutils_helpers.CheckExpectedError(t, err, nil)
@@ -206,8 +218,10 @@ func Test_getExportEnvID(t *testing.T) {
 // Test getExportEnvID function fails on missing configuration
 func Test_getExportEnvID_missingConfig(t *testing.T) {
 	// Clear viper configuration
-	viper.Set("pingone.export.environmentid", "")
-	viper.Set("pingone.worker.environmentid", "")
+	profileViper := viper.New()
+	profileViper.Set("pingone.export.environmentid", "")
+	profileViper.Set("pingone.worker.environmentid", "")
+	profiles.SetProfileViperWithViper(profileViper)
 
 	expectedErrorPattern := `^failed to determine export environment ID$`
 	_, err := getExportEnvID()
@@ -219,7 +233,10 @@ func Test_getExportEnvID_missingConfig(t *testing.T) {
 func Test_getExportEnvID_defaultToWorkerEnvID(t *testing.T) {
 	// Set viper configuration needed to get the export environment ID
 	oldWorkerEnvID := "12345678-1234-1234-1234-123456789012"
-	viper.Set("pingone.worker.environmentid", oldWorkerEnvID)
+
+	profileViper := viper.New()
+	profileViper.Set("pingone.worker.environmentid", oldWorkerEnvID)
+	profiles.SetProfileViperWithViper(profileViper)
 
 	newExportEnvID, err := getExportEnvID()
 	testutils_helpers.CheckExpectedError(t, err, nil)

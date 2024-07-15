@@ -21,10 +21,10 @@ func getApiClient(t *testing.T) *sdk.Client {
 
 	// Create valid profile viper
 	profileViper := viper.New()
-	profileViper.Set("pingone.worker.clientid", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"))
-	profileViper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
-	profileViper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
-	profileViper.Set("pingone.region", os.Getenv("PINGCTL_PINGONE_REGION"))
+	profileViper.Set("pingone.worker.clientid", os.Getenv(profiles.WorkerClientIDOption.EnvVar))
+	profileViper.Set("pingone.worker.clientsecret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar))
+	profileViper.Set("pingone.worker.environmentid", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
+	profileViper.Set("pingone.region", os.Getenv(profiles.RegionOption.EnvVar))
 	profiles.SetProfileViperWithViper(profileViper)
 
 	// Initialize the API client
@@ -61,9 +61,9 @@ func Test_initApiClient(t *testing.T) {
 func Test_initApiClient_incompleteConfig(t *testing.T) {
 	// Create invalid profile viper
 	profileViper := viper.New()
-	profileViper.Set("pingone.worker.clientid", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"))
-	profileViper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
-	profileViper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
+	profileViper.Set("pingone.worker.clientid", os.Getenv(profiles.WorkerClientIDOption.EnvVar))
+	profileViper.Set("pingone.worker.clientsecret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar))
+	profileViper.Set("pingone.worker.environmentid", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
 	profileViper.Set("pingone.region", "")
 	profiles.SetProfileViperWithViper(profileViper)
 
@@ -76,9 +76,9 @@ func Test_initApiClient_incompleteConfig(t *testing.T) {
 func Test_initApiClient_invalidRegionConfig(t *testing.T) {
 	// Create invalid profile viper
 	profileViper := viper.New()
-	profileViper.Set("pingone.worker.clientid", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"))
-	profileViper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
-	profileViper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
+	profileViper.Set("pingone.worker.clientid", os.Getenv(profiles.WorkerClientIDOption.EnvVar))
+	profileViper.Set("pingone.worker.clientsecret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar))
+	profileViper.Set("pingone.worker.environmentid", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
 	profileViper.Set("pingone.region", "invalid")
 	profiles.SetProfileViperWithViper(profileViper)
 
@@ -92,9 +92,9 @@ func Test_initApiClient_invalidClientIdConfig(t *testing.T) {
 	// Create invalid profile viper
 	profileViper := viper.New()
 	profileViper.Set("pingone.worker.clientid", "12345678-1234-1234-1234-123456789012")
-	profileViper.Set("pingone.worker.clientsecret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"))
-	profileViper.Set("pingone.worker.environmentid", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
-	profileViper.Set("pingone.region", os.Getenv("PINGCTL_PINGONE_REGION"))
+	profileViper.Set("pingone.worker.clientsecret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar))
+	profileViper.Set("pingone.worker.environmentid", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
+	profileViper.Set("pingone.region", os.Getenv(profiles.RegionOption.EnvVar))
 	profiles.SetProfileViperWithViper(profileViper)
 
 	expectedErrorPattern := `^failed to initialize pingone API client\.\s+oauth2: "invalid_client" "Request denied: Invalid client credentials \(Correlation ID: [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\)"\s+configuration values used for client initialization:\s+worker client ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+worker environment ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+pingone region - [A-Za-z]+\s+worker client secret - .+$`
@@ -260,7 +260,7 @@ func Test_validateExportEnvID(t *testing.T) {
 	// Get apiClient from helper function
 	apiClient := getApiClient(t)
 
-	err := validateExportEnvID(context.Background(), os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"), apiClient)
+	err := validateExportEnvID(context.Background(), os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar), apiClient)
 	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
@@ -281,14 +281,14 @@ func Test_validateExportEnvID_nilContext(t *testing.T) {
 
 	expectedErrorPattern := `^failed to validate environment ID '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'. context is nil$`
 	// nolint:staticcheck // ignore SA1012 this is a test
-	err := validateExportEnvID(nil, os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"), apiClient) //lint:ignore SA1012 this is a test
+	err := validateExportEnvID(nil, os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar), apiClient) //lint:ignore SA1012 this is a test
 	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test validateExportEnvID function fails on nil API client
 func Test_validateExportEnvID_nilApiClient(t *testing.T) {
 	expectedErrorPattern := `^failed to validate environment ID '[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'. apiClient is nil$`
-	err := validateExportEnvID(context.Background(), os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"), nil)
+	err := validateExportEnvID(context.Background(), os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar), nil)
 	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -298,8 +298,8 @@ func Test_getExportableConnectors(t *testing.T) {
 	apiClient := getApiClient(t)
 
 	// Get the API clientID from env var
-	apiClientId := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID")
-	exportEnvID := os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+	apiClientId := os.Getenv(profiles.WorkerClientIDOption.EnvVar)
+	exportEnvID := os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar)
 
 	// Initialize multiService with all services
 	multiService := customtypes.NewMultiService()
@@ -325,8 +325,8 @@ func Test_getExportableConnectors_noServices(t *testing.T) {
 	apiClient := getApiClient(t)
 
 	// Get the API clientID from env var
-	apiClientId := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID")
-	exportEnvID := os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+	apiClientId := os.Getenv(profiles.WorkerClientIDOption.EnvVar)
+	exportEnvID := os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar)
 
 	exportableConnectors := getExportableConnectors(exportEnvID, apiClientId, context.Background(), nil, apiClient)
 
@@ -343,8 +343,8 @@ func Test_getExportableConnectors_oneService(t *testing.T) {
 	apiClient := getApiClient(t)
 
 	// Get the API clientID from env var
-	apiClientId := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID")
-	exportEnvID := os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+	apiClientId := os.Getenv(profiles.WorkerClientIDOption.EnvVar)
+	exportEnvID := os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar)
 
 	// Initialize multiService with one service
 	multiService := customtypes.NewMultiService()
@@ -377,8 +377,8 @@ func Test_exportConnectors(t *testing.T) {
 	apiClient := getApiClient(t)
 
 	// Get the API clientID from env var
-	apiClientId := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID")
-	exportEnvID := os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+	apiClientId := os.Getenv(profiles.WorkerClientIDOption.EnvVar)
+	exportEnvID := os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar)
 
 	exportableConnectors := []connector.Exportable{
 		mfa.MFAConnector(context.Background(), apiClient, &apiClientId, exportEnvID),
@@ -407,8 +407,8 @@ func Test_exportConnectors_invalidOutputDir(t *testing.T) {
 	apiClient := getApiClient(t)
 
 	// Get the API clientID from env var
-	apiClientId := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID")
-	exportEnvID := os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+	apiClientId := os.Getenv(profiles.WorkerClientIDOption.EnvVar)
+	exportEnvID := os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar)
 
 	exportableConnectors := []connector.Exportable{
 		mfa.MFAConnector(context.Background(), apiClient, &apiClientId, exportEnvID),

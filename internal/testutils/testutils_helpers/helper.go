@@ -22,7 +22,7 @@ var (
 
 func GetEnvironmentID() string {
 	envIdOnce.Do(func() {
-		environmentId = os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+		environmentId = os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar)
 	})
 
 	return environmentId
@@ -45,10 +45,10 @@ func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
 	apiClientOnce.Do(func() {
 		// Grab environment vars for initializing the API client.
 		// These are set in GitHub Actions.
-		clientID := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID")
-		clientSecret := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET")
+		clientID := os.Getenv(profiles.WorkerClientIDOption.EnvVar)
+		clientSecret := os.Getenv(profiles.WorkerClientSecretOption.EnvVar)
 		environmentId := GetEnvironmentID()
-		region := os.Getenv("PINGCTL_PINGONE_REGION")
+		region := os.Getenv(profiles.RegionOption.EnvVar)
 
 		if clientID == "" || clientSecret == "" || environmentId == "" || region == "" {
 			t.Fatalf("Unable to retrieve env var value for one or more of clientID, clientSecret, environmentID, region.")

@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/pingidentity/pingctl/internal/testutils/testutils_command"
 	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
 )
@@ -126,10 +127,10 @@ func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
 		"--output-directory", outputDir,
 		"--overwrite",
 		"--service", "pingone-protect",
-		"--pingone-worker-environment-id", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"),
-		"--pingone-worker-client-id", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID"),
-		"--pingone-worker-client-secret", os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET"),
-		"--pingone-region", os.Getenv("PINGCTL_PINGONE_REGION"))
+		"--pingone-worker-environment-id", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar),
+		"--pingone-worker-client-id", os.Getenv(profiles.WorkerClientIDOption.EnvVar),
+		"--pingone-worker-client-secret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar),
+		"--pingone-region", os.Getenv(profiles.RegionOption.EnvVar))
 	testutils_helpers.CheckExpectedError(t, err, nil)
 }
 
@@ -137,6 +138,6 @@ func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
 func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlagRequiredTogether(t *testing.T) {
 	expectedErrorPattern := `^if any flags in the group \[pingone-worker-environment-id pingone-worker-client-id pingone-worker-client-secret pingone-region] are set they must all be set; missing \[pingone-region pingone-worker-client-id pingone-worker-client-secret]$`
 	err := testutils_command.ExecutePingctl(t, "platform", "export",
-		"--pingone-worker-environment-id", os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"))
+		"--pingone-worker-environment-id", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
 	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
 }

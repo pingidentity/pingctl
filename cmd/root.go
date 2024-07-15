@@ -52,7 +52,7 @@ func init() {
 func NewRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:           "pingctl",
-		Version:       "v2.0.0-alpha.3",
+		Version:       "v2.0.0-alpha.4",
 		Short:         "A CLI tool for managing Ping Identity products.",
 		Long:          `A CLI tool for managing Ping Identity products.`,
 		SilenceErrors: true, // Upon error in RunE method, let output package in main.go handle error output

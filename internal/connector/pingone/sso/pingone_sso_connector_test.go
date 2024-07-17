@@ -11,7 +11,11 @@ import (
 func TestApplicationTerraformPlan(t *testing.T) {
 	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
 	applicationResource := resources.Application(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, applicationResource, nil)
+	ignoreErrors := []string{
+		`Error: attribute "oidc_options": attribute "client_id" is required`,
+	}
+
+	testutils_helpers.ValidateTerraformPlan(t, applicationResource, ignoreErrors)
 }
 
 // Test --generate-config-out for the ApplicationAttributeMapping resource

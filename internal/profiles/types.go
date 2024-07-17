@@ -3,6 +3,8 @@ package profiles
 import (
 	"slices"
 	"strings"
+
+	"github.com/pingidentity/pingctl/internal/customtypes"
 )
 
 type ConfigOpts struct {
@@ -76,6 +78,11 @@ var (
 		EnvVar:         "PINGCTL_PINGONE_REGION",
 		Type:           ENUM_PINGONE_REGION,
 	}
+	ProfileDescriptionOption = Option{
+		CobraParamName: "description",
+		ViperKey:       "description",
+		Type:           ENUM_STRING,
+	}
 
 	ConfigOptions = ConfigOpts{
 		Options: []Option{
@@ -87,6 +94,7 @@ var (
 			WorkerClientIDOption,
 			WorkerClientSecretOption,
 			RegionOption,
+			ProfileDescriptionOption,
 		},
 	}
 )
@@ -127,4 +135,20 @@ func OptionTypeFromViperKey(key string) (optType OptionType, ok bool) {
 		}
 	}
 	return "", false
+}
+
+func GetDefaultValue(optType OptionType) (val any) {
+	switch optType {
+	case ENUM_BOOL:
+		return false
+	case ENUM_ID:
+		return ""
+	case ENUM_OUTPUT_FORMAT:
+		return customtypes.OutputFormat("text")
+	case ENUM_PINGONE_REGION:
+		return customtypes.PingOneRegion("")
+	case ENUM_STRING:
+		return ""
+	}
+	return nil
 }

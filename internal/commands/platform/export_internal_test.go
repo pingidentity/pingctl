@@ -25,7 +25,7 @@ func getApiClient(t *testing.T) *sdk.Client {
 	profileViper.Set("pingone.worker.clientsecret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar))
 	profileViper.Set("pingone.worker.environmentid", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
 	profileViper.Set("pingone.region", os.Getenv(profiles.RegionOption.EnvVar))
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	// Initialize the API client
 	apiClient, apiClientId, err := initApiClient(context.Background(), "v1.2.3")
@@ -65,7 +65,7 @@ func Test_initApiClient_incompleteConfig(t *testing.T) {
 	profileViper.Set("pingone.worker.clientsecret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar))
 	profileViper.Set("pingone.worker.environmentid", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
 	profileViper.Set("pingone.region", "")
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	expectedErrorPattern := `^failed to initialize pingone API client\. unrecognized pingone region: ''\. Must be one of: [A-Za-z\s,]+$`
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
@@ -80,7 +80,7 @@ func Test_initApiClient_invalidRegionConfig(t *testing.T) {
 	profileViper.Set("pingone.worker.clientsecret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar))
 	profileViper.Set("pingone.worker.environmentid", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
 	profileViper.Set("pingone.region", "invalid")
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	expectedErrorPattern := `^failed to initialize pingone API client\. unrecognized pingone region: 'invalid'\. Must be one of: [A-Za-z\s,]+$`
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
@@ -95,7 +95,7 @@ func Test_initApiClient_invalidClientIdConfig(t *testing.T) {
 	profileViper.Set("pingone.worker.clientsecret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar))
 	profileViper.Set("pingone.worker.environmentid", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
 	profileViper.Set("pingone.region", os.Getenv(profiles.RegionOption.EnvVar))
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	expectedErrorPattern := `^failed to initialize pingone API client\.\s+oauth2: "invalid_client" "Request denied: Invalid client credentials \(Correlation ID: [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\)"\s+configuration values used for client initialization:\s+worker client ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+worker environment ID - [0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}\s+pingone region - [A-Za-z]+\s+worker client secret - .+$`
 	_, _, err := initApiClient(context.Background(), "v1.2.3")
@@ -199,7 +199,7 @@ func Test_getExportEnvID(t *testing.T) {
 
 	profileViper := viper.New()
 	profileViper.Set("pingone.export.environmentid", oldExportEnvID)
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	newExportEnvID, err := getExportEnvID()
 	testutils_helpers.CheckExpectedError(t, err, nil)
@@ -221,7 +221,7 @@ func Test_getExportEnvID_missingConfig(t *testing.T) {
 	profileViper := viper.New()
 	profileViper.Set("pingone.export.environmentid", "")
 	profileViper.Set("pingone.worker.environmentid", "")
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	expectedErrorPattern := `^failed to determine export environment ID$`
 	_, err := getExportEnvID()
@@ -236,7 +236,7 @@ func Test_getExportEnvID_defaultToWorkerEnvID(t *testing.T) {
 
 	profileViper := viper.New()
 	profileViper.Set("pingone.worker.environmentid", oldWorkerEnvID)
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	newExportEnvID, err := getExportEnvID()
 	testutils_helpers.CheckExpectedError(t, err, nil)

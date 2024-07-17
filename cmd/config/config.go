@@ -1,15 +1,9 @@
 package config
 
 import (
-	"github.com/pingidentity/pingctl/internal/logger"
+	"github.com/pingidentity/pingctl/cmd/config/profile"
 	"github.com/spf13/cobra"
 )
-
-func init() {
-	l := logger.Get()
-
-	l.Debug().Msgf("Initializing Config Subcommand...")
-}
 
 func NewConfigCommand() *cobra.Command {
 	cmd := &cobra.Command{
@@ -21,6 +15,7 @@ func NewConfigCommand() *cobra.Command {
 	cmd.AddCommand(NewConfigGetCommand())
 	cmd.AddCommand(NewConfigSetCommand())
 	cmd.AddCommand(NewConfigUnsetCommand())
+	cmd.AddCommand(profile.NewConfigProfileCommand())
 
 	return cmd
 }

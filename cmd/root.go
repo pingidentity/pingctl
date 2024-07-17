@@ -9,7 +9,6 @@ import (
 	"github.com/pingidentity/pingctl/cmd/config"
 	"github.com/pingidentity/pingctl/cmd/feedback"
 	"github.com/pingidentity/pingctl/cmd/platform"
-	config_internal "github.com/pingidentity/pingctl/internal/commands/config"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
@@ -39,7 +38,11 @@ func init() {
 	// Determine the default configuration file location
 	home, err := os.UserHomeDir()
 	if err != nil {
-		l.Fatal().Err(err).Msgf("Failed to determine user's home directory")
+		output.Print(output.Opts{
+			Message:      "Failed to determine user's home directory",
+			Result:       output.ENUM_RESULT_FAILURE,
+			FatalMessage: err.Error(),
+		})
 	}
 
 	// Default the config in $home/.pingctl directory with name "config.yaml".
@@ -157,6 +160,22 @@ func initMainViper() {
 		l.Info().Msgf("Using configuration file: %s", mainViper.ConfigFileUsed())
 	}
 
+	// If there are no profiles in the configuration file, seed the default profile
+	if len(profiles.ConfigProfileNames()) == 0 {
+		output.Print(output.Opts{
+			Message: fmt.Sprintf("No profiles found in configuration file: %s. Creating 'default' profile.", mainViper.ConfigFileUsed()),
+			Result:  output.ENUM_RESULT_NOACTION_WARN,
+		})
+
+		if err := profiles.CreateNewProfile(defaultProfileName, "Default profile created by pingctl", true); err != nil {
+			output.Print(output.Opts{
+				Message:      "Failed to create default profile",
+				Result:       output.ENUM_RESULT_FAILURE,
+				FatalMessage: err.Error(),
+			})
+		}
+	}
+
 	// Validate the configuration
 	if err := profiles.Validate(); err != nil {
 		output.Print(output.Opts{
@@ -175,7 +194,10 @@ func initDefaultConfigFile() {
 
 	// Make sure the default config file exists, and if not, seed a new file
 	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
-		l.Debug().Msgf("Default configuration file does not exist. Seeding a new file at location: %s", cfgFile)
+		output.Print(output.Opts{
+			Message: fmt.Sprintf("pingctl's configuration file does not exist. Seeding a new file at location: %s", cfgFile),
+			Result:  output.ENUM_RESULT_NOACTION_WARN,
+		})
 
 		// MkdirAll does nothing if directories already exist. Create needed directories for config file location.
 		err := os.MkdirAll(filepath.Dir(cfgFile), os.ModePerm)
@@ -190,23 +212,7 @@ func initDefaultConfigFile() {
 		// No viper instance is configured yet, so to create a valid configuration file,
 		// we need to create a new viper instance and set the configuration options to their default values.
 		tempViper := viper.New()
-		profiles.SetProfileViperWithViper(tempViper)
-		for _, opt := range profiles.ConfigOptions.Options {
-			if opt.ViperKey == profiles.ProfileOption.ViperKey {
-				tempViper.Set(opt.ViperKey, defaultProfileName)
-				continue
-			}
-			if err := config_internal.UnsetValue(fmt.Sprintf("%s.%s", defaultProfileName, opt.ViperKey), opt.Type); err != nil {
-				output.Print(output.Opts{
-					Message:      "Failed to set default configuration value",
-					Result:       output.ENUM_RESULT_FAILURE,
-					FatalMessage: err.Error(),
-				})
-			}
-		}
-
-		// Ensure this temporary viper instance cannot be used elsewhere
-		profiles.SetProfileViperWithViper(nil)
+		tempViper.Set(profiles.ProfileOption.ViperKey, defaultProfileName)
 
 		// SafeWriteConfigAs writes current configuration to a given filename if it does not exist.
 		// Use global viper instance as main viper instance is not yet configured.

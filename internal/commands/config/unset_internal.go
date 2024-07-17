@@ -5,7 +5,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
 )
@@ -32,9 +31,7 @@ func RunInternalConfigUnset(args []string) error {
 		return fmt.Errorf("failed to unset configuration: value type for key %s unrecognized", viperKey)
 	}
 
-	if err := UnsetValue(viperKey, valueType); err != nil {
-		return err
-	}
+	profiles.GetProfileViper().Set(viperKey, profiles.GetDefaultValue(valueType))
 
 	if err := profiles.SaveProfileViperToFile(); err != nil {
 		return err
@@ -61,22 +58,4 @@ func parseUnsetArgs(args []string) (string, error) {
 
 	// Assume viper configuration key is args[0] and ignore any other input
 	return args[0], nil
-}
-
-func UnsetValue(viperKey string, valueType profiles.OptionType) error {
-	switch valueType {
-	case profiles.ENUM_BOOL:
-		profiles.GetProfileViper().Set(viperKey, false)
-	case profiles.ENUM_ID:
-		profiles.GetProfileViper().Set(viperKey, string(""))
-	case profiles.ENUM_OUTPUT_FORMAT:
-		profiles.GetProfileViper().Set(viperKey, customtypes.OutputFormat(""))
-	case profiles.ENUM_PINGONE_REGION:
-		profiles.GetProfileViper().Set(viperKey, customtypes.PingOneRegion(""))
-	case profiles.ENUM_STRING:
-		profiles.GetProfileViper().Set(viperKey, string(""))
-	default:
-		return fmt.Errorf("unable to unset configuration: variable type for key '%s' is not recognized", viperKey)
-	}
-	return nil
 }

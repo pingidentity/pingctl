@@ -6,6 +6,7 @@ require (
 	github.com/fatih/color v1.17.0
 	github.com/golangci/golangci-lint v1.55.2
 	github.com/hashicorp/go-uuid v1.0.3
+	github.com/manifoldco/promptui v0.9.0
 	github.com/patrickcping/pingone-go-sdk-v2 v0.12.2
 	github.com/patrickcping/pingone-go-sdk-v2/management v0.42.0
 	github.com/patrickcping/pingone-go-sdk-v2/mfa v0.20.0
@@ -50,6 +51,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/charithe/durationcheck v0.0.10 // indirect
 	github.com/chavacava/garif v0.1.0 // indirect
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/curioswitch/go-reassign v0.2.0 // indirect
 	github.com/daixiang0/gci v0.11.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

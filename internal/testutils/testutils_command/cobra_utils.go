@@ -11,8 +11,11 @@ import (
 )
 
 var (
+	// use spaces for tabs in the config file contents below,
+	// as tabs are not supported in YAML
 	configFileContents = fmt.Sprintf(`activeProfile: default
 default:
+    description: "test profile description"
     pingctl:
         color: true
         output: text

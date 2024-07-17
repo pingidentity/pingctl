@@ -80,7 +80,7 @@ func ExamplePrintConfig() {
 	profileViper.Set(profiles.WorkerClientSecretOption.ViperKey, "test-client-secret")
 	profileViper.Set(profiles.WorkerEnvironmentIDOption.ViperKey, "test-environment-id")
 	profileViper.Set(profiles.ExportEnvironmentIDOption.ViperKey, "test-export-environment-id")
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	_ = PrintConfig()
 
@@ -104,7 +104,7 @@ func Example_printConfigFromKey() {
 	profileViper := viper.New()
 	profileViper.Set(profiles.RegionOption.ViperKey, "test-region")
 	profileViper.Set(profiles.OutputOption.ViperKey, "text")
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	_ = printConfigFromKey(profiles.RegionOption.ViperKey)
 	_ = printConfigFromKey(profiles.OutputOption.ViperKey)

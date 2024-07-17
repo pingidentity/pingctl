@@ -55,18 +55,3 @@ func Test_parseUnsetArgs_TooManyArgs(t *testing.T) {
 	_, err := parseUnsetArgs([]string{profiles.ColorOption.ViperKey, profiles.WorkerClientIDOption.ViperKey})
 	testutils_helpers.CheckExpectedError(t, err, nil)
 }
-
-// Test unsetValue function with invalid value type
-func Test_unsetValue_InvalidValueType(t *testing.T) {
-	expectedErrorPattern := `^unable to unset configuration: variable type for key 'pingctl\.color' is not recognized$`
-	err := UnsetValue(profiles.ColorOption.ViperKey, "invalid")
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test unsetValue function with valid value type
-func Test_unsetValue_ValidValueType(t *testing.T) {
-	testutils_helpers.InitVipers(t)
-
-	err := UnsetValue(profiles.ColorOption.ViperKey, profiles.ENUM_BOOL)
-	testutils_helpers.CheckExpectedError(t, err, nil)
-}

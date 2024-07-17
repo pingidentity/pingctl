@@ -164,7 +164,7 @@ func InitVipers(t *testing.T) {
 	mainViper.SetConfigFile(t.TempDir() + "/config.yaml")
 
 	// Set up valid viper configuration
-	profileViper := viper.GetViper()
+	profileViper := viper.New()
 	profileViper.Set(profiles.ColorOption.ViperKey, true)
-	profiles.SetProfileViperWithViper(profileViper)
+	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 }

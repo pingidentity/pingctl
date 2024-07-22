@@ -1,8 +1,13 @@
 package profile
 
 import (
+	"fmt"
+	"os"
+	"strings"
+
 	profile_internal "github.com/pingidentity/pingctl/internal/commands/config/profile"
 	"github.com/pingidentity/pingctl/internal/logger"
+	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -39,7 +44,14 @@ func ConfigProfileAddRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Profile Add Subcommand Called.")
 
-	if err := profile_internal.RunInternalConfigProfileAdd(profileName, description, setActive, setActiveFlag.Changed); err != nil {
+	if len(args) > 0 {
+		output.Print(output.Opts{
+			Message: fmt.Sprintf("'pingctl config profile add' takes no arguments. Ignoring extra arguments: %s", strings.Join(args, " ")),
+			Result:  output.ENUM_RESULT_NOACTION_WARN,
+		})
+	}
+
+	if err := profile_internal.RunInternalConfigProfileAdd(profileName, description, setActive, setActiveFlag.Changed, os.Stdin); err != nil {
 		return err
 	}
 

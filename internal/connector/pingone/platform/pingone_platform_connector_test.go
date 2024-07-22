@@ -3,251 +3,193 @@ package platform_test
 import (
 	"testing"
 
+	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
+	"github.com/pingidentity/pingctl/internal/testing/testutils_terraform"
 )
 
-// Test --generate-config-out for the Agreement resource
-func TestAgreementTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	agreementResource := resources.Agreement(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, agreementResource, nil)
-}
+func TestPlatformTerraformPlan(t *testing.T) {
+	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
 
-// Test --generate-config-out for the AgreementEnable resource
-func TestAgreementEnableTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	agreementEnableResource := resources.AgreementEnable(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, agreementEnableResource, nil)
-}
+	testutils_terraform.InitTerraform(t)
 
-// Test --generate-config-out for the AgreementLocalization resource
-func TestAgreementLocalizationTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	agreementLocalizationResource := resources.AgreementLocalization(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, agreementLocalizationResource, nil)
-}
-
-// Test --generate-config-out for the AgreementLocalizationEnable resource
-func TestAgreementLocalizationEnableTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	agreementLocalizationEnableResource := resources.AgreementLocalizationEnable(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, agreementLocalizationEnableResource, nil)
-}
-
-// Test --generate-config-out for the AgreementLocalizationRevision resource
-func TestAgreementLocalizationRevisionTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	agreementLocalizationRevisionResource := resources.AgreementLocalizationRevision(sdkClientInfo)
-
-	testutils_helpers.ValidateTerraformPlan(t, agreementLocalizationRevisionResource, nil)
-}
-
-// Test --generate-config-out for the BrandingSettings resource
-func TestBrandingSettingsTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	brandingSettingsResource := resources.BrandingSettings(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, brandingSettingsResource, nil)
-}
-
-// Test --generate-config-out for the BrandingTheme resource
-func TestBrandingThemeTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	brandingThemeResource := resources.BrandingTheme(sdkClientInfo)
-
-	// TODO - Remove this ignore error.
-	// This test is failing due to a bug where computed values are failing
-	// config generation as they are treated as required attributes.
-	ignoreErrors := []string{
-		"Error: Invalid Attribute Combination",
+	testCases := []struct {
+		name          string
+		resource      connector.ExportableResource
+		ignoredErrors []string
+	}{
+		{
+			name:          "Agreement",
+			resource:      resources.Agreement(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "AgreementEnable",
+			resource:      resources.AgreementEnable(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "AgreementLocalization",
+			resource:      resources.AgreementLocalization(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "AgreementLocalizationEnable",
+			resource:      resources.AgreementLocalizationEnable(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "AgreementLocalizationRevision",
+			resource:      resources.AgreementLocalizationRevision(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "BrandingSettings",
+			resource:      resources.BrandingSettings(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "BrandingTheme",
+			resource: resources.BrandingTheme(sdkClientInfo),
+			ignoredErrors: []string{
+				"Error: Invalid Attribute Combination",
+			},
+		},
+		{
+			name:          "BrandingThemeDefault",
+			resource:      resources.BrandingThemeDefault(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "Certificate",
+			resource: resources.Certificate(sdkClientInfo),
+			ignoredErrors: []string{
+				"Error: Invalid combination of arguments",
+			},
+		},
+		{
+			name:          "CustomDomain",
+			resource:      resources.CustomDomain(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "Environment",
+			resource:      resources.Environment(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "Form",
+			resource: resources.Form(sdkClientInfo),
+			ignoredErrors: []string{
+				`Error: attribute "components": attribute "fields": incorrect set element type: attributes "other_option_attribute_disabled", "other_option_enabled", "other_option_input_label", "other_option_key", and "other_option_label" are required`,
+			},
+		},
+		{
+			name:     "FormRecaptchaV2",
+			resource: resources.FormRecaptchaV2(sdkClientInfo),
+			ignoredErrors: []string{
+				"Error: Missing Configuration for Required Attribute",
+			},
+		},
+		{
+			name:     "Gateway",
+			resource: resources.Gateway(sdkClientInfo),
+			ignoredErrors: []string{
+				"Error: Invalid Attribute Combination",
+				"Error: Missing required argument",
+			},
+		},
+		{
+			name:          "GatewayCredential",
+			resource:      resources.GatewayCredential(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "GatewayRoleAssignment",
+			resource:      resources.GatewayRoleAssignment(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "IdentityPropagationPlan",
+			resource:      resources.IdentityPropagationPlan(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "Key",
+			resource:      resources.Key(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "KeyRotationPolicy",
+			resource:      resources.KeyRotationPolicy(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "Language",
+			resource:      resources.Language(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "LanguageUpdate",
+			resource:      resources.LanguageUpdate(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "NotificationPolicy",
+			resource:      resources.NotificationPolicy(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "NotificationSettings",
+			resource:      resources.NotificationSettings(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "NotificationSettingsEmail",
+			resource: resources.NotificationSettingsEmail(sdkClientInfo),
+			ignoredErrors: []string{
+				"Error: Missing Configuration for Required Attribute",
+			},
+		},
+		{
+			name:          "NotificationTemplateContent",
+			resource:      resources.NotificationTemplateContent(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "PhoneDeliverySettings",
+			resource: resources.PhoneDeliverySettings(sdkClientInfo),
+			ignoredErrors: []string{
+				"Error: Missing required argument",
+				"Error: Missing Configuration for Required Attribute",
+			},
+		},
+		{
+			name:          "SystemApplication",
+			resource:      resources.SystemApplication(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "TrustedEmailAddress",
+			resource:      resources.TrustedEmailAddress(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "TrustedEmailDomain",
+			resource:      resources.TrustedEmailDomain(sdkClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "Webhook",
+			resource:      resources.Webhook(sdkClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
-	testutils_helpers.ValidateTerraformPlan(t, brandingThemeResource, ignoreErrors)
-}
-
-// Test --generate-config-out for the BrandingThemeDefault resource
-func TestBrandingThemeDefaultTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	brandingThemeDefaultResource := resources.BrandingThemeDefault(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, brandingThemeDefaultResource, nil)
-}
-
-// Test --generate-config-out for the Certificate resource
-func TestCertificateTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	certificateResource := resources.Certificate(sdkClientInfo)
-	ignoreErrors := []string{
-		"Error: Invalid combination of arguments",
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			testutils_terraform.ValidateTerraformPlan(t, tc.resource, tc.ignoredErrors)
+		})
 	}
-	testutils_helpers.ValidateTerraformPlan(t, certificateResource, ignoreErrors)
-}
-
-// Test --generate-config-out for the CustomDomain resource
-func TestCustomDomainTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	customDomainResource := resources.CustomDomain(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, customDomainResource, nil)
-}
-
-// Test --generate-config-out for the Environment resource
-func TestEnvironmentTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	environmentResource := resources.Environment(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, environmentResource, nil)
-}
-
-// Test --generate-config-out for the Form resource
-func TestFormTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	formResource := resources.Form(sdkClientInfo)
-
-	// TODO - Remove this ignore error.
-	// This test is failing due to a bug where computed values are failing
-	// config generation as they are treated as required attributes.
-	ignoreErrors := []string{
-		`Error: attribute "components": attribute "fields": incorrect set element type: attributes "other_option_attribute_disabled", "other_option_enabled", "other_option_input_label", "other_option_key", and "other_option_label" are required`,
-	}
-
-	testutils_helpers.ValidateTerraformPlan(t, formResource, ignoreErrors)
-}
-
-// Test --generate-config-out for the FormRecaptchaV2 resource
-func TestFormRecaptchaV2TerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	formRecaptchaV2Resource := resources.FormRecaptchaV2(sdkClientInfo)
-	ignoreErrors := []string{
-		"Error: Missing Configuration for Required Attribute",
-	}
-	testutils_helpers.ValidateTerraformPlan(t, formRecaptchaV2Resource, ignoreErrors)
-}
-
-// Test --generate-config-out for the Gateway resource
-func TestGatewayTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	gatewayResource := resources.Gateway(sdkClientInfo)
-	ignoreErrors := []string{
-		"Error: Invalid Attribute Combination",
-		"Error: Missing required argument",
-	}
-	testutils_helpers.ValidateTerraformPlan(t, gatewayResource, ignoreErrors)
-}
-
-// Test --generate-config-out for the GatewayCredential resource
-func TestGatewayCredentialTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	gatewayCredentialResource := resources.GatewayCredential(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, gatewayCredentialResource, nil)
-}
-
-// Test --generate-config-out for the GatewayRoleAssignment resource
-func TestGatewayRoleAssignmentTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	gatewayRoleAssignmentResource := resources.GatewayRoleAssignment(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, gatewayRoleAssignmentResource, nil)
-}
-
-// Test --generate-config-out for the IdentityPropagationPlan resource
-func TestIdentityPropagationPlanTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	identityPropagationPlanResource := resources.IdentityPropagationPlan(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, identityPropagationPlanResource, nil)
-}
-
-// Test --generate-config-out for the Key resource
-func TestKeyTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	keyResource := resources.Key(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, keyResource, nil)
-}
-
-// Test --generate-config-out for the KeyRotationPolicy resource
-func TestKeyRotationPolicyTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	keyRotationPolicyResource := resources.KeyRotationPolicy(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, keyRotationPolicyResource, nil)
-}
-
-// Test --generate-config-out for the Language resource
-func TestLanguageTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	languageResource := resources.Language(sdkClientInfo)
-
-	testutils_helpers.ValidateTerraformPlan(t, languageResource, nil)
-}
-
-// Test --generate-config-out for the LanguageUpdate resource
-func TestLanguageUpdateTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	languageUpdateResource := resources.LanguageUpdate(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, languageUpdateResource, nil)
-}
-
-// Test --generate-config-out for the NotificationPolicy resource
-func TestNotificationPolicyTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	notificationPolicyResource := resources.NotificationPolicy(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, notificationPolicyResource, nil)
-}
-
-// Test --generate-config-out for the NotificationSettings resource
-func TestNotificationSettingsTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	notificationSettingsResource := resources.NotificationSettings(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, notificationSettingsResource, nil)
-}
-
-// Test --generate-config-out for the NotificationSettingsEmail resource
-func TestNotificationSettingsEmailTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	notificationSettingsEmailResource := resources.NotificationSettingsEmail(sdkClientInfo)
-	ignoreErrors := []string{
-		"Error: Missing Configuration for Required Attribute",
-	}
-	testutils_helpers.ValidateTerraformPlan(t, notificationSettingsEmailResource, ignoreErrors)
-}
-
-// Test --generate-config-out for the NotificationTemplateContent resource
-func TestNotificationTemplateContentTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	notificationTemplateContentResource := resources.NotificationTemplateContent(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, notificationTemplateContentResource, nil)
-}
-
-// Test --generate-config-out for the PhoneDeliverySettings resource
-func TestPhoneDeliverySettingsTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	phoneDeliverySettingsResource := resources.PhoneDeliverySettings(sdkClientInfo)
-	ignoreErrors := []string{
-		"Error: Missing required argument",
-		"Error: Missing Configuration for Required Attribute",
-	}
-	testutils_helpers.ValidateTerraformPlan(t, phoneDeliverySettingsResource, ignoreErrors)
-}
-
-// Test --generate-config-out for the SystemApplication resource
-func TestSystemApplicationTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	systemApplicationResource := resources.SystemApplication(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, systemApplicationResource, nil)
-}
-
-// Test --generate-config-out for the TrustedEmailAddress resource
-func TestTrustedEmailAddressTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	trustedEmailAddressResource := resources.TrustedEmailAddress(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, trustedEmailAddressResource, nil)
-}
-
-// Test --generate-config-out for the TrustedEmailDomain resource
-func TestTrustedEmailDomainTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	trustedEmailDomainResource := resources.TrustedEmailDomain(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, trustedEmailDomainResource, nil)
-}
-
-// Test --generate-config-out for the Webhook resource
-func TestWebhookTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
-	webhookResource := resources.Webhook(sdkClientInfo)
-	testutils_helpers.ValidateTerraformPlan(t, webhookResource, nil)
 }

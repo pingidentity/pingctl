@@ -6,12 +6,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/sso/resources"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
 func TestGroupRoleAssignmentExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
 	resource := resources.GroupRoleAssignment(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -19,14 +19,14 @@ func TestGroupRoleAssignmentExport(t *testing.T) {
 		{
 			ResourceType: "pingone_group_role_assignment",
 			ResourceName: "testing_Client Application Developer_1",
-			ResourceID:   fmt.Sprintf("%s/b6924f30-73ca-4d3c-964b-90c77adce6a7/1db1accc-f63f-4f03-ab62-c767398fa730", testutils_helpers.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/b6924f30-73ca-4d3c-964b-90c77adce6a7/1db1accc-f63f-4f03-ab62-c767398fa730", testutils.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_group_role_assignment",
 			ResourceName: "testing_Identity Data Read Only_2",
-			ResourceID:   fmt.Sprintf("%s/b6924f30-73ca-4d3c-964b-90c77adce6a7/53a88921-2a9f-44f1-958e-3db9be3f8c69", testutils_helpers.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/b6924f30-73ca-4d3c-964b-90c77adce6a7/53a88921-2a9f-44f1-958e-3db9be3f8c69", testutils.GetEnvironmentID()),
 		},
 	}
 
-	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

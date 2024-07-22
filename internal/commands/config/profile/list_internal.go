@@ -18,7 +18,7 @@ func RunInternalConfigProfileList(args []string) {
 
 	activeProfileName := profiles.GetConfigActiveProfile()
 	profileNames := profiles.ConfigProfileNames()
-	listOutputString := fmt.Sprintf("pingctl profiles (found in: %s):\n", profiles.GetMainViper().ConfigFileUsed())
+	listOutputString := "pingctl profiles:\n"
 
 	for _, pName := range profileNames {
 		if pName == activeProfileName {

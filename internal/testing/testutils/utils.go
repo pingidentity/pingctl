@@ -1,4 +1,4 @@
-package testutils_helpers
+package testutils
 
 import (
 	"context"
@@ -7,10 +7,9 @@ import (
 	"sync"
 	"testing"
 
-	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
+	"github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/profiles"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -26,16 +25,6 @@ func GetEnvironmentID() string {
 	})
 
 	return environmentId
-}
-
-// Utility method to print log file if present.
-func PrintLogs(t *testing.T) {
-	t.Helper()
-
-	logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
-	if err == nil {
-		t.Logf("Captured Logs: %s", string(logContent[:]))
-	}
 }
 
 // Utility method to initialize a PingOne SDK client for testing
@@ -54,7 +43,7 @@ func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
 			t.Fatalf("Unable to retrieve env var value for one or more of clientID, clientSecret, environmentID, region.")
 		}
 
-		apiConfig := &sdk.Config{
+		apiConfig := &pingone.Config{
 			ClientID:      &clientID,
 			ClientSecret:  &clientSecret,
 			EnvironmentID: &environmentId,
@@ -157,14 +146,28 @@ func CheckExpectedError(t *testing.T, err error, errMessagePattern *string) {
 	}
 }
 
-func InitVipers(t *testing.T) {
+// Get os.File with string written to it.
+// The caller is responsible for closing the file.
+func WriteStringToPipe(str string, t *testing.T) (reader *os.File) {
 	t.Helper()
-	// Give main viper instance a file location to write to
-	mainViper := profiles.GetMainViper()
-	mainViper.SetConfigFile(t.TempDir() + "/config.yaml")
 
-	// Set up valid viper configuration
-	profileViper := viper.New()
-	profileViper.Set(profiles.ColorOption.ViperKey, true)
-	profiles.SetProfileViperWithViper(profileViper, "testProfile")
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer writer.Close()
+
+	if _, err := writer.WriteString(str); err != nil {
+		reader.Close()
+		t.Fatal(err)
+	}
+
+	// Close the writer to simulate EOF
+	if err = writer.Close(); err != nil {
+		reader.Close()
+		t.Fatal(err)
+	}
+
+	return reader
 }

@@ -11,15 +11,15 @@ import (
 func RunInternalConfigProfileSetActive(args []string) error {
 	profileName, err := parseSetActiveArgs(args)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to set active profile: %v", err)
 	}
 
 	if err = profiles.ValidateExistingProfileName(profileName); err != nil {
-		return err
+		return fmt.Errorf("failed to set active profile: %v", err)
 	}
 
 	if err = profiles.SetConfigActiveProfile(profileName); err != nil {
-		return err
+		return fmt.Errorf("failed to set active profile: %v", err)
 	}
 
 	output.Print(output.Opts{
@@ -32,7 +32,7 @@ func RunInternalConfigProfileSetActive(args []string) error {
 
 func parseSetActiveArgs(args []string) (string, error) {
 	if len(args) == 0 {
-		return "", fmt.Errorf("failed to set active configuration profile: no profile name provided")
+		return "", fmt.Errorf("profile name is required")
 	}
 
 	if len(args) > 1 {

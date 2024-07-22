@@ -99,6 +99,7 @@ var (
 	}
 )
 
+// Return a list of all viper keys from Options defined in @ConfigOptions
 func ProfileKeys() (keys []string) {
 	for _, option := range ConfigOptions.Options {
 		if option.ViperKey == ProfileOption.ViperKey {
@@ -112,13 +113,19 @@ func ProfileKeys() (keys []string) {
 	return keys
 }
 
+// Return a list of all viper keys from Options defined in @ConfigOptions
+// Including all substrings of parent keys.
+// For example, the option key export.environmentID adds the keys
+// 'export' and 'export.environmentID' to the list.
 func ExpandedProfileKeys() (keys []string) {
 	leafKeys := ProfileKeys()
 	for _, key := range leafKeys {
 		keySplit := strings.Split(key, ".")
 		for i := 0; i < len(keySplit); i++ {
 			curKey := strings.Join(keySplit[:i+1], ".")
-			if !slices.Contains(keys, curKey) {
+			if !slices.ContainsFunc(keys, func(v string) bool {
+				return strings.EqualFold(v, curKey)
+			}) {
 				keys = append(keys, curKey)
 			}
 		}

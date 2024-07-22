@@ -6,12 +6,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
 func TestLanguageExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
 	resource := resources.Language(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -19,9 +19,9 @@ func TestLanguageExport(t *testing.T) {
 		{
 			ResourceType: "pingone_language",
 			ResourceName: "Afar",
-			ResourceID:   fmt.Sprintf("%s/c5f97303-c5c1-459a-b8ee-3fcb183eb52a", testutils_helpers.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/c5f97303-c5c1-459a-b8ee-3fcb183eb52a", testutils.GetEnvironmentID()),
 		},
 	}
 
-	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

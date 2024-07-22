@@ -5,85 +5,85 @@ import (
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/profiles"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_command"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
+	"github.com/pingidentity/pingctl/internal/testing/testutils_cobra"
 )
 
 // Test Platform Export Command Executes without issue
 func TestPlatformExportCmd_Execute(t *testing.T) {
 	outputDir := t.TempDir()
 
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--overwrite")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--overwrite")
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Platform Export Command fails when provided invalid flag
 func TestPlatformExportCmd_InvalidFlag(t *testing.T) {
 	expectedErrorPattern := `^unknown flag: --invalid$`
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--invalid")
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--invalid")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Platform Export Command --help, -h flag
 func TestPlatformExportCmd_HelpFlag(t *testing.T) {
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--help")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--help")
+	testutils.CheckExpectedError(t, err, nil)
 
-	err = testutils_command.ExecutePingctl(t, "platform", "export", "-h")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	err = testutils_cobra.ExecutePingctl(t, "platform", "export", "-h")
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Platform Export Command --service flag
 func TestPlatformExportCmd_ServiceFlag(t *testing.T) {
 	outputDir := t.TempDir()
 
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--overwrite", "--service", "pingone-protect")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--overwrite", "--service", "pingone-protect")
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Platform Export Command --service flag with invalid service
 func TestPlatformExportCmd_ServiceFlagInvalidService(t *testing.T) {
 	expectedErrorPattern := `^invalid argument "invalid" for "--service" flag: unrecognized service 'invalid'\. Must be one of: [a-z-\s,]+$`
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--service", "invalid")
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--service", "invalid")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Platform Export Command --export-format flag
 func TestPlatformExportCmd_ExportFormatFlag(t *testing.T) {
 	outputDir := t.TempDir()
 
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--export-format", "HCL", "--overwrite", "--service", "pingone-protect")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--export-format", "HCL", "--overwrite", "--service", "pingone-protect")
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Platform Export Command --export-format flag with invalid format
 func TestPlatformExportCmd_ExportFormatFlagInvalidFormat(t *testing.T) {
 	expectedErrorPattern := `^invalid argument "invalid" for "--export-format" flag: unrecognized export format 'invalid'\. Must be one of: [A-Z]+$`
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--export-format", "invalid")
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--export-format", "invalid")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Platform Export Command --output-directory flag
 func TestPlatformExportCmd_OutputDirectoryFlag(t *testing.T) {
 	outputDir := t.TempDir()
 
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--overwrite", "--service", "pingone-protect")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--overwrite", "--service", "pingone-protect")
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Platform Export Command --output-directory flag with invalid directory
 func TestPlatformExportCmd_OutputDirectoryFlagInvalidDirectory(t *testing.T) {
 	expectedErrorPattern := `^failed to create 'platform export' output directory '\/invalid': mkdir \/invalid: .+$`
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--output-directory", "/invalid")
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--output-directory", "/invalid")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Platform Export Command --overwrite flag
 func TestPlatformExportCmd_OverwriteFlag(t *testing.T) {
 	outputDir := t.TempDir()
 
-	err := testutils_command.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--overwrite", "--service", "pingone-protect")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--overwrite", "--service", "pingone-protect")
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Platform Export Command --overwrite flag false with existing directory
@@ -97,8 +97,8 @@ func TestPlatformExportCmd_OverwriteFlagFalseWithExistingDirectory(t *testing.T)
 	}
 
 	expectedErrorPattern := `^'platform export' output directory '[A-Za-z0-9_\-\/]+' is not empty\. Use --overwrite to overwrite existing export data$`
-	err = testutils_command.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--service", "pingone-protect", "--overwrite=false")
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
+	err = testutils_cobra.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--service", "pingone-protect", "--overwrite=false")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Platform Export Command --overwrite flag true with existing directory
@@ -111,8 +111,8 @@ func TestPlatformExportCmd_OverwriteFlagTrueWithExistingDirectory(t *testing.T) 
 		t.Errorf("Error creating file in output directory: %v", err)
 	}
 
-	err = testutils_command.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--service", "pingone-protect", "--overwrite")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	err = testutils_cobra.ExecutePingctl(t, "platform", "export", "--output-directory", outputDir, "--service", "pingone-protect", "--overwrite")
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Platform Export Command with
@@ -123,7 +123,7 @@ func TestPlatformExportCmd_OverwriteFlagTrueWithExistingDirectory(t *testing.T) 
 func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
 	outputDir := t.TempDir()
 
-	err := testutils_command.ExecutePingctl(t, "platform", "export",
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
 		"--output-directory", outputDir,
 		"--overwrite",
 		"--service", "pingone-protect",
@@ -131,13 +131,13 @@ func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
 		"--pingone-worker-client-id", os.Getenv(profiles.WorkerClientIDOption.EnvVar),
 		"--pingone-worker-client-secret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar),
 		"--pingone-region", os.Getenv(profiles.RegionOption.EnvVar))
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Platform Export Command fails when not provided required pingone flags together
 func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlagRequiredTogether(t *testing.T) {
 	expectedErrorPattern := `^if any flags in the group \[pingone-worker-environment-id pingone-worker-client-id pingone-worker-client-secret pingone-region] are set they must all be set; missing \[pingone-region pingone-worker-client-id pingone-worker-client-secret]$`
-	err := testutils_command.ExecutePingctl(t, "platform", "export",
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
 		"--pingone-worker-environment-id", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }

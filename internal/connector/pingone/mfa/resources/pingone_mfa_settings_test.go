@@ -5,12 +5,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/mfa/resources"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
 func TestMFASettingsExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
 	resource := resources.MFASettings(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -18,9 +18,9 @@ func TestMFASettingsExport(t *testing.T) {
 		{
 			ResourceType: "pingone_mfa_settings",
 			ResourceName: "mfa_settings",
-			ResourceID:   testutils_helpers.GetEnvironmentID(),
+			ResourceID:   testutils.GetEnvironmentID(),
 		},
 	}
 
-	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

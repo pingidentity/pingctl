@@ -1,9 +1,11 @@
 package profile_internal
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/pingidentity/pingctl/internal/input"
+	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
 )
 
@@ -33,6 +35,11 @@ func RunInternalConfigProfileAdd(profileName, description string, setActive, set
 	if err = profiles.CreateNewProfile(profileName, description, setActive); err != nil {
 		return err
 	}
+
+	output.Print(output.Opts{
+		Message: fmt.Sprintf("Profile '%s' added successfully", profileName),
+		Result:  output.ENUM_RESULT_SUCCESS,
+	})
 
 	return nil
 }

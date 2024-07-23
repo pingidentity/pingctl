@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/customtypes"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
 // Test the custom type PingOneRegion Set method with a valid value
 func TestPingOneRegion_SetValid(t *testing.T) {
 	pingOneRegion := customtypes.PingOneRegion("AsiaPacific")
 	err := pingOneRegion.Set("Europe")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test the custom type PingOneRegion Set method with an invalid value
@@ -20,7 +20,7 @@ func TestPingOneRegion_SetInvalid(t *testing.T) {
 	expectedErrorPattern := `^unrecognized PingOne Region: 'INVALID'. Must be one of: [A-Za-z\s,]+$`
 	pingOneRegion := customtypes.PingOneRegion("AsiaPacific")
 	err := pingOneRegion.Set("INVALID")
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test the custom type PingOneRegion Type method

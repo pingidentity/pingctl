@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/customtypes"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
 // Test custom type MultiService NewMultiService() method
@@ -22,7 +22,7 @@ func TestMultiService_GetServices(t *testing.T) {
 	multiService := customtypes.NewMultiService()
 	expectedService := customtypes.ENUM_SERVICE_PLATFORM
 	err := multiService.Set(expectedService)
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	testutils.CheckExpectedError(t, err, nil)
 
 	services := multiService.GetServices()
 	if services == nil {
@@ -42,7 +42,7 @@ func TestMultiService_GetServices(t *testing.T) {
 func TestMultiService_SetValid(t *testing.T) {
 	multiService := customtypes.NewMultiService()
 	err := multiService.Set(customtypes.ENUM_SERVICE_PLATFORM)
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test custom type MultiService Set() method with an invalid value
@@ -50,7 +50,7 @@ func TestMultiService_SetInvalid(t *testing.T) {
 	expectedErrorPattern := `unrecognized service 'INVALID'. Must be one of: [a-z\-]+`
 	multiService := customtypes.NewMultiService()
 	err := multiService.Set("INVALID")
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test custom type MultiService Type() method

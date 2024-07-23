@@ -4,7 +4,7 @@ import (
 	feedback_internal "github.com/pingidentity/pingctl/internal/commands/feedback"
 )
 
-func ExamplePrintFeedbackMessage() {
+func Example_printFeedbackMessage() {
 	feedback_internal.PrintFeedbackMessage()
 
 	//Output:

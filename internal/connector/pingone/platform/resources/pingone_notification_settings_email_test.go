@@ -5,12 +5,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
 func TestNotificationSettingsEmailExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
 	resource := resources.NotificationSettingsEmail(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -18,9 +18,9 @@ func TestNotificationSettingsEmailExport(t *testing.T) {
 		{
 			ResourceType: "pingone_notification_settings_email",
 			ResourceName: "pingone_notification_settings_email",
-			ResourceID:   testutils_helpers.GetEnvironmentID(),
+			ResourceID:   testutils.GetEnvironmentID(),
 		},
 	}
 
-	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

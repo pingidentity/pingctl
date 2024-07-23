@@ -21,12 +21,6 @@ var (
 	overwriteExport bool
 )
 
-func init() {
-	l := logger.Get()
-
-	l.Debug().Msgf("Initializing Platform Export Subcommand...")
-}
-
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "export",

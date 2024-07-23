@@ -13,7 +13,6 @@ type Binding struct {
 }
 
 var (
-	mainViper      *viper.Viper = viper.New()
 	profileViper   *viper.Viper
 	profileName    string
 	flagBindings   []Binding
@@ -21,11 +20,11 @@ var (
 	envVarBindings []Option
 )
 
-func GetMainViper() *viper.Viper {
-	return mainViper
-}
-
 func SetProfileViperWithProfile(pName string) (err error) {
+	if err := ValidateExistingProfileName(pName); err != nil {
+		return err
+	}
+
 	subViper := mainViper.Sub(pName)
 	if subViper == nil {
 		return fmt.Errorf("profile '%s' not found in configuration file: %s", pName, mainViper.ConfigFileUsed())
@@ -36,8 +35,9 @@ func SetProfileViperWithProfile(pName string) (err error) {
 	return nil
 }
 
-func SetProfileViperWithViper(v *viper.Viper) {
+func SetProfileViperWithViper(v *viper.Viper, pName string) {
 	profileViper = v
+	profileName = pName
 }
 
 func GetProfileViper() *viper.Viper {
@@ -80,14 +80,47 @@ func ApplyBindingsToProfileViper() (err error) {
 	return nil
 }
 
-func SaveProfileViperToFile() error {
-	profileKeys := profileViper.AllKeys()
-	for _, key := range profileKeys {
-		mainViper.Set(fmt.Sprintf("%s.%s", profileName, key), profileViper.Get(key))
+func CreateNewProfile(pName, desc string, setActive bool) (err error) {
+	err = ValidateNewProfileName(pName)
+	if err != nil {
+		return err
 	}
 
-	if err := mainViper.WriteConfig(); err != nil {
-		return fmt.Errorf("failed to write pingctl configuration to file '%s': %v", mainViper.ConfigFileUsed(), err)
+	oldProfileName := profileName
+	newProfileViper := viper.New()
+
+	for _, opt := range ConfigOptions.Options {
+		if opt.ViperKey == ProfileOption.ViperKey {
+			continue
+		}
+
+		// Set all options to their default state
+		newProfileViper.Set(opt.ViperKey, GetDefaultValue(opt.Type))
+	}
+
+	// set the new profile description
+	newProfileViper.Set(ProfileDescriptionOption.ViperKey, desc)
+
+	// set the new viper as the profile viper
+	SetProfileViperWithViper(newProfileViper, pName)
+
+	// save the new profile to the configuration file
+	if err := SaveProfileViperToFile(); err != nil {
+		return fmt.Errorf("failed to create new profile: %v", err)
+	}
+
+	// set the profile viper back to the old profile if it existed
+	if oldProfileName != "" {
+		if err = SetProfileViperWithProfile(oldProfileName); err != nil {
+			return fmt.Errorf("failed to create new profile: %v", err)
+		}
+	}
+
+	// set the new profile as the active profile if applicable
+	if setActive {
+		if err = SetConfigActiveProfile(pName); err != nil {
+			return fmt.Errorf("failed to create new profile: %v", err)
+		}
 	}
 
 	return nil

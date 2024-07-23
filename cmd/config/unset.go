@@ -6,12 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	l := logger.Get()
-
-	l.Debug().Msgf("Initializing Config Unset Subcommand...")
-}
-
 func NewConfigUnsetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "unset",

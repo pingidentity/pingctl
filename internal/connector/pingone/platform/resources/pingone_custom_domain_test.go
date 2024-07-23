@@ -6,12 +6,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
 func TestCustomDomainExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
 	resource := resources.CustomDomain(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -19,9 +19,9 @@ func TestCustomDomainExport(t *testing.T) {
 		{
 			ResourceType: "pingone_custom_domain",
 			ResourceName: "pioneerpalaceband.com",
-			ResourceID:   fmt.Sprintf("%s/5eb2548d-fdb2-45f6-85bc-7adfd856cbd9", testutils_helpers.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/5eb2548d-fdb2-45f6-85bc-7adfd856cbd9", testutils.GetEnvironmentID()),
 		},
 	}
 
-	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

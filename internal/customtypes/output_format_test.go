@@ -5,14 +5,14 @@ import (
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/customtypes"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
 // Test the custom type OutputFormat Set method with a valid value
 func TestOutputFormat_SetValid(t *testing.T) {
 	outputFormat := customtypes.OutputFormat("text")
 	err := outputFormat.Set("json")
-	testutils_helpers.CheckExpectedError(t, err, nil)
+	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test the custom type OutputFormat Set method with an invalid value
@@ -20,7 +20,7 @@ func TestOutputFormat_SetInvalid(t *testing.T) {
 	expectedErrorPattern := `unrecognized Output Format: 'INVALID'. Must be one of: [a-z\s,]+`
 	outputFormat := customtypes.OutputFormat("text")
 	err := outputFormat.Set("INVALID")
-	testutils_helpers.CheckExpectedError(t, err, &expectedErrorPattern)
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test the custom type OutputFormat Type method

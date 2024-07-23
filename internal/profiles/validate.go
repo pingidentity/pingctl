@@ -2,7 +2,6 @@ package profiles
 
 import (
 	"fmt"
-	"regexp"
 	"slices"
 	"strings"
 
@@ -13,11 +12,17 @@ import (
 
 func Validate() error {
 	// Get a slice of all profile names configured in the config.yaml file
-	profileNames := configProfileNames()
+	profileNames := ConfigProfileNames()
 
 	// Validate profile names
 	if err := validateProfileNames(profileNames); err != nil {
 		return err
+	}
+
+	// Make sure selected active profile is in the configuration file
+	activeProfile := GetConfigActiveProfile()
+	if !slices.Contains(profileNames, activeProfile) {
+		return fmt.Errorf("failed to validate pingctl configuration: active profile '%s' not found in configuration file %s", activeProfile, mainViper.ConfigFileUsed())
 	}
 
 	// for each profile key, set the profile based on mainViper.Sub() and validate the profile
@@ -36,33 +41,13 @@ func Validate() error {
 	return nil
 }
 
-func validateProfileNames(profileKeys []string) error {
-	for _, profileKey := range profileKeys {
-		re := regexp.MustCompile(`^[a-zA-Z0-9\_\-]+$`)
-		if !re.MatchString(profileKey) {
-			return fmt.Errorf("failed to validate pingctl configuration: profile name '%s' must contain only alphanumeric characters, underscores, and dashes", profileKey)
+func validateProfileNames(profileNames []string) error {
+	for _, profileName := range profileNames {
+		if err := ValidateProfileNameFormat(profileName); err != nil {
+			return err
 		}
 	}
 	return nil
-}
-
-func configProfileNames() []string {
-	allKeys := mainViper.AllKeys()
-
-	// Get a slice of all profile keys to validate profiles individually
-	var profileKeys []string
-	for _, key := range allKeys {
-		//remove "activeProfile" from profileKeys
-		if strings.EqualFold(key, ProfileOption.ViperKey) {
-			continue
-		}
-
-		rootKey := strings.Split(key, ".")[0]
-		if !slices.Contains(profileKeys, rootKey) {
-			profileKeys = append(profileKeys, rootKey)
-		}
-	}
-	return profileKeys
 }
 
 func validateProfileKeys(profileName string, profileViper *viper.Viper) error {

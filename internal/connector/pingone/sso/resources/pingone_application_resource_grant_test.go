@@ -6,12 +6,12 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/sso/resources"
-	"github.com/pingidentity/pingctl/internal/testutils/testutils_helpers"
+	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
 func TestApplicationResourceGrantExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils_helpers.GetPingOneSDKClientInfo(t)
+	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
 	resource := resources.ApplicationResourceGrant(sdkClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
@@ -19,24 +19,24 @@ func TestApplicationResourceGrantExport(t *testing.T) {
 		{
 			ResourceType: "pingone_application_resource_grant",
 			ResourceName: "PingOne Application Portal_openid",
-			ResourceID:   fmt.Sprintf("%s/92a3765c-e135-4afa-8b12-4469672ac8a9/7e1e25cd-a29e-43b3-bf4a-317ffaabb49c", testutils_helpers.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/92a3765c-e135-4afa-8b12-4469672ac8a9/7e1e25cd-a29e-43b3-bf4a-317ffaabb49c", testutils.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_application_resource_grant",
 			ResourceName: "PingOne Application Portal_PingOne API",
-			ResourceID:   fmt.Sprintf("%s/92a3765c-e135-4afa-8b12-4469672ac8a9/cf7c2b8e-718c-4ccc-ad1e-1612724baf8e", testutils_helpers.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/92a3765c-e135-4afa-8b12-4469672ac8a9/cf7c2b8e-718c-4ccc-ad1e-1612724baf8e", testutils.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_application_resource_grant",
 			ResourceName: "PingOne Self-Service - MyAccount_PingOne API",
-			ResourceID:   fmt.Sprintf("%s/4ce54d01-5138-4c56-8175-4f02f69278f5/78d28a77-127d-434b-ae30-71bc18c97902", testutils_helpers.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/4ce54d01-5138-4c56-8175-4f02f69278f5/78d28a77-127d-434b-ae30-71bc18c97902", testutils.GetEnvironmentID()),
 		},
 		{
 			ResourceType: "pingone_application_resource_grant",
 			ResourceName: "PingOne Self-Service - MyAccount_openid",
-			ResourceID:   fmt.Sprintf("%s/4ce54d01-5138-4c56-8175-4f02f69278f5/88063562-7b01-4dbc-b638-119435f74860", testutils_helpers.GetEnvironmentID()),
+			ResourceID:   fmt.Sprintf("%s/4ce54d01-5138-4c56-8175-4f02f69278f5/88063562-7b01-4dbc-b638-119435f74860", testutils.GetEnvironmentID()),
 		},
 	}
 
-	testutils_helpers.ValidateImportBlocks(t, resource, &expectedImportBlocks)
+	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)
 }

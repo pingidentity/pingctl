@@ -1,4 +1,4 @@
-package testutils_helpers
+package testutils_terraform
 
 import (
 	"encoding/json"
@@ -7,12 +7,18 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
+)
+
+var (
+	exportDir                   string
+	terraformExecutableFilepath string
 )
 
 // Test --generate-config-out for a resource
@@ -35,14 +41,20 @@ func ValidateTerraformPlan(t *testing.T, resource connector.ExportableResource, 
 func singleResourceTerraformPlanGenerateConfigOut(t *testing.T, resource connector.ExportableResource) (jsonOutput []map[string]interface{}) {
 	t.Helper()
 
-	// Create temporary directories for export files and terraform plan testing
-	exportDir := t.TempDir()
+	dirEntries, err := os.ReadDir(exportDir)
+	if err != nil {
+		t.Fatalf("Failed to read directory entries: %v", err)
+	}
 
-	// Check if terraform is installed
-	terraformExecutableFilepath := checkTerraformInstallPath(t)
-
-	// Terraform Initialize the testing directory for terraform plan testing
-	initTerraformInDir(t, exportDir, terraformExecutableFilepath)
+	// Clear the export directory of all TF files not named main.tf
+	re := regexp.MustCompile(`^.*\.tf$`)
+	for _, de := range dirEntries {
+		if de.Name() != "main.tf" && re.MatchString(de.Name()) {
+			if err := os.RemoveAll(filepath.Join(exportDir, de.Name())); err != nil {
+				t.Fatalf("Failed to remove directory entry: %v", err)
+			}
+		}
+	}
 
 	// Export the resource
 	if err := common.WriteFiles([]connector.ExportableResource{resource}, connector.ENUMEXPORTFORMAT_HCL, exportDir, true); err != nil {
@@ -108,22 +120,15 @@ func runTerraformPlanGenerateConfigOut(t *testing.T, terraformExecutableFilepath
 	return string(stdoutOutput)
 }
 
-// Helper function to check the path of the terraform executable
-func checkTerraformInstallPath(t *testing.T) string {
+// Helper function to initialize the testing directory for terraform plan testing
+func InitTerraform(t *testing.T) {
 	t.Helper()
+
+	// Create temporary directories for export files and terraform plan testing
+	exportDir = t.TempDir()
 
 	// Check if terraform is installed
-	terraformExecutableFilepath, err := exec.LookPath("terraform")
-	if err != nil {
-		t.Fatalf("Terraform is not installed: %v", err)
-	}
-
-	return terraformExecutableFilepath
-}
-
-// Helper function to initialize the testing directory for terraform plan testing
-func initTerraformInDir(t *testing.T, exportDir string, terraformExecutableFilepath string) {
-	t.Helper()
+	checkTerraformInstallPath(t)
 
 	mainTFFileContents := fmt.Sprintf(`terraform {
 	required_providers {
@@ -134,9 +139,8 @@ func initTerraformInDir(t *testing.T, exportDir string, terraformExecutableFilep
 	}
 }
 	
-provider "pingone" {
-	# Configuration options
-}`, os.Getenv("PINGCTL_PINGONE_PROVIDER_VERSION"))
+provider "pingone" {}
+`, os.Getenv("PINGCTL_PINGONE_PROVIDER_VERSION"))
 
 	// Write main.tf to testing directory
 	mainTFFilepath := filepath.Join(exportDir, "main.tf")
@@ -153,5 +157,17 @@ provider "pingone" {
 	combinedOutput, err := initCmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("Failed to run terraform init: %v\n%s", err, combinedOutput)
+	}
+}
+
+// Helper function to check the path of the terraform executable
+func checkTerraformInstallPath(t *testing.T) {
+	t.Helper()
+
+	// Check if terraform is installed
+	var err error
+	terraformExecutableFilepath, err = exec.LookPath("terraform")
+	if err != nil {
+		t.Fatalf("Terraform is not installed: %v", err)
 	}
 }

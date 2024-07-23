@@ -1,4 +1,4 @@
-package testutils_helpers
+package testutils
 
 import (
 	"context"
@@ -7,10 +7,9 @@ import (
 	"sync"
 	"testing"
 
-	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
+	"github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/profiles"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -22,20 +21,10 @@ var (
 
 func GetEnvironmentID() string {
 	envIdOnce.Do(func() {
-		environmentId = os.Getenv("PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
+		environmentId = os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar)
 	})
 
 	return environmentId
-}
-
-// Utility method to print log file if present.
-func PrintLogs(t *testing.T) {
-	t.Helper()
-
-	logContent, err := os.ReadFile(os.Getenv("PINGCTL_LOG_PATH"))
-	if err == nil {
-		t.Logf("Captured Logs: %s", string(logContent[:]))
-	}
 }
 
 // Utility method to initialize a PingOne SDK client for testing
@@ -45,16 +34,16 @@ func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
 	apiClientOnce.Do(func() {
 		// Grab environment vars for initializing the API client.
 		// These are set in GitHub Actions.
-		clientID := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_ID")
-		clientSecret := os.Getenv("PINGCTL_PINGONE_WORKER_CLIENT_SECRET")
+		clientID := os.Getenv(profiles.WorkerClientIDOption.EnvVar)
+		clientSecret := os.Getenv(profiles.WorkerClientSecretOption.EnvVar)
 		environmentId := GetEnvironmentID()
-		region := os.Getenv("PINGCTL_PINGONE_REGION")
+		region := os.Getenv(profiles.RegionOption.EnvVar)
 
 		if clientID == "" || clientSecret == "" || environmentId == "" || region == "" {
 			t.Fatalf("Unable to retrieve env var value for one or more of clientID, clientSecret, environmentID, region.")
 		}
 
-		apiConfig := &sdk.Config{
+		apiConfig := &pingone.Config{
 			ClientID:      &clientID,
 			ClientSecret:  &clientSecret,
 			EnvironmentID: &environmentId,
@@ -157,14 +146,28 @@ func CheckExpectedError(t *testing.T, err error, errMessagePattern *string) {
 	}
 }
 
-func InitVipers(t *testing.T) {
+// Get os.File with string written to it.
+// The caller is responsible for closing the file.
+func WriteStringToPipe(str string, t *testing.T) (reader *os.File) {
 	t.Helper()
-	// Give main viper instance a file location to write to
-	mainViper := profiles.GetMainViper()
-	mainViper.SetConfigFile(t.TempDir() + "/config.yaml")
 
-	// Set up valid viper configuration
-	profileViper := viper.GetViper()
-	profileViper.Set(profiles.ColorOption.ViperKey, true)
-	profiles.SetProfileViperWithViper(profileViper)
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer writer.Close()
+
+	if _, err := writer.WriteString(str); err != nil {
+		reader.Close()
+		t.Fatal(err)
+	}
+
+	// Close the writer to simulate EOF
+	if err = writer.Close(); err != nil {
+		reader.Close()
+		t.Fatal(err)
+	}
+
+	return reader
 }

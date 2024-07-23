@@ -6,12 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	l := logger.Get()
-
-	l.Debug().Msgf("Initializing Config Get Subcommand...")
-}
-
 func NewConfigGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",

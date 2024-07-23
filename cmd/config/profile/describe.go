@@ -9,8 +9,8 @@ import (
 func NewConfigProfileDescribeCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "describe",
-		Short: "Command to describe a configuration profiles.",
-		Long:  `Command to describe a configuration profiles.`,
+		Short: "Command to describe a configuration profile.",
+		Long:  `Command to describe a configuration profile.`,
 		RunE:  ConfigProfileDescribeRunE,
 	}
 

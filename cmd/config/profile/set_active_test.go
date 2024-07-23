@@ -13,24 +13,25 @@ func TestConfigProfileSetActiveCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
+// Test Config Profile Set-Active Command fails when provided too few arguments
+func TestConfigProfileSetActiveCmd_TooFewArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config profile set-active': command accepts 1 arg\(s\), received 0$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "set-active")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Config Profile Set-Active Command fails when provided too many arguments
+func TestConfigProfileSetActiveCmd_TooManyArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config profile set-active': command accepts 1 arg\(s\), received 2$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "set-active", "production", "extra-arg")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
 // Test Config Profile Set-Active Command fails when provided an non-existent profile name
 func TestConfigProfileSetActiveCmd_NonExistentProfileName(t *testing.T) {
 	expectedErrorPattern := `^failed to set active profile: invalid profile name: '.*' profile does not exist$`
 	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "set-active", "invalid-profile")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test Config Profile Set-Active Command fails when no argument is provided
-func TestConfigProfileSetActiveCmd_NoProfileName(t *testing.T) {
-	expectedErrorPattern := `^failed to set active profile: profile name is required$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "set-active")
-	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test Config Profile Set-Active Command executes successfully when too many arguments are provided
-func TestConfigProfileSetActiveCmd_TooManyArgs(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "production", "production", "extra-arg1", "extra-arg2")
-	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Config Profile Set-Active Command executes successfully when provided the already active profile name

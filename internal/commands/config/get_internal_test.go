@@ -13,7 +13,7 @@ import (
 func Test_RunInternalConfigGet_NoArgs(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := RunInternalConfigGet([]string{})
+	err := RunInternalConfigGet("")
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -21,7 +21,7 @@ func Test_RunInternalConfigGet_NoArgs(t *testing.T) {
 func Test_RunInternalConfigGet_WithArgs(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := RunInternalConfigGet([]string{profiles.ColorOption.ViperKey})
+	err := RunInternalConfigGet(profiles.ColorOption.ViperKey)
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -29,7 +29,7 @@ func Test_RunInternalConfigGet_WithArgs(t *testing.T) {
 func Test_RunInternalConfigGet_WithArgs_NotSet(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := RunInternalConfigGet([]string{profiles.WorkerClientIDOption.ViperKey})
+	err := RunInternalConfigGet(profiles.WorkerClientIDOption.ViperKey)
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -38,36 +38,8 @@ func Test_RunInternalConfigGet_InvalidKey(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	expectedErrorPattern := `^unable to get configuration: value 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`
-	err := RunInternalConfigGet([]string{"pingctl.invalid"})
+	err := RunInternalConfigGet("pingctl.invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test RunInternalConfigGet function with too many args
-func Test_RunInternalConfigGet_TooManyArgs(t *testing.T) {
-	testutils_viper.InitVipers(t)
-
-	err := RunInternalConfigGet([]string{profiles.WorkerClientIDOption.ViperKey, profiles.WorkerClientSecretOption.ViperKey})
-	testutils.CheckExpectedError(t, err, nil)
-}
-
-// Test parseGetArgs function
-func Test_parseGetArgs(t *testing.T) {
-	_, err := parseGetArgs([]string{profiles.WorkerClientIDOption.ViperKey})
-	testutils.CheckExpectedError(t, err, nil)
-}
-
-// Test parseGetArgs function with no args
-func Test_parseGetArgs_NoArgs(t *testing.T) {
-	testutils_viper.InitVipers(t)
-
-	_, err := parseGetArgs([]string{})
-	testutils.CheckExpectedError(t, err, nil)
-}
-
-// Test parseGetArgs function with too many args
-func Test_parseGetArgs_TooManyArgs(t *testing.T) {
-	_, err := parseGetArgs([]string{profiles.WorkerClientIDOption.ViperKey, profiles.WorkerClientSecretOption.ViperKey})
-	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test PrintConfig() function
@@ -88,7 +60,7 @@ func Example_printConfig() {
 	// Output:
 	// pingctl:
 	//     color: true
-	//     output: text
+	//     outputformat: text
 	// pingone:
 	//     export:
 	//         environmentid: test-export-environment-id

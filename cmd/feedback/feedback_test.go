@@ -13,10 +13,11 @@ func TestFeedbackCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
-// Test Feedback Command Executes without issue when provided additional arguments
+// Test Feedback Command fails when provided too many arguments
 func TestFeedbackCmd_TooManyArgs(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "feedback", "arg1", "arg2", "arg3")
-	testutils.CheckExpectedError(t, err, nil)
+	expectedErrorPattern := `^failed to execute 'pingctl feedback': command accepts 0 arg\(s\), received 1$`
+	err := testutils_cobra.ExecutePingctl(t, "feedback", "extra-arg")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Feedback Command help flag

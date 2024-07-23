@@ -7,28 +7,11 @@ import (
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
 )
 
-// Test RunInternalConfigProfileDescribe function with no args
-func Test_RunInternalConfigProfileDescribe_NoArgs(t *testing.T) {
+// Test RunInternalConfigProfileDescribe function with valid arg
+func Test_RunInternalConfigProfileDescribe_ValidArg(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	expectedErrorPattern := "^failed to describe profile: profile name is required$"
-	err := RunInternalConfigProfileDescribe([]string{})
-	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test RunInternalConfigProfileDescribe function with multiple args
-func Test_RunInternalConfigProfileDescribe_MultipleArgs(t *testing.T) {
-	testutils_viper.InitVipers(t)
-
-	err := RunInternalConfigProfileDescribe([]string{"production", "extra-arg"})
-	testutils.CheckExpectedError(t, err, nil)
-}
-
-// Test RunInternalConfigProfileDescribe function with valid args
-func Test_RunInternalConfigProfileDescribe_ValidArgs(t *testing.T) {
-	testutils_viper.InitVipers(t)
-
-	err := RunInternalConfigProfileDescribe([]string{"production"})
+	err := RunInternalConfigProfileDescribe("production")
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -37,7 +20,7 @@ func Test_RunInternalConfigProfileDescribe_InvalidProfileName(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	expectedErrorPattern := "^failed to describe profile: invalid profile name: '.*'. name must contain only alphanumeric characters, underscores, and dashes$"
-	err := RunInternalConfigProfileDescribe([]string{"invalid&*^*&"})
+	err := RunInternalConfigProfileDescribe("invalid&*^*&")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -46,7 +29,7 @@ func Test_RunInternalConfigProfileDescribe_NonExistentProfile(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	expectedErrorPattern := "^failed to describe profile: invalid profile name: '.*' profile does not exist$"
-	err := RunInternalConfigProfileDescribe([]string{"invalid"})
+	err := RunInternalConfigProfileDescribe("invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -54,7 +37,7 @@ func Test_RunInternalConfigProfileDescribe_NonExistentProfile(t *testing.T) {
 func Test_RunInternalConfigProfileDescribe_ActiveProfile(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := RunInternalConfigProfileDescribe([]string{"default"})
+	err := RunInternalConfigProfileDescribe("default")
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -62,14 +45,14 @@ func Test_RunInternalConfigProfileDescribe_ActiveProfile(t *testing.T) {
 func Example_runInternalConfigProfileDescribe() {
 	testutils_viper.InitVipers(&testing.T{})
 
-	_ = RunInternalConfigProfileDescribe([]string{"production"})
+	_ = RunInternalConfigProfileDescribe("production")
 
 	// Output:
 	// Profile Name: production
 	// Description: test profile description
 	//
 	// Set Options:
-	//  - pingctl.output: text
+	//  - pingctl.outputFormat: text
 	//  - pingctl.color: true
 	//
 	// Unset Options:
@@ -78,27 +61,4 @@ func Example_runInternalConfigProfileDescribe() {
 	//  - pingone.worker.clientID
 	//  - pingone.worker.clientSecret
 	//  - pingone.region
-}
-
-// Test parseDescArgs function with no args
-func Test_parseDescArgs_NoArgs(t *testing.T) {
-	expectedErrorPattern := "^profile name is required$"
-	_, err := parseDescArgs([]string{})
-	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test parseDescArgs function with multiple args
-func Test_parseDescArgs_MultipleArgs(t *testing.T) {
-	_, err := parseDescArgs([]string{"production", "extra-arg"})
-	testutils.CheckExpectedError(t, err, nil)
-}
-
-// Test parseDescArgs function with one arg
-func Test_parseDescArgs_OneArg(t *testing.T) {
-	parsedArg, err := parseDescArgs([]string{"production"})
-	testutils.CheckExpectedError(t, err, nil)
-
-	if parsedArg != "production" {
-		t.Fatalf("Expected parsed arg to be 'production', got '%s'", parsedArg)
-	}
 }

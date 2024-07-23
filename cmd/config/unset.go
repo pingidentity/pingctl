@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/pingidentity/pingctl/cmd/common"
 	config_internal "github.com/pingidentity/pingctl/internal/commands/config"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
@@ -8,12 +9,14 @@ import (
 
 func NewConfigUnsetCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "unset",
+		Args:                  common.ExactArgs(1),
+		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
+		Example: `pingctl config unset pingctl.color
+pingctl config unset pingone.region`,
+		Long:  `Unset pingctl configuration settings.`,
+		RunE:  ConfigUnsetRunE,
 		Short: "Unset pingctl configuration settings.",
-		Long: `Unset pingctl configuration settings.
-
-Example command usage: 'pingctl config unset pingctl.color'`,
-		RunE: ConfigUnsetRunE,
+		Use:   "unset [flags] key",
 	}
 
 	return cmd
@@ -22,7 +25,7 @@ func ConfigUnsetRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Get Subcommand Called.")
 
-	if err := config_internal.RunInternalConfigUnset(args); err != nil {
+	if err := config_internal.RunInternalConfigUnset(args[0]); err != nil {
 		return err
 	}
 

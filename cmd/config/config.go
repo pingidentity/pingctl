@@ -7,9 +7,9 @@ import (
 
 func NewConfigCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "config",
-		Short: "Command to get, set, and unset pingctl configuration settings.",
 		Long:  `Command to get, set, and unset pingctl configuration settings.`,
+		Short: "Command to get, set, and unset pingctl configuration settings.",
+		Use:   "config",
 	}
 
 	cmd.AddCommand(NewConfigGetCommand())

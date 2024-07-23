@@ -1,19 +1,26 @@
 package auth
 
 import (
+	"github.com/pingidentity/pingctl/cmd/common"
 	"github.com/spf13/cobra"
 )
 
 func NewLogoutCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "logout",
-		Short: "Logout user from the CLI",
-		Long:  "Logout user from the CLI",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			// authConnectors := []connector.Authenticatable{}
-			return nil
-		},
+		Args:                  common.ExactArgs(0),
+		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
+		Long:                  "Logout user from the CLI",
+		RunE:                  AuthLogoutRunE,
+		Short:                 "Logout user from the CLI",
+		Use:                   "logout [flags]",
 	}
 
 	return cmd
+}
+
+func AuthLogoutRunE(cmd *cobra.Command, args []string) error {
+	// l := logger.Get()
+	// l.Debug().Msgf("Auth Logout Subcommand Called.")
+
+	return nil
 }

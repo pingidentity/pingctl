@@ -13,10 +13,11 @@ func TestConfigProfileListCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
-// Test Config Profile List Command executes successfully when provided too many arguments
+// Test Config Profile List Command fails when provided too many arguments
 func TestConfigProfileListCmd_TooManyArgs(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "list", "extra-arg1", "extra-arg2")
-	testutils.CheckExpectedError(t, err, nil)
+	expectedErrorPattern := `^failed to execute '.*': command accepts \d arg\(s\), received 1$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "list", "extra-arg")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Config Profile List Command executes successfully when provided the help flag

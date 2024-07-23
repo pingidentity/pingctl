@@ -13,6 +13,13 @@ func TestConfigProfileAddCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
+// Test Config Profile Add Command fails when provided too many arguments
+func TestConfigProfileAddCmd_TooManyArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config profile add': command accepts 0 arg\(s\), received 1$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "add", "extra-arg")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
 // Test Config Profile Add Command fails when provided an invalid profile name
 func TestConfigProfileAddCmd_InvalidProfileName(t *testing.T) {
 	expectedErrorPattern := `^invalid profile name: '.*'. name must contain only alphanumeric characters, underscores, and dashes$`
@@ -43,7 +50,7 @@ func TestConfigProfileAddCmd_NoProfileDescription(t *testing.T) {
 
 // Test Config Profile Add Command fails when set-active flag is provided an invalid value
 func TestConfigProfileAddCmd_InvalidSetActiveValue(t *testing.T) {
-	expectedErrorPattern := `^invalid argument "invalid" for "--set-active" flag: strconv.ParseBool: parsing "invalid": invalid syntax$`
+	expectedErrorPattern := `^invalid argument "invalid" for "-s, --set-active" flag: strconv.ParseBool: parsing "invalid": invalid syntax$`
 	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "add", "--name", "new-test-profile-name", "--set-active=invalid", "--description", "test-description")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
@@ -53,12 +60,6 @@ func TestConfigProfileAddCmd_InvalidFlag(t *testing.T) {
 	expectedErrorPattern := `^unknown flag: --invalid$`
 	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "add", "--invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test Config Profile Add Command executes successfully when provided too many arguments
-func TestConfigProfileAddCmd_TooManyArgs(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "add", "--name", "new-test-profile-name", "--set-active", "--description", "test-description", "extra-arg1", "extra-arg2")
-	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Config Profile Add Command executes successfully when provided help flag

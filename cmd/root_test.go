@@ -14,10 +14,10 @@ func TestRootCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
-// Test Root Command Executes fails when provided additional arguments
-func TestRootCmd_TooManyArgs(t *testing.T) {
-	expectedErrorPattern := `^unknown command "arg1" for "pingctl"$`
-	err := testutils_cobra.ExecutePingctl(t, "arg1")
+// Test Root Command Executes fails when provided an invalid command
+func TestRootCmd_InvalidCommand(t *testing.T) {
+	expectedErrorPattern := `^unknown command "invalid" for "pingctl"$`
+	err := testutils_cobra.ExecutePingctl(t, "invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -46,34 +46,34 @@ func TestRootCmd_VersionFlag(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
-// Test Root Command Executes when provided the --output flag
-func TestRootCmd_OutputFlag(t *testing.T) {
+// Test Root Command Executes when provided the --output-format flag
+func TestRootCmd_OutputFormatFlag(t *testing.T) {
 	for _, outputFormat := range customtypes.OutputFormatValidValues() {
-		err := testutils_cobra.ExecutePingctl(t, "--output", outputFormat)
+		err := testutils_cobra.ExecutePingctl(t, "--output-format", outputFormat)
 		testutils.CheckExpectedError(t, err, nil)
 	}
 }
 
-// Test Root Command fails when provided an invalid value for the --output flag
+// Test Root Command fails when provided an invalid value for the --output-format flag
 func TestRootCmd_InvalidOutputFlag(t *testing.T) {
-	expectedErrorPattern := `^invalid argument "invalid" for "--output" flag: unrecognized Output Format: 'invalid'\. Must be one of: [a-z\s,]+$`
-	err := testutils_cobra.ExecutePingctl(t, "--output", "invalid")
+	expectedErrorPattern := `^invalid argument "invalid" for "-O, --output-format" flag: unrecognized Output Format: 'invalid'\. Must be one of: [a-z\s,]+$`
+	err := testutils_cobra.ExecutePingctl(t, "--output-format", "invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
-// Test Root Command fails when provided no value for the --output flag
+// Test Root Command fails when provided no value for the --output-format flag
 func TestRootCmd_NoValueOutputFlag(t *testing.T) {
-	expectedErrorPattern := `^flag needs an argument: --output$`
-	err := testutils_cobra.ExecutePingctl(t, "--output")
+	expectedErrorPattern := `^flag needs an argument: --output-format$`
+	err := testutils_cobra.ExecutePingctl(t, "--output-format")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
-// Test Root Command Executes output does not change with output=text vs output=json
+// Test Root Command Executes output does not change with output-format=text vs output-format=json
 func TestRootCmd_OutputFlagTextVsJSON(t *testing.T) {
-	textOutput, err := testutils_cobra.ExecutePingctlCaptureCobraOutput(t, "--output=text")
+	textOutput, err := testutils_cobra.ExecutePingctlCaptureCobraOutput(t, "--output-format", "text")
 	testutils.CheckExpectedError(t, err, nil)
 
-	jsonOutput, err := testutils_cobra.ExecutePingctlCaptureCobraOutput(t, "--output=json")
+	jsonOutput, err := testutils_cobra.ExecutePingctlCaptureCobraOutput(t, "--output-format", "json")
 	testutils.CheckExpectedError(t, err, nil)
 
 	if textOutput != jsonOutput {

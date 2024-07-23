@@ -6,9 +6,9 @@ import (
 
 func NewPlatformCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "platform",
-		Short: "Provides details and interactions with the connected Ping Platform.",
 		Long:  `Provides details and interactions with the connected Ping Platform.`,
+		Short: "Provides details and interactions with the connected Ping Platform.",
+		Use:   "platform",
 	}
 
 	cmd.AddCommand(NewExportCommand())

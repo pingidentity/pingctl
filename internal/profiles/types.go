@@ -31,9 +31,9 @@ const (
 
 var (
 	OutputOption = Option{
-		CobraParamName: "output",
-		ViperKey:       "pingctl.output",
-		EnvVar:         "PINGCTL_OUTPUT",
+		CobraParamName: "output-format",
+		ViperKey:       "pingctl.outputFormat",
+		EnvVar:         "PINGCTL_OUTPUT_FORMAT",
 		Type:           ENUM_OUTPUT_FORMAT,
 	}
 	ColorOption = Option{
@@ -43,7 +43,7 @@ var (
 		Type:           ENUM_BOOL,
 	}
 	ProfileOption = Option{
-		CobraParamName: "profile",
+		CobraParamName: "active-profile",
 		ViperKey:       "activeProfile",
 		EnvVar:         "PINGCTL_ACTIVE_PROFILE",
 		Type:           ENUM_STRING,

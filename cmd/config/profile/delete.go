@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"github.com/pingidentity/pingctl/cmd/common"
 	profile_internal "github.com/pingidentity/pingctl/internal/commands/config/profile"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
@@ -8,10 +9,13 @@ import (
 
 func NewConfigProfileDeleteCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete",
-		Short: "Command to delete a configuration profile.",
-		Long:  `Command to delete a configuration profile.`,
-		RunE:  ConfigProfileDeleteRunE,
+		Args:                  common.ExactArgs(1),
+		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
+		Example:               `pingctl config profile delete my-profile`,
+		Long:                  `Command to delete a configuration profile.`,
+		RunE:                  ConfigProfileDeleteRunE,
+		Short:                 "Command to delete a configuration profile.",
+		Use:                   "delete [flags] profile",
 	}
 
 	return cmd
@@ -21,7 +25,7 @@ func ConfigProfileDeleteRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Profile Delete Subcommand Called.")
 
-	if err := profile_internal.RunInternalConfigProfileDelete(args); err != nil {
+	if err := profile_internal.RunInternalConfigProfileDelete(args[0]); err != nil {
 		return err
 	}
 

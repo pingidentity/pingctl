@@ -14,14 +14,14 @@ func NewConfigSetCommand() *cobra.Command {
 		Example: `pingctl config set pingctl.color=true
 pingctl config set pingone.region=AsiaPacific`,
 		Long:  `Set pingctl configuration settings.`,
-		RunE:  ConfigSetRunE,
+		RunE:  configSetRunE,
 		Short: "Set pingctl configuration settings.",
 		Use:   "set [flags] key=value",
 	}
 
 	return cmd
 }
-func ConfigSetRunE(cmd *cobra.Command, args []string) error {
+func configSetRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Get Subcommand Called.")
 

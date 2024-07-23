@@ -28,7 +28,7 @@ pingctl config profile add --name my-profile
 pingctl config profile add --name my-profile --set-active
 pingctl config profile add --name my-profile --description "My new profile"`,
 		Long:  `Command to add a new configuration profile to pingctl.`,
-		RunE:  ConfigProfileAddRunE,
+		RunE:  configProfileAddRunE,
 		Short: "Command to add a new configuration profile to pingctl.",
 		Use:   "add [flags]",
 	}
@@ -44,7 +44,7 @@ pingctl config profile add --name my-profile --description "My new profile"`,
 	return cmd
 }
 
-func ConfigProfileAddRunE(cmd *cobra.Command, args []string) error {
+func configProfileAddRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Profile Add Subcommand Called.")
 

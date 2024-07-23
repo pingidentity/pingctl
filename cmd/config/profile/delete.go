@@ -13,7 +13,7 @@ func NewConfigProfileDeleteCommand() *cobra.Command {
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
 		Example:               `pingctl config profile delete my-profile`,
 		Long:                  `Command to delete a configuration profile.`,
-		RunE:                  ConfigProfileDeleteRunE,
+		RunE:                  configProfileDeleteRunE,
 		Short:                 "Command to delete a configuration profile.",
 		Use:                   "delete [flags] profile",
 	}
@@ -21,7 +21,7 @@ func NewConfigProfileDeleteCommand() *cobra.Command {
 	return cmd
 }
 
-func ConfigProfileDeleteRunE(cmd *cobra.Command, args []string) error {
+func configProfileDeleteRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Profile Delete Subcommand Called.")
 

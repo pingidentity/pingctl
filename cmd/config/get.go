@@ -7,8 +7,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var ()
-
 func NewConfigGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.RangeArgs(0, 1),
@@ -17,16 +15,16 @@ func NewConfigGetCommand() *cobra.Command {
 pingctl config get pingone
 pingctl config get pingctl.color
 pingctl config get pingone.export.environmentID`,
-		Use:   "get [flags] [key]",
-		Short: "Get pingctl configuration settings.",
 		Long:  `Get pingctl configuration settings.`,
-		RunE:  ConfigGetRunE,
+		RunE:  configGetRunE,
+		Short: "Get pingctl configuration settings.",
+		Use:   "get [flags] [key]",
 	}
 
 	return cmd
 }
 
-func ConfigGetRunE(cmd *cobra.Command, args []string) error {
+func configGetRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Get Subcommand Called.")
 

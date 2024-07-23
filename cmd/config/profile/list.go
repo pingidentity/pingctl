@@ -12,7 +12,7 @@ func NewConfigProfileListCommand() *cobra.Command {
 		Args:                  common.ExactArgs(0),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
 		Long:                  `Command to list all configuration profiles.`,
-		RunE:                  ConfigProfileListRunE,
+		RunE:                  configProfileListRunE,
 		Short:                 "Command to list all configuration profiles.",
 		Use:                   "list [flags]",
 	}
@@ -20,7 +20,7 @@ func NewConfigProfileListCommand() *cobra.Command {
 	return cmd
 }
 
-func ConfigProfileListRunE(cmd *cobra.Command, args []string) error {
+func configProfileListRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Profile List Subcommand Called.")
 

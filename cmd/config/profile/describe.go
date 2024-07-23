@@ -12,7 +12,7 @@ func NewConfigProfileDescribeCommand() *cobra.Command {
 		Args:    common.ExactArgs(1),
 		Example: `pingctl config profile describe my-profile`,
 		Long:    `Command to describe a configuration profile.`,
-		RunE:    ConfigProfileDescribeRunE,
+		RunE:    configProfileDescribeRunE,
 		Short:   "Command to describe a configuration profile.",
 		Use:     "describe [flags] profile",
 	}
@@ -20,7 +20,7 @@ func NewConfigProfileDescribeCommand() *cobra.Command {
 	return cmd
 }
 
-func ConfigProfileDescribeRunE(cmd *cobra.Command, args []string) error {
+func configProfileDescribeRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Profile Describe Subcommand Called.")
 

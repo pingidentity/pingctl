@@ -14,14 +14,14 @@ func NewConfigUnsetCommand() *cobra.Command {
 		Example: `pingctl config unset pingctl.color
 pingctl config unset pingone.region`,
 		Long:  `Unset pingctl configuration settings.`,
-		RunE:  ConfigUnsetRunE,
+		RunE:  configUnsetRunE,
 		Short: "Unset pingctl configuration settings.",
 		Use:   "unset [flags] key",
 	}
 
 	return cmd
 }
-func ConfigUnsetRunE(cmd *cobra.Command, args []string) error {
+func configUnsetRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Get Subcommand Called.")
 

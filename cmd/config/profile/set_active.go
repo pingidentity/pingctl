@@ -12,7 +12,7 @@ func NewConfigProfileSetActiveCommand() *cobra.Command {
 		Args:    common.ExactArgs(1),
 		Example: `pingctl config profile set-active my-profile`,
 		Long:    `Command to set the active configuration profile.`,
-		RunE:    ConfigProfileSetActiveRunE,
+		RunE:    configProfileSetActiveRunE,
 		Short:   "Command to set the active configuration profile.",
 		Use:     "set-active [flags] profile",
 	}
@@ -20,7 +20,7 @@ func NewConfigProfileSetActiveCommand() *cobra.Command {
 	return cmd
 }
 
-func ConfigProfileSetActiveRunE(cmd *cobra.Command, args []string) error {
+func configProfileSetActiveRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Profile set-active Subcommand Called.")
 

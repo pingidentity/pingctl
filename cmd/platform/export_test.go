@@ -17,6 +17,13 @@ func TestPlatformExportCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
+// Test Platform Export Command fails when provided too many arguments
+func TestPlatformExportCmd_TooManyArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl platform export': command accepts 0 arg\(s\), received 1$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "extra-arg")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
 // Test Platform Export Command fails when provided invalid flag
 func TestPlatformExportCmd_InvalidFlag(t *testing.T) {
 	expectedErrorPattern := `^unknown flag: --invalid$`
@@ -43,7 +50,7 @@ func TestPlatformExportCmd_ServiceFlag(t *testing.T) {
 
 // Test Platform Export Command --service flag with invalid service
 func TestPlatformExportCmd_ServiceFlagInvalidService(t *testing.T) {
-	expectedErrorPattern := `^invalid argument "invalid" for "--service" flag: unrecognized service 'invalid'\. Must be one of: [a-z-\s,]+$`
+	expectedErrorPattern := `^invalid argument "invalid" for "-s, --service" flag: unrecognized service 'invalid'\. Must be one of: [a-z-\s,]+$`
 	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--service", "invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
@@ -58,7 +65,7 @@ func TestPlatformExportCmd_ExportFormatFlag(t *testing.T) {
 
 // Test Platform Export Command --export-format flag with invalid format
 func TestPlatformExportCmd_ExportFormatFlagInvalidFormat(t *testing.T) {
-	expectedErrorPattern := `^invalid argument "invalid" for "--export-format" flag: unrecognized export format 'invalid'\. Must be one of: [A-Z]+$`
+	expectedErrorPattern := `^invalid argument "invalid" for "-e, --export-format" flag: unrecognized export format 'invalid'\. Must be one of: [A-Z]+$`
 	err := testutils_cobra.ExecutePingctl(t, "platform", "export", "--export-format", "invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }

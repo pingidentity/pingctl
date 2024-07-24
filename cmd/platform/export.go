@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/pingidentity/pingctl/cmd/common"
 	platform_internal "github.com/pingidentity/pingctl/internal/commands/platform"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/customtypes"
@@ -23,17 +24,23 @@ var (
 
 func NewExportCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "export",
-		Short: "Export configuration-as-code packages for the Ping Platform.",
+		Args:                  common.ExactArgs(0),
+		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
+		Example: `pingctl platform export
+pingctl platform export --service pingone-platform --service pingone-sso
+pingctl platform export --output-directory dir --overwrite
+pingctl platform export --export-format HCL`,
 		Long:  `Export configuration-as-code packages for the Ping Platform.`,
-		RunE:  ExportRunE,
+		Short: "Export configuration-as-code packages for the Ping Platform.",
+		RunE:  exportRunE,
+		Use:   "export [flags]",
 	}
 
 	// Add flags that are not tracked in the viper configuration file
-	cmd.Flags().Var(&exportFormat, "export-format", fmt.Sprintf("Specifies export format\nAllowed: %q", connector.ENUMEXPORTFORMAT_HCL))
-	cmd.Flags().Var(&multiService, "service", fmt.Sprintf("Specifies service(s) to export. Allowed services: %s", multiService.String()))
-	cmd.Flags().StringVar(&outputDir, "output-directory", "", "Specifies output directory for export (Default: Present working directory)")
-	cmd.Flags().BoolVar(&overwriteExport, "overwrite", false, "Overwrite existing generated exports if set.")
+	cmd.Flags().VarP(&exportFormat, "export-format", "e", fmt.Sprintf("Specifies export format\nAllowed: %q", connector.ENUMEXPORTFORMAT_HCL))
+	cmd.Flags().VarP(&multiService, "service", "s", fmt.Sprintf("Specifies service(s) to export. Allowed services: %s", multiService.String()))
+	cmd.Flags().StringVarP(&outputDir, "output-directory", "d", "", "Specifies output directory for export (Default: Present working directory)")
+	cmd.Flags().BoolVarP(&overwriteExport, "overwrite", "o", false, "Overwrite existing generated exports if set.")
 
 	// Add flags that are bound to configuration file keys
 	cmd.Flags().String(profiles.WorkerEnvironmentIDOption.CobraParamName, "", "The ID of the PingOne environment that contains the worker token client used to authenticate.\nAlso configurable via environment variable PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID")
@@ -76,7 +83,7 @@ func NewExportCommand() *cobra.Command {
 	return cmd
 }
 
-func ExportRunE(cmd *cobra.Command, args []string) error {
+func exportRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 
 	l.Debug().Msgf("Platform Export Subcommand Called.")

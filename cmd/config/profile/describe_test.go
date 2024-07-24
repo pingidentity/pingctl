@@ -13,24 +13,25 @@ func TestConfigProfileDescribeCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
+// Test Config Profile Describe Command fails when provided too few arguments
+func TestConfigProfileDescribeCmd_TooFewArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config profile describe': command accepts 1 arg\(s\), received 0$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "describe")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Config Profile Describe Command fails when provided too many arguments
+func TestConfigProfileDescribeCmd_TooManyArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config profile describe': command accepts 1 arg\(s\), received 2$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "describe", "production", "extra-arg")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
 // Test Config Profile Describe Command fails when provided an non-existent profile name
 func TestConfigProfileDescribeCmd_NonExistentProfileName(t *testing.T) {
 	expectedErrorPattern := `^failed to describe profile: invalid profile name: '.*' profile does not exist$`
 	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "describe", "invalid-profile")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test Config Profile Describe Command fails when no argument is provided
-func TestConfigProfileDescribeCmd_NoProfileName(t *testing.T) {
-	expectedErrorPattern := `^failed to describe profile: profile name is required$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "describe")
-	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test Config Profile Describe Command executes successfully when too many arguments are provided
-func TestConfigProfileDescribeCmd_TooManyArgs(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "describe", "production", "extra-arg1", "extra-arg2")
-	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Config Profile Describe Command fails when provided an invalid flag

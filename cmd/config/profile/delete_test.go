@@ -13,24 +13,25 @@ func TestConfigProfileDeleteCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
+// Test Config Profile Delete Command fails when provided too few arguments
+func TestConfigProfileDeleteCmd_TooFewArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config profile delete': command accepts 1 arg\(s\), received 0$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "delete")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Config Profile Delete Command fails when provided too many arguments
+func TestConfigProfileDeleteCmd_TooManyArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config profile delete': command accepts 1 arg\(s\), received 2$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "delete", "production", "extra-arg")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
 // Test Config Profile Delete Command fails when provided an non-existent profile name
 func TestConfigProfileDeleteCmd_NonExistentProfileName(t *testing.T) {
 	expectedErrorPattern := `^failed to delete profile: invalid profile name: '.*' profile does not exist$`
 	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "delete", "invalid-profile")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test Config Profile Delete Command fails when no argument is provided
-func TestConfigProfileDeleteCmd_NoProfileName(t *testing.T) {
-	expectedErrorPattern := `^failed to delete profile: profile name is required$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "delete")
-	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test Config Profile Delete Command executes successfully when too many arguments are provided
-func TestConfigProfileDeleteCmd_TooManyArgs(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "profile", "delete", "production", "extra-arg1", "extra-arg2")
-	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Config Profile Delete Command fails when provided the active profile name

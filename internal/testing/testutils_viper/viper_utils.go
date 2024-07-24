@@ -16,7 +16,7 @@ default:
     description: "default description"
     pingctl:
         color: true
-        output: text
+        outputFormat: text
     pingone:
         export:
             environmentid: ""
@@ -29,7 +29,7 @@ production:
     description: "test profile description"
     pingctl:
         color: true
-        output: text
+        outputFormat: text
     pingone:
         export:
             environmentid: ""

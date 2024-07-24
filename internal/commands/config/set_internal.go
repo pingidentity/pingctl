@@ -8,13 +8,12 @@ import (
 
 	"github.com/hashicorp/go-uuid"
 	"github.com/pingidentity/pingctl/internal/customtypes"
-	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
 )
 
-func RunInternalConfigSet(args []string) error {
+func RunInternalConfigSet(kvPair string) error {
 	// Parse the key=value pair from the command line arguments
-	viperKey, value, err := parseSetArgs(args)
+	viperKey, value, err := parseKeyValuePair(kvPair)
 	if err != nil {
 		return err
 	}
@@ -54,22 +53,10 @@ func RunInternalConfigSet(args []string) error {
 	return nil
 }
 
-func parseSetArgs(args []string) (string, string, error) {
-	if len(args) == 0 {
-		return "", "", fmt.Errorf("failed to set configuration: no 'key=value' assignment given in set command")
-	}
-
-	if len(args) > 1 {
-		output.Print(output.Opts{
-			Message: fmt.Sprintf("'pingctl config set' only sets one key-value pair per command. Ignoring extra arguments: %s", strings.Join(args[1:], " ")),
-			Result:  output.ENUM_RESULT_NOACTION_WARN,
-		})
-	}
-
-	// Assume viper configuration key=value pair is args[0] and ignore any other input
-	parsedInput := strings.SplitN(args[0], "=", 2)
+func parseKeyValuePair(kvPair string) (string, string, error) {
+	parsedInput := strings.SplitN(kvPair, "=", 2)
 	if len(parsedInput) != 2 {
-		return "", "", fmt.Errorf("failed to set configuration: invalid assignment format '%s'. Expect 'key=value' format", args[0])
+		return "", "", fmt.Errorf("failed to set configuration: invalid assignment format '%s'. Expect 'key=value' format", kvPair)
 	}
 
 	return parsedInput[0], parsedInput[1], nil

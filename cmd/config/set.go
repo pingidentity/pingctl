@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/pingidentity/pingctl/cmd/common"
 	config_internal "github.com/pingidentity/pingctl/internal/commands/config"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
@@ -8,21 +9,23 @@ import (
 
 func NewConfigSetCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set",
+		Args:                  common.ExactArgs(1),
+		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
+		Example: `pingctl config set pingctl.color=true
+pingctl config set pingone.region=AsiaPacific`,
+		Long:  `Set pingctl configuration settings.`,
+		RunE:  configSetRunE,
 		Short: "Set pingctl configuration settings.",
-		Long: `Set pingctl configuration settings.
-
-Example command usage: 'pingctl config set pingctl.color=false'`,
-		RunE: ConfigSetRunE,
+		Use:   "set [flags] key=value",
 	}
 
 	return cmd
 }
-func ConfigSetRunE(cmd *cobra.Command, args []string) error {
+func configSetRunE(cmd *cobra.Command, args []string) error {
 	l := logger.Get()
 	l.Debug().Msgf("Config Get Subcommand Called.")
 
-	if err := config_internal.RunInternalConfigSet(args); err != nil {
+	if err := config_internal.RunInternalConfigSet(args[0]); err != nil {
 		return err
 	}
 

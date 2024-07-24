@@ -15,10 +15,17 @@ func TestConfigSetCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
-// Test Config Set Command Fails when no arguments are provided
-func TestConfigSetCmd_NoArgs(t *testing.T) {
-	expectedErrorPattern := `^failed to set configuration: no 'key=value' assignment given in set command$`
+// Test Config Set Command Fails when provided too few arguments
+func TestConfigSetCmd_TooFewArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config set': command accepts 1 arg\(s\), received 0$`
 	err := testutils_cobra.ExecutePingctl(t, "config", "set")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Config Set Command Fails when provided too many arguments
+func TestConfigSetCmd_TooManyArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config set': command accepts 1 arg\(s\), received 2$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", profiles.ColorOption.ViperKey), fmt.Sprintf("%s=true", profiles.ColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -41,12 +48,6 @@ func TestConfigSetCmd_NoValueProvided(t *testing.T) {
 	expectedErrorPattern := `^failed to set configuration: value for key 'pingctl\.color' is empty\. Use 'pingctl config unset pingctl\.color' to unset the key$`
 	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=", profiles.ColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test Config Set Command Executes normally when too many arguments are provided
-func TestConfigSetCmd_TooManyArgs(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", profiles.ColorOption.ViperKey), fmt.Sprintf("%s=json", profiles.OutputOption.ViperKey))
-	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Config Set Command for key 'pingone.worker.clientId' updates viper configuration

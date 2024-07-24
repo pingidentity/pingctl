@@ -6,12 +6,15 @@ import (
 
 func NewAuthCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "auth",
-		Short: "Authenticate the CLI with configured Ping connections",
 		Long:  "Authenticate the CLI with configured Ping connections",
+		Short: "Authenticate the CLI with configured Ping connections",
+		Use:   "auth",
 	}
 
-	cmd.AddCommand(NewLoginCommand(), NewLogoutCommand())
+	cmd.AddCommand(
+		NewLoginCommand(),
+		NewLogoutCommand(),
+	)
 
 	return cmd
 }

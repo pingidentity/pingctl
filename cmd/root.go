@@ -54,26 +54,26 @@ func init() {
 // rootCmd represents the base command when called without any subcommands
 func NewRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
+		Long:          `A CLI tool for managing Ping Identity products.`,
+		Short:         "A CLI tool for managing Ping Identity products.",
+		SilenceErrors: true, // Upon error in RunE method, let output package in main.go handle error output
 		Use:           "pingctl",
 		Version:       "v2.0.0-alpha.4",
-		Short:         "A CLI tool for managing Ping Identity products.",
-		Long:          `A CLI tool for managing Ping Identity products.`,
-		SilenceErrors: true, // Upon error in RunE method, let output package in main.go handle error output
 	}
 
 	cmd.AddCommand(
-		platform.NewPlatformCommand(),
-		feedback.NewFeedbackCommand(),
-		config.NewConfigCommand(),
 		// auth.NewAuthCommand(),
+		config.NewConfigCommand(),
+		feedback.NewFeedbackCommand(),
+		platform.NewPlatformCommand(),
 	)
 
 	// flags used within this file assigned to variables
-	cmd.PersistentFlags().StringVar(&cfgFile, "config", "", "Configuration file location (default \"$HOME/.pingctl/config.yaml\"")
-	cmd.PersistentFlags().StringVar(&profileName, profiles.ProfileOption.CobraParamName, "", "Profile to use from configuration file (default \"default\")")
+	cmd.PersistentFlags().StringVarP(&cfgFile, "config", "C", "", "Configuration file location (default \"$HOME/.pingctl/config.yaml\")")
+	cmd.PersistentFlags().StringVarP(&profileName, profiles.ProfileOption.CobraParamName, "P", "", "Profile to use from configuration file")
 
 	// custom pflag.Value types use Var() method
-	cmd.PersistentFlags().Var(&outputFormat, profiles.OutputOption.CobraParamName, fmt.Sprintf("Specifies output format\nValid output options: %s", strings.Join(customtypes.OutputFormatValidValues(), ", ")))
+	cmd.PersistentFlags().VarP(&outputFormat, profiles.OutputOption.CobraParamName, "O", fmt.Sprintf("Specifies output format. Valid formats: %s", strings.Join(customtypes.OutputFormatValidValues(), ", ")))
 	profiles.AddPFlagBinding(profiles.Binding{
 		Option: profiles.OutputOption,
 		Flag:   cmd.PersistentFlags().Lookup(profiles.OutputOption.CobraParamName),

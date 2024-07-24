@@ -14,6 +14,13 @@ func TestConfigGetCmd_Execute(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 }
 
+// Test Config Get Command fails when provided too many arguments
+func TestConfigGetCmd_TooManyArgs(t *testing.T) {
+	expectedErrorPattern := `^failed to execute 'pingctl config get': command accepts 0 to 1 arg\(s\), received 2$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "get", profiles.ColorOption.ViperKey, profiles.OutputOption.ViperKey)
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
 // Test Config Get Command Executes when provided a full key
 func TestConfigGetCmd_FullKey(t *testing.T) {
 	err := testutils_cobra.ExecutePingctl(t, "config", "get", profiles.WorkerClientIDOption.ViperKey)
@@ -31,10 +38,4 @@ func TestConfigGetCmd_InvalidKey(t *testing.T) {
 	expectedErrorPattern := `^unable to get configuration: value 'pingctl\.invalid' is not recognized as a valid configuration key\. Valid keys: [A-Za-z\.\s,]+$`
 	err := testutils_cobra.ExecutePingctl(t, "config", "get", "pingctl.invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
-}
-
-// Test Config Get Command Executes normally when too many arguments are provided
-func TestConfigGetCmd_TooManyArgs(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "get", profiles.ColorOption.ViperKey, profiles.OutputOption.ViperKey)
-	testutils.CheckExpectedError(t, err, nil)
 }

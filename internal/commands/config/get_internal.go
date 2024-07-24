@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func RunInternalConfigGet(args []string) error {
+func RunInternalConfigGet(viperKey string) error {
 	// Write the profile configuration to file,
 	// even though no configuration change is happening here
 	// This handles the edge case where the config.yaml file was generated for
@@ -19,14 +19,10 @@ func RunInternalConfigGet(args []string) error {
 		return err
 	}
 
-	viperKey, err := parseGetArgs(args)
-	if err != nil {
-		return err
-	}
-
-	// If the viper key is empty,
-	// the parseGetArgs() function already printed the entire configuration
 	if viperKey == "" {
+		if err := PrintConfig(); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -54,26 +50,6 @@ func RunInternalConfigGet(args []string) error {
 	}
 
 	return nil
-}
-
-func parseGetArgs(args []string) (string, error) {
-	// If no configuration key is supplied via args, return all configuration settings as YAML
-	if len(args) == 0 {
-		if err := PrintConfig(); err != nil {
-			return "", err
-		}
-		return "", nil
-	}
-
-	if len(args) > 1 {
-		output.Print(output.Opts{
-			Message: fmt.Sprintf("'pingctl config get' only gets one key per command. Ignoring extra arguments: %s", strings.Join(args[1:], " ")),
-			Result:  output.ENUM_RESULT_NOACTION_WARN,
-		})
-	}
-
-	// Assume viper configuration key is args[0] and ignore any other input
-	return args[0], nil
 }
 
 func PrintConfig() error {

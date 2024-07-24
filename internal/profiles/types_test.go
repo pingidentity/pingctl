@@ -4,6 +4,7 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
 )
@@ -74,3 +75,65 @@ func TestExpandedProfileKeys(t *testing.T) {
 }
 
 // Test OptionTypeFromViperKey function
+func TestOptionTypeFromViperKey(t *testing.T) {
+	// Test OptionTypeFromViperKey function
+	optType, ok := profiles.OptionTypeFromViperKey(profiles.WorkerClientIDOption.ViperKey)
+	if !ok {
+		t.Errorf("Expected key %s to be found", profiles.WorkerClientIDOption.ViperKey)
+	}
+
+	// Check the type of the option
+	if optType != profiles.WorkerClientIDOption.Type {
+		t.Errorf("Expected type %s, but got %s", profiles.WorkerClientIDOption.Type, optType)
+	}
+
+	// Check random key is not found
+	_, ok = profiles.OptionTypeFromViperKey("random")
+	if ok {
+		t.Errorf("Expected key %s to not be found", "random")
+	}
+}
+
+// Test GetDefaultValue function
+func TestGetDefaultValue(t *testing.T) {
+	// Test GetDefaultValue function with bool type
+	val := profiles.GetDefaultValue(profiles.ENUM_BOOL)
+	b, ok := val.(bool)
+	if !ok || b != false {
+		t.Errorf("Expected value %v, but got %v", false, val)
+	}
+
+	// Test GetDefaultValue function with string type
+	val = profiles.GetDefaultValue(profiles.ENUM_STRING)
+	s, ok := val.(string)
+	if !ok || s != "" {
+		t.Errorf("Expected value %v, but got %v", "", val)
+	}
+
+	// Test GetDefaultValue function with UUID type
+	val = profiles.GetDefaultValue(profiles.ENUM_ID)
+	s, ok = val.(string)
+	if !ok || s != "" {
+		t.Errorf("Expected value %v, but got %v", "", val)
+	}
+
+	// Test GetDefaultValue function with output format type
+	val = profiles.GetDefaultValue(profiles.ENUM_OUTPUT_FORMAT)
+	o, ok := val.(customtypes.OutputFormat)
+	if !ok || o != customtypes.OutputFormat("text") {
+		t.Errorf("Expected value %v, but got %v", "text", val)
+	}
+
+	// Test GetDefaultValue function with pingone region type
+	val = profiles.GetDefaultValue(profiles.ENUM_PINGONE_REGION)
+	p, ok := val.(customtypes.PingOneRegion)
+	if !ok || p != customtypes.PingOneRegion("") {
+		t.Errorf("Expected value %v, but got %v", "", val)
+	}
+
+	// Test GetDefaultValue function with random type
+	val = profiles.GetDefaultValue("random")
+	if val != nil {
+		t.Errorf("Expected value %v, but got %v", nil, val)
+	}
+}

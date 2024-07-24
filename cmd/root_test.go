@@ -109,3 +109,16 @@ func TestRootCmd_NoValueConfigFlag(t *testing.T) {
 	err := testutils_cobra.ExecutePingctl(t, "--config")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
+
+// Test Root Command Executes when provided the --active-profile flag
+func TestRootCmd_ActiveProfileFlag(t *testing.T) {
+	err := testutils_cobra.ExecutePingctl(t, "--active-profile", "default")
+	testutils.CheckExpectedError(t, err, nil)
+}
+
+// Test Root Command fails when provided no value for the --active-profile flag
+func TestRootCmd_NoValueActiveProfileFlag(t *testing.T) {
+	expectedErrorPattern := `^flag needs an argument: --active-profile$`
+	err := testutils_cobra.ExecutePingctl(t, "--active-profile")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}

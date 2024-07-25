@@ -71,3 +71,10 @@ func InitVipers(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func InitVipersCustomFile(t *testing.T, fileContents string) {
+	t.Helper()
+
+	configFileContents = fileContents
+	InitVipers(t)
+}

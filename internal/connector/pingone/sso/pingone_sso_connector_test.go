@@ -20,11 +20,9 @@ func TestSSOTerraformPlan(t *testing.T) {
 		ignoredErrors []string
 	}{
 		{
-			name:     "Application",
-			resource: resources.Application(sdkClientInfo),
-			ignoredErrors: []string{
-				`Error: attribute "oidc_options": attribute "client_id" is required`,
-			},
+			name:          "Application",
+			resource:      resources.Application(sdkClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:          "ApplicationAttributeMapping",

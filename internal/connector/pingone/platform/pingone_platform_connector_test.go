@@ -79,11 +79,9 @@ func TestPlatformTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
-			name:     "Form",
-			resource: resources.Form(sdkClientInfo),
-			ignoredErrors: []string{
-				`Error: attribute "components": attribute "fields": incorrect set element type: attributes "other_option_attribute_disabled", "other_option_enabled", "other_option_input_label", "other_option_key", and "other_option_label" are required`,
-			},
+			name:          "Form",
+			resource:      resources.Form(sdkClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:     "FormRecaptchaV2",

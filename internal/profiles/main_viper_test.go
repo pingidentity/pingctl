@@ -35,14 +35,16 @@ func TestGetConfigActiveProfile(t *testing.T) {
 func TestSetConfigActiveProfile(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := profiles.SetConfigActiveProfile("production")
+	pName := "test"
+
+	err := profiles.SetConfigActiveProfile(pName)
 	if err != nil {
 		t.Errorf("SetConfigActiveProfile returned error: %v", err)
 	}
 
 	profile := profiles.GetConfigActiveProfile()
-	if profile != "production" {
-		t.Errorf("GetConfigActiveProfile returned %s, expected 'test'", profile)
+	if profile != pName {
+		t.Errorf("GetConfigActiveProfile returned '%s', expected '%s'", profile, pName)
 	}
 }
 

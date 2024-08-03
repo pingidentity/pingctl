@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneApplicationSecretResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneApplicationSecretResource
-func ApplicationSecret(clientInfo *connector.SDKClientInfo) *PingoneApplicationSecretResource {
+func ApplicationSecret(clientInfo *connector.PingOneClientInfo) *PingoneApplicationSecretResource {
 	return &PingoneApplicationSecretResource{
 		clientInfo: clientInfo,
 	}

@@ -20,7 +20,7 @@ func TestMultiService_NewMultiService(t *testing.T) {
 // Test custom type MultiService GetServices() method
 func TestMultiService_GetServices(t *testing.T) {
 	multiService := customtypes.NewMultiService()
-	expectedService := customtypes.ENUM_SERVICE_PLATFORM
+	expectedService := customtypes.ENUM_SERVICE_PINGONE_PLATFORM
 	err := multiService.Set(expectedService)
 	testutils.CheckExpectedError(t, err, nil)
 
@@ -41,7 +41,7 @@ func TestMultiService_GetServices(t *testing.T) {
 // Test custom type MultiService Set() method with a valid value
 func TestMultiService_SetValid(t *testing.T) {
 	multiService := customtypes.NewMultiService()
-	err := multiService.Set(customtypes.ENUM_SERVICE_PLATFORM)
+	err := multiService.Set(customtypes.ENUM_SERVICE_PINGONE_PLATFORM)
 	testutils.CheckExpectedError(t, err, nil)
 }
 

@@ -12,11 +12,11 @@ var (
 )
 
 type PingoneBrandingSettingsResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneBrandingSettingsResource
-func BrandingSettings(clientInfo *connector.SDKClientInfo) *PingoneBrandingSettingsResource {
+func BrandingSettings(clientInfo *connector.PingOneClientInfo) *PingoneBrandingSettingsResource {
 	return &PingoneBrandingSettingsResource{
 		clientInfo: clientInfo,
 	}

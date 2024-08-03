@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneSchemaAttributeResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneSchemaAttributeResource
-func SchemaAttribute(clientInfo *connector.SDKClientInfo) *PingoneSchemaAttributeResource {
+func SchemaAttribute(clientInfo *connector.PingOneClientInfo) *PingoneSchemaAttributeResource {
 	return &PingoneSchemaAttributeResource{
 		clientInfo: clientInfo,
 	}

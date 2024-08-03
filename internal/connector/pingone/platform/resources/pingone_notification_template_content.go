@@ -15,11 +15,11 @@ var (
 )
 
 type PingoneNotificationTemplateContentResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneNotificationTemplateContentResource
-func NotificationTemplateContent(clientInfo *connector.SDKClientInfo) *PingoneNotificationTemplateContentResource {
+func NotificationTemplateContent(clientInfo *connector.PingOneClientInfo) *PingoneNotificationTemplateContentResource {
 	return &PingoneNotificationTemplateContentResource{
 		clientInfo: clientInfo,
 	}

@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneFormResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneFormResource
-func Form(clientInfo *connector.SDKClientInfo) *PingoneFormResource {
+func Form(clientInfo *connector.PingOneClientInfo) *PingoneFormResource {
 	return &PingoneFormResource{
 		clientInfo: clientInfo,
 	}

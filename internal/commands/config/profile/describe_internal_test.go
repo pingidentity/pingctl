@@ -61,4 +61,13 @@ func Example_runInternalConfigProfileDescribe() {
 	//  - pingone.worker.clientID
 	//  - pingone.worker.clientSecret
 	//  - pingone.region
+	//  - pingfederate.basicAuth.username
+	//  - pingfederate.basicAuth.password
+	//  - pingfederate.httpsHost
+	//  - pingfederate.adminApiPath
+	//  - pingfederate.clientCredentialsAuth.clientID
+	//  - pingfederate.clientCredentialsAuth.clientSecret
+	//  - pingfederate.clientCredentialsAuth.tokenURL
+	//  - pingfederate.clientCredentialsAuth.scopes
+	//  - pingfederate.accessTokenAuth.accessToken
 }

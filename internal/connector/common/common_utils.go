@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/pingidentity/pingctl/internal/connector"
+	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
@@ -60,8 +61,8 @@ func WriteFiles(exportableResources []connector.ExportableResource, format, outp
 				if err != nil {
 					return fmt.Errorf("failed to write import block template to file %q. err: %s", outputFilePath, err.Error())
 				}
-				// default:
-				// Note that this default case is already handled in export.go, and should never be called.
+			default:
+				return fmt.Errorf("unrecognized export format %q. Must be one of: %s", format, customtypes.ExportFormatValidValues())
 			}
 		}
 	}

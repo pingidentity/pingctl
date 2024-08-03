@@ -13,11 +13,11 @@ var (
 )
 
 type PingoneAgreementLocalizationEnableResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneAgreementLocalizationEnableResource
-func AgreementLocalizationEnable(clientInfo *connector.SDKClientInfo) *PingoneAgreementLocalizationEnableResource {
+func AgreementLocalizationEnable(clientInfo *connector.PingOneClientInfo) *PingoneAgreementLocalizationEnableResource {
 	return &PingoneAgreementLocalizationEnableResource{
 		clientInfo: clientInfo,
 	}

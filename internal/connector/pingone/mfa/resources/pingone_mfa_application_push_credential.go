@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneMFAApplicationPushCredentialResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneMFAApplicationPushCredentialResource
-func MFAApplicationPushCredential(clientInfo *connector.SDKClientInfo) *PingoneMFAApplicationPushCredentialResource {
+func MFAApplicationPushCredential(clientInfo *connector.PingOneClientInfo) *PingoneMFAApplicationPushCredentialResource {
 	return &PingoneMFAApplicationPushCredentialResource{
 		clientInfo: clientInfo,
 	}

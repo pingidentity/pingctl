@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneApplicationAttributeMappingResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneApplicationAttributeMappingResource
-func ApplicationAttributeMapping(clientInfo *connector.SDKClientInfo) *PingoneApplicationAttributeMappingResource {
+func ApplicationAttributeMapping(clientInfo *connector.PingOneClientInfo) *PingoneApplicationAttributeMappingResource {
 	return &PingoneApplicationAttributeMappingResource{
 		clientInfo: clientInfo,
 	}

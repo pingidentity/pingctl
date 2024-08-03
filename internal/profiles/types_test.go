@@ -29,8 +29,8 @@ func TestProfileKeys(t *testing.T) {
 	}
 
 	// Check random profile key is in the list
-	if !slices.Contains(keys, profiles.WorkerClientIDOption.ViperKey) {
-		t.Errorf("Expected key %s in the list", profiles.WorkerClientIDOption.ViperKey)
+	if !slices.Contains(keys, profiles.PingOneWorkerClientIDOption.ViperKey) {
+		t.Errorf("Expected key %s in the list", profiles.PingOneWorkerClientIDOption.ViperKey)
 	}
 
 	// Make sure the list is sorted
@@ -59,8 +59,8 @@ func TestExpandedProfileKeys(t *testing.T) {
 	}
 
 	// Check random profile key is in the list
-	if !slices.Contains(keys, profiles.WorkerClientIDOption.ViperKey) {
-		t.Errorf("Expected key %s in the list", profiles.WorkerClientIDOption.ViperKey)
+	if !slices.Contains(keys, profiles.PingOneWorkerClientIDOption.ViperKey) {
+		t.Errorf("Expected key %s in the list", profiles.PingOneWorkerClientIDOption.ViperKey)
 	}
 
 	// Check random parent profile key is in the list
@@ -77,14 +77,14 @@ func TestExpandedProfileKeys(t *testing.T) {
 // Test OptionTypeFromViperKey function
 func TestOptionTypeFromViperKey(t *testing.T) {
 	// Test OptionTypeFromViperKey function
-	optType, ok := profiles.OptionTypeFromViperKey(profiles.WorkerClientIDOption.ViperKey)
+	optType, ok := profiles.OptionTypeFromViperKey(profiles.PingOneWorkerClientIDOption.ViperKey)
 	if !ok {
-		t.Errorf("Expected key %s to be found", profiles.WorkerClientIDOption.ViperKey)
+		t.Errorf("Expected key %s to be found", profiles.PingOneWorkerClientIDOption.ViperKey)
 	}
 
 	// Check the type of the option
-	if optType != profiles.WorkerClientIDOption.Type {
-		t.Errorf("Expected type %s, but got %s", profiles.WorkerClientIDOption.Type, optType)
+	if optType != profiles.PingOneWorkerClientIDOption.Type {
+		t.Errorf("Expected type %s, but got %s", profiles.PingOneWorkerClientIDOption.Type, optType)
 	}
 
 	// Check random key is not found

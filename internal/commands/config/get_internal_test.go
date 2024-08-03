@@ -29,7 +29,7 @@ func Test_RunInternalConfigGet_WithArgs(t *testing.T) {
 func Test_RunInternalConfigGet_WithArgs_NotSet(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := RunInternalConfigGet(profiles.WorkerClientIDOption.ViperKey)
+	err := RunInternalConfigGet(profiles.PingOneWorkerClientIDOption.ViperKey)
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -48,11 +48,11 @@ func Example_printConfig() {
 	profileViper := viper.New()
 	profileViper.Set(profiles.ColorOption.ViperKey, true)
 	profileViper.Set(profiles.OutputOption.ViperKey, "text")
-	profileViper.Set(profiles.RegionOption.ViperKey, "test-region")
-	profileViper.Set(profiles.WorkerClientIDOption.ViperKey, "test-client-id")
-	profileViper.Set(profiles.WorkerClientSecretOption.ViperKey, "test-client-secret")
-	profileViper.Set(profiles.WorkerEnvironmentIDOption.ViperKey, "test-environment-id")
-	profileViper.Set(profiles.ExportEnvironmentIDOption.ViperKey, "test-export-environment-id")
+	profileViper.Set(profiles.PingOneRegionOption.ViperKey, "test-region")
+	profileViper.Set(profiles.PingOneWorkerClientIDOption.ViperKey, "test-client-id")
+	profileViper.Set(profiles.PingOneWorkerClientSecretOption.ViperKey, "test-client-secret")
+	profileViper.Set(profiles.PingOneWorkerEnvironmentIDOption.ViperKey, "test-environment-id")
+	profileViper.Set(profiles.PingOneExportEnvironmentIDOption.ViperKey, "test-export-environment-id")
 	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
 	_ = PrintConfig()
@@ -75,11 +75,11 @@ func Example_printConfig() {
 func Example_printConfigFromKey() {
 	// set viper configuration key-value for testing
 	profileViper := viper.New()
-	profileViper.Set(profiles.RegionOption.ViperKey, "test-region")
+	profileViper.Set(profiles.PingOneRegionOption.ViperKey, "test-region")
 	profileViper.Set(profiles.OutputOption.ViperKey, "text")
 	profiles.SetProfileViperWithViper(profileViper, "testProfile")
 
-	_ = printConfigFromKey(profiles.RegionOption.ViperKey)
+	_ = printConfigFromKey(profiles.PingOneRegionOption.ViperKey)
 	_ = printConfigFromKey(profiles.OutputOption.ViperKey)
 
 	// Output:

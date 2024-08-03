@@ -15,11 +15,11 @@ var (
 )
 
 type PingonePhoneDeliverySettingsResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingonePhoneDeliverySettingsResource
-func PhoneDeliverySettings(clientInfo *connector.SDKClientInfo) *PingonePhoneDeliverySettingsResource {
+func PhoneDeliverySettings(clientInfo *connector.PingOneClientInfo) *PingonePhoneDeliverySettingsResource {
 	return &PingonePhoneDeliverySettingsResource{
 		clientInfo: clientInfo,
 	}

@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneIdentityProviderResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneIdentityProviderResource
-func IdentityProvider(clientInfo *connector.SDKClientInfo) *PingoneIdentityProviderResource {
+func IdentityProvider(clientInfo *connector.PingOneClientInfo) *PingoneIdentityProviderResource {
 	return &PingoneIdentityProviderResource{
 		clientInfo: clientInfo,
 	}

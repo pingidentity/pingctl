@@ -10,9 +10,9 @@ import (
 )
 
 func TestSSOTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
+	PingOneClientInfo := testutils.GetPingOneClientInfo(t)
 
-	testutils_terraform.InitTerraform(t)
+	testutils_terraform.InitPingOneTerraform(t)
 
 	testCases := []struct {
 		name          string
@@ -21,119 +21,119 @@ func TestSSOTerraformPlan(t *testing.T) {
 	}{
 		{
 			name:          "Application",
-			resource:      resources.Application(sdkClientInfo),
+			resource:      resources.Application(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ApplicationAttributeMapping",
-			resource:      resources.ApplicationAttributeMapping(sdkClientInfo),
+			resource:      resources.ApplicationAttributeMapping(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ApplicationFlowPolicyAssignment",
-			resource:      resources.ApplicationFlowPolicyAssignment(sdkClientInfo),
+			resource:      resources.ApplicationFlowPolicyAssignment(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ApplicationResourceGrant",
-			resource:      resources.ApplicationResourceGrant(sdkClientInfo),
+			resource:      resources.ApplicationResourceGrant(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ApplicationRoleAssignment",
-			resource:      resources.ApplicationRoleAssignment(sdkClientInfo),
+			resource:      resources.ApplicationRoleAssignment(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ApplicationSecret",
-			resource:      resources.ApplicationSecret(sdkClientInfo),
+			resource:      resources.ApplicationSecret(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ApplicationSignOnPolicyAssignment",
-			resource:      resources.ApplicationSignOnPolicyAssignment(sdkClientInfo),
+			resource:      resources.ApplicationSignOnPolicyAssignment(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "Group",
-			resource:      resources.Group(sdkClientInfo),
+			resource:      resources.Group(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "GroupNesting",
-			resource:      resources.GroupNesting(sdkClientInfo),
+			resource:      resources.GroupNesting(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "GroupRoleAssignment",
-			resource:      resources.GroupRoleAssignment(sdkClientInfo),
+			resource:      resources.GroupRoleAssignment(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "IdentityProvider",
-			resource:      resources.IdentityProvider(sdkClientInfo),
+			resource:      resources.IdentityProvider(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "IdentityProviderAttribute",
-			resource:      resources.IdentityProviderAttribute(sdkClientInfo),
+			resource:      resources.IdentityProviderAttribute(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "PasswordPolicy",
-			resource:      resources.PasswordPolicy(sdkClientInfo),
+			resource:      resources.PasswordPolicy(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "Population",
-			resource:      resources.Population(sdkClientInfo),
+			resource:      resources.Population(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "PopulationDefault",
-			resource:      resources.PopulationDefault(sdkClientInfo),
+			resource:      resources.PopulationDefault(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "Resource",
-			resource:      resources.Resource(sdkClientInfo),
+			resource:      resources.Resource(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ResourceAttribute",
-			resource:      resources.ResourceAttribute(sdkClientInfo),
+			resource:      resources.ResourceAttribute(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ResourceScope",
-			resource:      resources.ResourceScope(sdkClientInfo),
+			resource:      resources.ResourceScope(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ResourceScopeOpenId",
-			resource:      resources.ResourceScopeOpenId(sdkClientInfo),
+			resource:      resources.ResourceScopeOpenId(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "ResourceScopePingOneApi",
-			resource:      resources.ResourceScopePingOneApi(sdkClientInfo),
+			resource:      resources.ResourceScopePingOneApi(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:     "SchemaAttribute",
-			resource: resources.SchemaAttribute(sdkClientInfo),
+			resource: resources.SchemaAttribute(PingOneClientInfo),
 			ignoredErrors: []string{
 				"Error: Data Loss Protection",
 			},
 		},
 		{
 			name:          "SignOnPolicy",
-			resource:      resources.SignOnPolicy(sdkClientInfo),
+			resource:      resources.SignOnPolicy(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:     "SignOnPolicyAction",
-			resource: resources.SignOnPolicyAction(sdkClientInfo),
+			resource: resources.SignOnPolicyAction(PingOneClientInfo),
 			ignoredErrors: []string{
 				"Error: Conflicting configuration arguments",
 			},

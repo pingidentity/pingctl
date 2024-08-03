@@ -121,7 +121,7 @@ func runTerraformPlanGenerateConfigOut(t *testing.T, terraformExecutableFilepath
 }
 
 // Helper function to initialize the testing directory for terraform plan testing
-func InitTerraform(t *testing.T) {
+func InitPingOneTerraform(t *testing.T) {
 	t.Helper()
 
 	// Create temporary directories for export files and terraform plan testing
@@ -141,6 +141,61 @@ func InitTerraform(t *testing.T) {
 	
 provider "pingone" {}
 `, os.Getenv("PINGCTL_PINGONE_PROVIDER_VERSION"))
+
+	// Write main.tf to testing directory
+	mainTFFilepath := filepath.Join(exportDir, "main.tf")
+	if err := os.WriteFile(mainTFFilepath, []byte(mainTFFileContents), 0600); err != nil {
+		t.Fatalf("Failed to write main.tf to testing directory: %v", err)
+	}
+
+	// Run terraform init in testing directory
+	initCmd := exec.Command(terraformExecutableFilepath)
+	initCmd.Args = append(initCmd.Args, "init")
+	initCmd.Dir = exportDir
+
+	// Run the command
+	combinedOutput, err := initCmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("Failed to run terraform init: %v\n%s", err, combinedOutput)
+	}
+}
+
+func InitPingFederateTerraform(t *testing.T) {
+	t.Helper()
+
+	// Create temporary directories for export files and terraform plan testing
+	exportDir = t.TempDir()
+
+	// Check if terraform is installed
+	checkTerraformInstallPath(t)
+
+	mainTFFileContents := fmt.Sprintf(`terraform {
+	required_providers {
+		pingfederate = {
+		source = "pingidentity/pingfederate"
+		version = "%s"
+		}
+	}
+}
+	
+provider "pingfederate" {
+  client_id       = "%s"
+  client_secret   = "%s"
+  scopes          = ["%s"]
+  token_url       = "%s"
+  https_host      = "%s"
+  admin_api_path  = "%s"
+  product_version = "12.1"
+  insecure_trust_all_tls = true
+  x_bypass_external_validation_header = true
+}
+`, os.Getenv("PINGCTL_PINGFEDERATE_PROVIDER_VERSION"),
+		os.Getenv("PINGCTL_PINGFEDERATE_CLIENT_ID"),
+		os.Getenv("PINGCTL_PINGFEDERATE_CLIENT_SECRET"),
+		os.Getenv("PINGCTL_PINGFEDERATE_SCOPES"),
+		os.Getenv("PINGCTL_PINGFEDERATE_TOKEN_URL"),
+		os.Getenv("PINGCTL_PINGFEDERATE_HTTPS_HOST"),
+		os.Getenv("PINGCTL_PINGFEDERATE_ADMIN_API_PATH"))
 
 	// Write main.tf to testing directory
 	mainTFFilepath := filepath.Join(exportDir, "main.tf")

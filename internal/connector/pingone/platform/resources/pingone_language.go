@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneLanguageResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneLanguageResource
-func Language(clientInfo *connector.SDKClientInfo) *PingoneLanguageResource {
+func Language(clientInfo *connector.PingOneClientInfo) *PingoneLanguageResource {
 	return &PingoneLanguageResource{
 		clientInfo: clientInfo,
 	}

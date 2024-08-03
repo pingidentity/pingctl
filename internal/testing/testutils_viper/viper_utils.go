@@ -9,9 +9,8 @@ import (
 )
 
 var (
-	// use spaces for tabs in the config file contents below,
-	// as tabs are not supported in YAML
-	configFileContents = fmt.Sprintf(`activeProfile: default
+	configFileContents        string
+	defaultConfigFileContents string = fmt.Sprintf(`activeProfile: default
 default:
     description: "default description"
     pingctl:
@@ -25,6 +24,19 @@ default:
             clientid: %s
             clientsecret: %s
             environmentid: %s
+    pingfederate:
+        accesstokenauth:
+            accesstoken: ""
+        adminapipath: ""
+        basicauth:
+            password: "%s"
+            username: "%s"
+        clientcredentialsauth:
+            clientid: "%s"
+            clientsecret: "%s"
+            scopes: "%s"
+            tokenurl: "%s"
+        httpshost: "%s"
 production:
     description: "test profile description"
     pingctl:
@@ -37,15 +49,39 @@ production:
         worker:
             clientid: ""
             clientsecret: ""
-            environmentid: ""`,
-		os.Getenv(profiles.RegionOption.EnvVar),
-		os.Getenv(profiles.WorkerClientIDOption.EnvVar),
-		os.Getenv(profiles.WorkerClientSecretOption.EnvVar),
-		os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
+            environmentid: ""
+    pingfederate:
+        accesstokenauth:
+            accesstoken: ""
+        adminapipath: ""
+        basicauth:
+            password: ""
+            username: ""
+        clientcredentialsauth:
+            clientid: ""
+            clientsecret: ""
+            scopes: ""
+            tokenurl: ""
+        httpshost: ""`,
+		os.Getenv(profiles.PingOneRegionOption.EnvVar),
+		os.Getenv(profiles.PingOneWorkerClientIDOption.EnvVar),
+		os.Getenv(profiles.PingOneWorkerClientSecretOption.EnvVar),
+		os.Getenv(profiles.PingOneWorkerEnvironmentIDOption.EnvVar),
+		os.Getenv(profiles.PingFederatePasswordOption.EnvVar),
+		os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		os.Getenv(profiles.PingFederateClientIDOption.EnvVar),
+		os.Getenv(profiles.PingFederateClientSecretOption.EnvVar),
+		os.Getenv(profiles.PingFederateScopesOption.EnvVar),
+		os.Getenv(profiles.PingFederateTokenURLOption.EnvVar),
+		os.Getenv(profiles.PingFederateHttpsHostOption.EnvVar))
 )
 
 func CreateConfigFile(t *testing.T) string {
 	t.Helper()
+
+	if configFileContents == "" {
+		configFileContents = defaultConfigFileContents
+	}
 
 	configFilepath := t.TempDir() + "/config.yaml"
 	if err := os.WriteFile(configFilepath, []byte(configFileContents), 0600); err != nil {
@@ -55,10 +91,10 @@ func CreateConfigFile(t *testing.T) string {
 	return configFilepath
 }
 
-func InitVipers(t *testing.T) {
+func configureMainViper(t *testing.T) {
 	t.Helper()
 
-	// // Create and write to a temporary config file
+	// Create and write to a temporary config file
 	configFilepath := CreateConfigFile(t)
 	// Give main viper instance a file location to write to
 	mainViper := profiles.GetMainViper()
@@ -72,9 +108,17 @@ func InitVipers(t *testing.T) {
 	}
 }
 
+func InitVipers(t *testing.T) {
+	t.Helper()
+
+	configFileContents = defaultConfigFileContents
+
+	configureMainViper(t)
+}
+
 func InitVipersCustomFile(t *testing.T, fileContents string) {
 	t.Helper()
 
 	configFileContents = fileContents
-	InitVipers(t)
+	configureMainViper(t)
 }

@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneCustomDomainResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneCustomDomainResource
-func CustomDomain(clientInfo *connector.SDKClientInfo) *PingoneCustomDomainResource {
+func CustomDomain(clientInfo *connector.PingOneClientInfo) *PingoneCustomDomainResource {
 	return &PingoneCustomDomainResource{
 		clientInfo: clientInfo,
 	}

@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneWebhookResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneWebhookResource
-func Webhook(clientInfo *connector.SDKClientInfo) *PingoneWebhookResource {
+func Webhook(clientInfo *connector.PingOneClientInfo) *PingoneWebhookResource {
 	return &PingoneWebhookResource{
 		clientInfo: clientInfo,
 	}

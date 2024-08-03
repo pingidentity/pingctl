@@ -14,11 +14,11 @@ var (
 )
 
 type PingonePopulationResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingonePopulationResource
-func Population(clientInfo *connector.SDKClientInfo) *PingonePopulationResource {
+func Population(clientInfo *connector.PingOneClientInfo) *PingonePopulationResource {
 	return &PingonePopulationResource{
 		clientInfo: clientInfo,
 	}

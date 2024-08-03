@@ -10,9 +10,9 @@ import (
 )
 
 func TestMFATerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
+	PingOneClientInfo := testutils.GetPingOneClientInfo(t)
 
-	testutils_terraform.InitTerraform(t)
+	testutils_terraform.InitPingOneTerraform(t)
 
 	testCases := []struct {
 		name          string
@@ -21,24 +21,24 @@ func TestMFATerraformPlan(t *testing.T) {
 	}{
 		{
 			name:     "MFAApplicationPushCredential",
-			resource: resources.MFAApplicationPushCredential(sdkClientInfo),
+			resource: resources.MFAApplicationPushCredential(PingOneClientInfo),
 			ignoredErrors: []string{
 				"Error: Invalid Attribute Combination",
 			},
 		},
 		{
 			name:          "MFAFido2Policy",
-			resource:      resources.MFAFido2Policy(sdkClientInfo),
+			resource:      resources.MFAFido2Policy(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "MFADevicePolicy",
-			resource:      resources.MFADevicePolicy(sdkClientInfo),
+			resource:      resources.MFADevicePolicy(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "MFASettings",
-			resource:      resources.MFASettings(sdkClientInfo),
+			resource:      resources.MFASettings(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 	}

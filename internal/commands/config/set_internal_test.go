@@ -19,7 +19,7 @@ func Test_RunInternalConfigSet_WithArgs(t *testing.T) {
 		t.Fatalf("failed to generate UUID: %v", err)
 	}
 
-	err = RunInternalConfigSet(fmt.Sprintf("%s=%s", profiles.WorkerClientIDOption.ViperKey, uuid))
+	err = RunInternalConfigSet(fmt.Sprintf("%s=%s", profiles.PingOneWorkerClientIDOption.ViperKey, uuid))
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -33,14 +33,14 @@ func Test_RunInternalConfigSet_InvalidKey(t *testing.T) {
 // Test RunInternalConfigSet function with empty value
 func Test_RunInternalConfigSet_EmptyValue(t *testing.T) {
 	expectedErrorPattern := `^failed to set configuration: value for key 'pingone\.worker\.clientID' is empty\. Use 'pingctl config unset pingone\.worker\.clientID' to unset the key$`
-	err := RunInternalConfigSet(fmt.Sprintf("%s=", profiles.WorkerClientIDOption.ViperKey))
+	err := RunInternalConfigSet(fmt.Sprintf("%s=", profiles.PingOneWorkerClientIDOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test RunInternalConfigSet function with invalid value
 func Test_RunInternalConfigSet_InvalidValue(t *testing.T) {
 	expectedErrorPattern := `^failed to set configuration: value for key 'pingone\.worker\.clientID' must be a valid UUID$`
-	err := RunInternalConfigSet(fmt.Sprintf("%s=invalid", profiles.WorkerClientIDOption.ViperKey))
+	err := RunInternalConfigSet(fmt.Sprintf("%s=invalid", profiles.PingOneWorkerClientIDOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -62,7 +62,7 @@ func Test_setValue_ValidValue(t *testing.T) {
 // Test setValue() function with invalid value
 func Test_setValue_InvalidValue(t *testing.T) {
 	expectedErrorPattern := `^failed to set configuration: value for key 'pingone\.worker\.clientID' must be a valid UUID$`
-	err := setValue(profiles.WorkerClientIDOption.ViperKey, "invalid", profiles.ENUM_ID)
+	err := setValue(profiles.PingOneWorkerClientIDOption.ViperKey, "invalid", profiles.ENUM_ID)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -97,14 +97,14 @@ func Test_setUUID_ValidValue(t *testing.T) {
 		t.Fatalf("failed to generate UUID: %v", err)
 	}
 
-	err = setUUID(profiles.WorkerClientIDOption.ViperKey, uuid)
+	err = setUUID(profiles.PingOneWorkerClientIDOption.ViperKey, uuid)
 	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test setUUID() function with invalid value
 func Test_setUUID_InvalidValue(t *testing.T) {
 	expectedErrorPattern := `^failed to set configuration: value for key 'pingone\.worker\.clientID' must be a valid UUID$`
-	err := setUUID(profiles.WorkerClientIDOption.ViperKey, "invalid")
+	err := setUUID(profiles.PingOneWorkerClientIDOption.ViperKey, "invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -127,13 +127,13 @@ func Test_setOutputFormat_InvalidValue(t *testing.T) {
 func Test_setPingOneRegion_ValidValue(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := setPingOneRegion(profiles.RegionOption.ViperKey, "AsiaPacific")
+	err := setPingOneRegion(profiles.PingOneRegionOption.ViperKey, "AsiaPacific")
 	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test setPingOneRegion() function with invalid value
 func Test_setPingOneRegion_InvalidValue(t *testing.T) {
 	expectedErrorPattern := `^failed to set configuration: unrecognized PingOne Region: 'invalid'\. Must be one of: [A-Za-z\s,]+$`
-	err := setPingOneRegion(profiles.RegionOption.ViperKey, "invalid")
+	err := setPingOneRegion(profiles.PingOneRegionOption.ViperKey, "invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }

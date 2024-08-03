@@ -15,11 +15,11 @@ var (
 )
 
 type PingoneResourceScopeResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneResourceScopeResource
-func ResourceScope(clientInfo *connector.SDKClientInfo) *PingoneResourceScopeResource {
+func ResourceScope(clientInfo *connector.PingOneClientInfo) *PingoneResourceScopeResource {
 	return &PingoneResourceScopeResource{
 		clientInfo: clientInfo,
 	}

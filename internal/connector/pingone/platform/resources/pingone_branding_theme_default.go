@@ -15,11 +15,11 @@ var (
 )
 
 type PingoneBrandingThemeDefaultResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneBrandingThemeDefaultResource
-func BrandingThemeDefault(clientInfo *connector.SDKClientInfo) *PingoneBrandingThemeDefaultResource {
+func BrandingThemeDefault(clientInfo *connector.PingOneClientInfo) *PingoneBrandingThemeDefaultResource {
 	return &PingoneBrandingThemeDefaultResource{
 		clientInfo: clientInfo,
 	}

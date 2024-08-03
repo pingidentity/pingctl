@@ -134,10 +134,10 @@ func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
 		"--output-directory", outputDir,
 		"--overwrite",
 		"--service", "pingone-protect",
-		"--pingone-worker-environment-id", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar),
-		"--pingone-worker-client-id", os.Getenv(profiles.WorkerClientIDOption.EnvVar),
-		"--pingone-worker-client-secret", os.Getenv(profiles.WorkerClientSecretOption.EnvVar),
-		"--pingone-region", os.Getenv(profiles.RegionOption.EnvVar))
+		"--pingone-worker-environment-id", os.Getenv(profiles.PingOneWorkerEnvironmentIDOption.EnvVar),
+		"--pingone-worker-client-id", os.Getenv(profiles.PingOneWorkerClientIDOption.EnvVar),
+		"--pingone-worker-client-secret", os.Getenv(profiles.PingOneWorkerClientSecretOption.EnvVar),
+		"--pingone-region", os.Getenv(profiles.PingOneRegionOption.EnvVar))
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -145,6 +145,131 @@ func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlag(t *testing.T) {
 func TestPlatformExportCmd_PingOneWorkerEnvironmentIdFlagRequiredTogether(t *testing.T) {
 	expectedErrorPattern := `^if any flags in the group \[pingone-worker-environment-id pingone-worker-client-id pingone-worker-client-secret pingone-region] are set they must all be set; missing \[pingone-region pingone-worker-client-id pingone-worker-client-secret]$`
 	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
-		"--pingone-worker-environment-id", os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar))
+		"--pingone-worker-environment-id", os.Getenv(profiles.PingOneWorkerEnvironmentIDOption.EnvVar))
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Platform Export command with PingFederate Basic Auth flags
+func TestPlatformExportCmd_PingFederateBasicAuthFlags(t *testing.T) {
+	outputDir := t.TempDir()
+
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--output-directory", outputDir,
+		"--overwrite",
+		"--service", "pingfederate",
+		"--pingfederate-username", os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		"--pingfederate-password", os.Getenv(profiles.PingFederatePasswordOption.EnvVar))
+	testutils.CheckExpectedError(t, err, nil)
+}
+
+// Test Platform Export Command fails when not provided required PingFederate Basic Auth flags together
+func TestPlatformExportCmd_PingFederateBasicAuthFlagsRequiredTogether(t *testing.T) {
+	expectedErrorPattern := `^if any flags in the group \[pingfederate-username pingfederate-password] are set they must all be set; missing \[pingfederate-password]$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--pingfederate-username", "Administrator")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Platform Export Command fails when provided invalid PingFederate Basic Auth flags
+func TestPlatformExportCmd_PingFederateBasicAuthFlagsInvalid(t *testing.T) {
+	outputDir := t.TempDir()
+
+	expectedErrorPattern := `^failed to export 'pingfederate' service: failed to export resource .*\. err: .* Request for resource '.*' was not successful\.\s+Response Code: 401 Unauthorized\s+Response Body: {{"resultId":"invalid_credentials","message":"The credentials you provided were not recognized\."}}\s+Error: 401 Unauthorized$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--output-directory", outputDir,
+		"--overwrite",
+		"--service", "pingfederate",
+		"--pingfederate-username", "Administrator",
+		"--pingfederate-password", "invalid")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Platform Export command with PingFederate Client Credentials Auth flags
+func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlags(t *testing.T) {
+	outputDir := t.TempDir()
+
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--output-directory", outputDir,
+		"--overwrite",
+		"--service", "pingfederate",
+		"--pingfederate-client-id", os.Getenv(profiles.PingFederateClientIDOption.EnvVar),
+		"--pingfederate-client-secret", os.Getenv(profiles.PingFederateClientSecretOption.EnvVar),
+		"--pingfederate-scopes", os.Getenv(profiles.PingFederateScopesOption.EnvVar),
+		"--pingfederate-token-url", os.Getenv(profiles.PingFederateTokenURLOption.EnvVar))
+	testutils.CheckExpectedError(t, err, nil)
+}
+
+// Test Platform Export Command fails when not provided required PingFederate Client Credentials Auth flags together
+func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlagsRequiredTogether(t *testing.T) {
+	expectedErrorPattern := `^if any flags in the group \[pingfederate-client-id pingfederate-client-secret pingfederate-token-url] are set they must all be set; missing \[pingfederate-client-secret pingfederate-token-url]$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--pingfederate-client-id", "test")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Platform Export Command fails when provided invalid PingFederate Client Credentials Auth flags
+func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlagsInvalid(t *testing.T) {
+	outputDir := t.TempDir()
+
+	expectedErrorPattern := `^failed to export 'pingfederate' service: failed to export resource .*\. err: .* Request for resource '.*' was not successful\. Response is nil\. Error: oauth2: "invalid_client" "Invalid client or client credentials\."$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--output-directory", outputDir,
+		"--overwrite",
+		"--service", "pingfederate",
+		"--pingfederate-client-id", "test",
+		"--pingfederate-client-secret", "invalid",
+		"--pingfederate-token-url", "https://localhost:9031/as/token.oauth2")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Platform Export Command fails when provided invalid PingFederate OAuth2 Token URL
+func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlagsInvalidTokenURL(t *testing.T) {
+	outputDir := t.TempDir()
+
+	expectedErrorPattern := `(?s)^failed to export 'pingfederate' service: failed to export resource.*\. err:.*Request for resource '.*' was not successful\. Response is nil\. Error: oauth2: cannot fetch token: 404 Not Found\s+Response: \<!DOCTYPE html\>\s+.*$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--output-directory", outputDir,
+		"--overwrite",
+		"--service", "pingfederate",
+		"--pingfederate-client-id", os.Getenv(profiles.PingFederateClientIDOption.EnvVar),
+		"--pingfederate-client-secret", os.Getenv(profiles.PingFederateClientSecretOption.EnvVar),
+		"--pingfederate-token-url", "https://localhost:9031/as/invalid")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Platform Export command fails when basic auth flags are provided with client credentials auth flags
+func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlagsWithUsername(t *testing.T) {
+	expectedErrorPattern := `^if any flags in the group \[.*\] are set none of the others can be; \[.*\] were all set$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--pingfederate-client-id", os.Getenv(profiles.PingFederateClientIDOption.EnvVar),
+		"--pingfederate-client-secret", os.Getenv(profiles.PingFederateClientSecretOption.EnvVar),
+		"--pingfederate-token-url", os.Getenv(profiles.PingFederateTokenURLOption.EnvVar),
+		"--pingfederate-username", os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		"--pingfederate-password", os.Getenv(profiles.PingFederatePasswordOption.EnvVar))
+
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Platform Export command fails when access token flags are provided with client credentials auth flags
+func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlagsWithAccessToken(t *testing.T) {
+	expectedErrorPattern := `^if any flags in the group \[.*\] are set none of the others can be; \[.*\] were all set$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--pingfederate-client-id", os.Getenv(profiles.PingFederateClientIDOption.EnvVar),
+		"--pingfederate-client-secret", os.Getenv(profiles.PingFederateClientSecretOption.EnvVar),
+		"--pingfederate-token-url", os.Getenv(profiles.PingFederateTokenURLOption.EnvVar),
+		"--pingfederate-access-token", "token")
+
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Platform Export command fails with invalid basic auth flags while there is valid client credentials in config.
+// This is because cobra/viper model prioritizes flags over config values.
+func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlagsWithInvalidBasicAuth(t *testing.T) {
+	expectedErrorPattern := `^failed to export 'pingfederate' service: failed to export resource .*\. err: .* Request for resource '.*' was not successful\.\s+Response Code: 401 Unauthorized\s+Response Body: {{"resultId":"invalid_credentials","message":"The credentials you provided were not recognized\."}}\s+Error: 401 Unauthorized$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--pingfederate-username", os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		"--pingfederate-password", "invalid",
+		"--service", "pingfederate",
+		"--overwrite")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }

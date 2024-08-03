@@ -11,8 +11,8 @@ import (
 
 func TestApplicationSignOnPolicyAssignmentExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
-	resource := resources.ApplicationSignOnPolicyAssignment(sdkClientInfo)
+	PingOneClientInfo := testutils.GetPingOneClientInfo(t)
+	resource := resources.ApplicationSignOnPolicyAssignment(PingOneClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{

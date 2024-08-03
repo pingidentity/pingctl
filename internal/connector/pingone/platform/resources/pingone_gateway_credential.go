@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneGatewayCredentialResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneGatewayCredentialResource
-func GatewayCredential(clientInfo *connector.SDKClientInfo) *PingoneGatewayCredentialResource {
+func GatewayCredential(clientInfo *connector.PingOneClientInfo) *PingoneGatewayCredentialResource {
 	return &PingoneGatewayCredentialResource{
 		clientInfo: clientInfo,
 	}

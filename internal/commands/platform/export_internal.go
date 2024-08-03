@@ -2,14 +2,17 @@ package platform_internal
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
-	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
+	pingoneGoClient "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
+	"github.com/pingidentity/pingctl/internal/connector/pingfederate"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/mfa"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/protect"
@@ -18,14 +21,35 @@ import (
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
+	pingfederateGoClient "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/rs/zerolog"
-	"github.com/spf13/cobra"
 )
 
-func RunInternalExport(cmd *cobra.Command, outputDir, exportFormat string, overwriteExport bool, multiService *customtypes.MultiService) (err error) {
-	apiClient, apiClientId, err := initApiClient(cmd.Context(), cmd.Root().Version)
-	if err != nil {
-		return err
+var (
+	pingfederateApiClient *pingfederateGoClient.APIClient
+	pingfederateContext   context.Context
+
+	pingoneApiClient   *pingoneGoClient.Client
+	pingoneApiClientId string
+	pingoneExportEnvID string
+	pingoneContext     context.Context
+)
+
+func RunInternalExport(ctx context.Context, commandVersion string, outputDir, exportFormat string, overwriteExport bool, multiService *customtypes.MultiService, basicAuthFlagsUsed, AccessTokenAuthFlagsUsed bool) (err error) {
+	if ctx == nil {
+		return fmt.Errorf("failed to run 'platform export' command. context is nil")
+	}
+
+	if multiService.ContainsPingOneService() {
+		if err = initPingOneServices(ctx, commandVersion); err != nil {
+			return err
+		}
+	}
+
+	if multiService.ContainsPingFederateService() {
+		if err = initPingFederateServices(ctx, basicAuthFlagsUsed, AccessTokenAuthFlagsUsed); err != nil {
+			return err
+		}
 	}
 
 	outputDir, err = fixEmptyOutputDirVar(outputDir)
@@ -37,16 +61,7 @@ func RunInternalExport(cmd *cobra.Command, outputDir, exportFormat string, overw
 		return err
 	}
 
-	exportEnvID, err := getExportEnvID()
-	if err != nil {
-		return err
-	}
-
-	if err := validateExportEnvID(cmd.Context(), exportEnvID, apiClient); err != nil {
-		return err
-	}
-
-	exportableConnectors := getExportableConnectors(exportEnvID, apiClientId, cmd.Context(), multiService, apiClient)
+	exportableConnectors := getExportableConnectors(multiService)
 
 	if err := exportConnectors(exportableConnectors, exportFormat, outputDir, overwriteExport); err != nil {
 		return err
@@ -59,28 +74,135 @@ func RunInternalExport(cmd *cobra.Command, outputDir, exportFormat string, overw
 	return nil
 }
 
-func initApiClient(ctx context.Context, version string) (apiClient *sdk.Client, apiClientId string, err error) {
+func initPingFederateServices(ctx context.Context, basicAuthFlagsUsed, accessTokenAuthFlagsUsed bool) (err error) {
+	// Todo - Remove InsecureSkipVerify: true
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, //#nosec G402 -- Todo this needs fixing
+		},
+	}
+
+	if err = initPingFederateApiClient(tr); err != nil {
+		return err
+	}
+
+	// Get all the PingFederate configuration values
+	profileViper := profiles.GetProfileViper()
+	pfClientID := profileViper.GetString(profiles.PingFederateClientIDOption.ViperKey)
+	pfClientSecret := profileViper.GetString(profiles.PingFederateClientSecretOption.ViperKey)
+	pfTokenUrl := profileViper.GetString(profiles.PingFederateTokenURLOption.ViperKey)
+	pfScopes := profileViper.GetString(profiles.PingFederateScopesOption.ViperKey)
+	pfAccessToken := profileViper.GetString(profiles.PingFederateAccessTokenOption.ViperKey)
+	pfUsername := profileViper.GetString(profiles.PingFederateUsernameOption.ViperKey)
+	pfPassword := profileViper.GetString(profiles.PingFederatePasswordOption.ViperKey)
+
+	pfScopesList := strings.Split(pfScopes, ",")
+	for i, scope := range pfScopesList {
+		pfScopesList[i] = strings.TrimSpace(scope)
+	}
+
+	switch {
+	case basicAuthFlagsUsed && pfUsername != "" && pfPassword != "":
+		pingfederateContext = context.WithValue(ctx, pingfederateGoClient.ContextBasicAuth, pingfederateGoClient.BasicAuth{
+			UserName: pfUsername,
+			Password: pfPassword,
+		})
+	case accessTokenAuthFlagsUsed && pfAccessToken != "":
+		pingfederateContext = context.WithValue(ctx, pingfederateGoClient.ContextAccessToken, pfAccessToken)
+	case pfClientID != "" && pfClientSecret != "" && pfTokenUrl != "":
+		pingfederateContext = context.WithValue(ctx, pingfederateGoClient.ContextOAuth2, pingfederateGoClient.OAuthValues{
+			Transport:    tr,
+			TokenUrl:     pfTokenUrl,
+			ClientId:     pfClientID,
+			ClientSecret: pfClientSecret,
+			Scopes:       pfScopesList,
+		})
+	case pfAccessToken != "":
+		pingfederateContext = context.WithValue(ctx, pingfederateGoClient.ContextAccessToken, pfAccessToken)
+	case pfUsername != "" && pfPassword != "":
+		pingfederateContext = context.WithValue(ctx, pingfederateGoClient.ContextBasicAuth, pingfederateGoClient.BasicAuth{
+			UserName: pfUsername,
+			Password: pfPassword,
+		})
+	default:
+		return fmt.Errorf(`failed to initialize PingFederate API client. none of the following sets of authentication configuration values are set: OAuth2 client credentials (client ID, client secret, token URL), Access token, or Basic Authentication credentials (username, password). configure these properties via parameter flags, environment variables, or the tool's configuration file (default: $HOME/.pingctl/config.yaml)`)
+	}
+
+	return nil
+}
+
+func initPingOneServices(ctx context.Context, cmdVersion string) (err error) {
+	if err = initPingOneApiClient(ctx, cmdVersion); err != nil {
+		return err
+	}
+
+	if err = getPingOneExportEnvID(); err != nil {
+		return err
+	}
+
+	if err := validatePingOneExportEnvID(ctx); err != nil {
+		return err
+	}
+
+	pingoneContext = ctx
+
+	return nil
+}
+
+func initPingFederateApiClient(tr *http.Transport) (err error) {
 	l := logger.Get()
-	l.Debug().Msgf("Initializing API client..")
+	l.Debug().Msgf("Initializing PingFederate API client.")
+
+	if tr == nil {
+		return fmt.Errorf("failed to initialize pingfederate API client. http transport is nil")
+	}
+
+	profileViper := profiles.GetProfileViper()
+	httpsHost := profileViper.GetString(profiles.PingFederateHttpsHostOption.ViperKey)
+	adminApiPath := profileViper.GetString(profiles.PingFederateAdminApiPathOption.ViperKey)
+
+	// default adminApiPath to /pf-admin-api/v1 if not set
+	if adminApiPath == "" {
+		adminApiPath = "/pf-admin-api/v1"
+	}
+
+	if httpsHost == "" {
+		return fmt.Errorf(`failed to initialize pingfederate API client. the pingfederate https host configuration value is not set: configure this property via parameter flags, environment variables, or the tool's configuration file (default: $HOME/.pingctl/config.yaml)`)
+	}
+
+	pfClientConfig := pingfederateGoClient.NewConfiguration()
+	pfClientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
+	pfClientConfig.Servers = pingfederateGoClient.ServerConfigurations{
+		{
+			URL: httpsHost + adminApiPath,
+		},
+	}
+	httpClient := &http.Client{Transport: tr}
+	pfClientConfig.HTTPClient = httpClient
+
+	pingfederateApiClient = pingfederateGoClient.NewAPIClient(pfClientConfig)
+
+	return nil
+}
+
+func initPingOneApiClient(ctx context.Context, version string) (err error) {
+	l := logger.Get()
+	l.Debug().Msgf("Initializing PingOne API client.")
 
 	profileViper := profiles.GetProfileViper()
 
 	// Make sure the API client can be initialized with the required parameters
-	if !profileViper.IsSet(profiles.WorkerEnvironmentIDOption.ViperKey) ||
-		!profileViper.IsSet(profiles.RegionOption.ViperKey) ||
-		!profileViper.IsSet(profiles.WorkerClientIDOption.ViperKey) ||
-		!profileViper.IsSet(profiles.WorkerClientSecretOption.ViperKey) {
-		return nil, "", fmt.Errorf(`failed to initialize pingone API client.
-		one of worker environment ID, worker client ID, worker client secret,
-		and/or pingone region is not set.
-		configure these properties via parameter flags, environment variables,
-		or the tool's configuration file (default: $HOME/.pingctl/config.yaml)`)
+	if !profileViper.IsSet(profiles.PingOneWorkerEnvironmentIDOption.ViperKey) ||
+		!profileViper.IsSet(profiles.PingOneRegionOption.ViperKey) ||
+		!profileViper.IsSet(profiles.PingOneWorkerClientIDOption.ViperKey) ||
+		!profileViper.IsSet(profiles.PingOneWorkerClientSecretOption.ViperKey) {
+		return fmt.Errorf(`failed to initialize pingone API client. one of worker environment ID, worker client ID, worker client secret, and/or pingone region is not set. configure these properties via parameter flags, environment variables, or the tool's configuration file (default: $HOME/.pingctl/config.yaml)`)
 	}
 
-	apiClientId = profileViper.GetString(profiles.WorkerClientIDOption.ViperKey)
-	clientSecret := profileViper.GetString(profiles.WorkerClientSecretOption.ViperKey)
-	environmentID := profileViper.GetString(profiles.WorkerEnvironmentIDOption.ViperKey)
-	region := profileViper.Get(profiles.RegionOption.ViperKey)
+	pingoneApiClientId = profileViper.GetString(profiles.PingOneWorkerClientIDOption.ViperKey)
+	clientSecret := profileViper.GetString(profiles.PingOneWorkerClientSecretOption.ViperKey)
+	environmentID := profileViper.GetString(profiles.PingOneWorkerEnvironmentIDOption.ViperKey)
+	region := profileViper.Get(profiles.PingOneRegionOption.ViperKey)
 
 	var regionStr string
 	switch regionVal := region.(type) {
@@ -89,14 +211,19 @@ func initApiClient(ctx context.Context, version string) (apiClient *sdk.Client, 
 	case customtypes.PingOneRegion:
 		regionStr = string(regionVal)
 	default:
-		return nil, "", fmt.Errorf("failed to initialize pingone API client. unrecognized pingone region variable type: %T", region)
+		return fmt.Errorf("failed to initialize pingone API client. unrecognized pingone region variable type: %T", region)
 	}
 
 	switch regionStr {
 	case customtypes.ENUM_PINGONE_REGION_AP, customtypes.ENUM_PINGONE_REGION_CA, customtypes.ENUM_PINGONE_REGION_EU, customtypes.ENUM_PINGONE_REGION_NA:
 		l.Debug().Msgf("pingone region '%s' validated.", regionStr)
 	default:
-		return nil, "", fmt.Errorf("failed to initialize pingone API client. unrecognized pingone region: '%s'. Must be one of: %s", regionStr, strings.Join(customtypes.PingOneRegionValidValues(), ", "))
+		return fmt.Errorf("failed to initialize pingone API client. unrecognized pingone region: '%s'. Must be one of: %s", regionStr, strings.Join(customtypes.PingOneRegionValidValues(), ", "))
+	}
+
+	// Make sure the client credentials are not empty
+	if pingoneApiClientId == "" || clientSecret == "" || environmentID == "" {
+		return fmt.Errorf(`failed to initialize pingone API client. one of worker client ID, worker client secret, and/or worker environment ID is empty. configure these properties via parameter flags, environment variables, or the tool's configuration file (default: $HOME/.pingctl/config.yaml)`)
 	}
 
 	userAgent := fmt.Sprintf("pingctl/%s", version)
@@ -105,15 +232,15 @@ func initApiClient(ctx context.Context, version string) (apiClient *sdk.Client, 
 		userAgent += fmt.Sprintf(" %s", v)
 	}
 
-	apiConfig := &sdk.Config{
-		ClientID:        &apiClientId,
+	apiConfig := &pingoneGoClient.Config{
+		ClientID:        &pingoneApiClientId,
 		ClientSecret:    &clientSecret,
 		EnvironmentID:   &environmentID,
 		Region:          regionStr,
 		UserAgentSuffix: &userAgent,
 	}
 
-	apiClient, err = apiConfig.APIClient(ctx)
+	pingoneApiClient, err = apiConfig.APIClient(ctx)
 	if err != nil {
 		// If logging level is DEBUG or TRACE, include the worker client secret in the error message
 		var clientSecretErrorMessage string
@@ -130,10 +257,10 @@ worker client ID - %s
 worker environment ID - %s
 pingone region - %s
 %s`
-		return nil, "", fmt.Errorf(initFailErrFormatMessage, err.Error(), apiClientId, environmentID, region, clientSecretErrorMessage)
+		return fmt.Errorf(initFailErrFormatMessage, err.Error(), pingoneApiClientId, environmentID, region, clientSecretErrorMessage)
 	}
 
-	return apiClient, apiClientId, nil
+	return nil
 }
 
 func fixEmptyOutputDirVar(outputDir string) (newOutputDir string, err error) {
@@ -197,54 +324,54 @@ func createOrValidateOutputDir(outputDir string, overwriteExport bool) (err erro
 	return nil
 }
 
-func getExportEnvID() (exportEnvID string, err error) {
+func getPingOneExportEnvID() (err error) {
 	profileViper := profiles.GetProfileViper()
 
 	// Find the env ID to export. Default to worker env id if not provided by user.
-	exportEnvID = profileViper.GetString(profiles.ExportEnvironmentIDOption.ViperKey)
-	if exportEnvID == "" {
-		exportEnvID = profileViper.GetString(profiles.WorkerEnvironmentIDOption.ViperKey)
+	pingoneExportEnvID = profileViper.GetString(profiles.PingOneExportEnvironmentIDOption.ViperKey)
+	if pingoneExportEnvID == "" {
+		pingoneExportEnvID = profileViper.GetString(profiles.PingOneWorkerEnvironmentIDOption.ViperKey)
 
 		// if the exportEnvID is still empty, this is a problem. Return error.
-		if exportEnvID == "" {
-			return "", fmt.Errorf("failed to determine export environment ID")
+		if pingoneExportEnvID == "" {
+			return fmt.Errorf("failed to determine pingone export environment ID")
 		}
 
 		output.Print(output.Opts{
-			Message: "No target export environment ID specified. Defaulting export environment ID to the Worker App environment ID.",
+			Message: "No target PingOne export environment ID specified. Defaulting export environment ID to the Worker App environment ID.",
 			Result:  output.ENUM_RESULT_NOACTION_WARN,
 		})
 	}
 
-	return exportEnvID, nil
+	return nil
 }
 
-func validateExportEnvID(ctx context.Context, exportEnvID string, apiClient *sdk.Client) (err error) {
+func validatePingOneExportEnvID(ctx context.Context) (err error) {
 	l := logger.Get()
 	l.Debug().Msgf("Validating export environment ID...")
 
 	if ctx == nil {
-		return fmt.Errorf("failed to validate environment ID '%s'. context is nil", exportEnvID)
+		return fmt.Errorf("failed to validate pingone environment ID '%s'. context is nil", pingoneExportEnvID)
 	}
 
-	if apiClient == nil {
-		return fmt.Errorf("failed to validate environment ID '%s'. apiClient is nil", exportEnvID)
+	if pingoneApiClient == nil {
+		return fmt.Errorf("failed to validate pingone environment ID '%s'. apiClient is nil", pingoneExportEnvID)
 	}
 
-	environment, response, err := apiClient.ManagementAPIClient.EnvironmentsApi.ReadOneEnvironment(ctx, exportEnvID).Execute()
+	environment, response, err := pingoneApiClient.ManagementAPIClient.EnvironmentsApi.ReadOneEnvironment(ctx, pingoneExportEnvID).Execute()
 	err = common.HandleClientResponse(response, err, "ReadOneEnvironment", "pingone_environment")
 	if err != nil {
 		return err
 	}
 
 	if environment == nil {
-		return fmt.Errorf("failed to validate environment ID '%s'. environment matching ID does not exist", exportEnvID)
+		return fmt.Errorf("failed to validate pingone environment ID '%s'. environment matching ID does not exist", pingoneExportEnvID)
 	}
 
 	return nil
 }
 
-func getExportableConnectors(exportEnvID, apiClientId string, ctx context.Context, multiService *customtypes.MultiService, apiClient *sdk.Client) (exportableConnectors *[]connector.Exportable) {
+func getExportableConnectors(multiService *customtypes.MultiService) (exportableConnectors *[]connector.Exportable) {
 	// Using the --service parameter(s) provided by user, build list of connectors to export
 	connectors := []connector.Exportable{}
 
@@ -254,14 +381,16 @@ func getExportableConnectors(exportEnvID, apiClientId string, ctx context.Contex
 
 	for _, service := range *multiService.GetServices() {
 		switch service {
-		case customtypes.ENUM_SERVICE_PLATFORM:
-			connectors = append(connectors, platform.PlatformConnector(ctx, apiClient, &apiClientId, exportEnvID))
-		case customtypes.ENUM_SERVICE_SSO:
-			connectors = append(connectors, sso.SSOConnector(ctx, apiClient, &apiClientId, exportEnvID))
-		case customtypes.ENUM_SERVICE_MFA:
-			connectors = append(connectors, mfa.MFAConnector(ctx, apiClient, &apiClientId, exportEnvID))
-		case customtypes.ENUM_SERVICE_PROTECT:
-			connectors = append(connectors, protect.ProtectConnector(ctx, apiClient, &apiClientId, exportEnvID))
+		case customtypes.ENUM_SERVICE_PINGONE_PLATFORM:
+			connectors = append(connectors, platform.PlatformConnector(pingoneContext, pingoneApiClient, &pingoneApiClientId, pingoneExportEnvID))
+		case customtypes.ENUM_SERVICE_PINGONE_SSO:
+			connectors = append(connectors, sso.SSOConnector(pingoneContext, pingoneApiClient, &pingoneApiClientId, pingoneExportEnvID))
+		case customtypes.ENUM_SERVICE_PINGONE_MFA:
+			connectors = append(connectors, mfa.MFAConnector(pingoneContext, pingoneApiClient, &pingoneApiClientId, pingoneExportEnvID))
+		case customtypes.ENUM_SERVICE_PINGONE_PROTECT:
+			connectors = append(connectors, protect.ProtectConnector(pingoneContext, pingoneApiClient, &pingoneApiClientId, pingoneExportEnvID))
+		case customtypes.ENUM_SERVICE_PINGFEDERATE:
+			connectors = append(connectors, pingfederate.PFConnector(pingfederateContext, pingfederateApiClient))
 			// default:
 			// This unrecognized service condition is handled by cobra with the custom type MultiService
 		}

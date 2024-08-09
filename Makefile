@@ -14,8 +14,10 @@ fmt:
 vet:
 	go vet ./...
 
-test:
+go-test:
 	go test -parallel=4 -count=1 ./...
+
+test: starttestcontainer go-test removetestcontainer
 
 devchecknotest: install importfmtlint fmt vet golangcilint
 

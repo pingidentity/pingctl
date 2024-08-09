@@ -123,6 +123,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     env:
+      PING_IDENTITY_CONFIG: ${{ secrets.PING_IDENTITY_CONFIG }}
       PINGCTL_PINGONE_WORKER_CLIENT_ID: ${{ secrets.PINGCTL_PINGONE_WORKER_CLIENT_ID }}
       PINGCTL_PINGONE_WORKER_CLIENT_SECRET: ${{ secrets.PINGCTL_PINGONE_WORKER_CLIENT_SECRET }}
       PINGCTL_PINGONE_REGION: ${{ secrets.PINGCTL_PINGONE_REGION }}
@@ -152,4 +153,4 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
-      - run: make test
+      - run: mkdir -p $HOME/.pingidentity/ && echo "$PING_IDENTITY_CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make starttestcontainer && make test && make removetestcontainer

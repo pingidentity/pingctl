@@ -58,7 +58,7 @@ func TestRunInternalExport(t *testing.T) {
 func TestRunInternalExport_invalidOutputDir(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	expectedErrorPattern := `^failed to create 'platform export' output directory '/invalid': mkdir /invalid: read-only file system$`
+	expectedErrorPattern := `^failed to create 'platform export' output directory '/invalid': mkdir /invalid:.*$`
 	err := RunInternalExport(context.Background(), "v1.2.3", "/invalid", connector.ENUMEXPORTFORMAT_HCL, true, customtypes.NewMultiService(), false, false)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }

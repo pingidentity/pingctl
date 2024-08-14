@@ -49,7 +49,7 @@ starttestcontainer:
 
 removetestcontainer:
 	docker rm -f pingfederate_terraform_provider_container
-	
+
 spincontainer: removetestcontainer starttestcontainer
 
 openlocalwebapi:

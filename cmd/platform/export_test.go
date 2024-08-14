@@ -273,3 +273,72 @@ func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlagsWithInvalidBasi
 		"--overwrite")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
+
+// Test Platform Export command with PingFederate X-Bypass Header set to true
+func TestPlatformExportCmd_PingFederateXBypassHeaderFlag(t *testing.T) {
+	outputDir := t.TempDir()
+
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--output-directory", outputDir,
+		"--overwrite",
+		"--service", "pingfederate",
+		"--pingfederate-x-bypass-external-validation-header=true",
+		"--pingfederate-username", os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		"--pingfederate-password", os.Getenv(profiles.PingFederatePasswordOption.EnvVar))
+	testutils.CheckExpectedError(t, err, nil)
+}
+
+// Test Platform Export command with PingFederate --pingfederate-insecure-trust-all-tls flag set to true
+func TestPlatformExportCmd_PingFederateTrustAllTLSFlag(t *testing.T) {
+	outputDir := t.TempDir()
+
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--output-directory", outputDir,
+		"--overwrite",
+		"--service", "pingfederate",
+		"--pingfederate-insecure-trust-all-tls=true",
+		"--pingfederate-username", os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		"--pingfederate-password", os.Getenv(profiles.PingFederatePasswordOption.EnvVar))
+	testutils.CheckExpectedError(t, err, nil)
+}
+
+// Test Platform Export command fails with PingFederate --pingfederate-insecure-trust-all-tls flag set to false
+func TestPlatformExportCmd_PingFederateTrustAllTLSFlagFalse(t *testing.T) {
+	outputDir := t.TempDir()
+
+	expectedErrorPattern := `^failed to export 'pingfederate' service: failed to export resource .*. err: .* Request for resource '.*' was not successful. Response is nil. Error: Get "https.*": tls: failed to verify certificate: x509: certificate signed by unknown authority$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--output-directory", outputDir,
+		"--overwrite",
+		"--service", "pingfederate",
+		"--pingfederate-insecure-trust-all-tls=false",
+		"--pingfederate-username", os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		"--pingfederate-password", os.Getenv(profiles.PingFederatePasswordOption.EnvVar))
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}
+
+// Test Platform Export command passes with PingFederate --pingfederate-insecure-trust-all-tls=false and --pingfederate-ca-certificate-pem-files set
+func TestPlatformExportCmd_PingFederateCaCertificatePemFiles(t *testing.T) {
+	outputDir := t.TempDir()
+
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--output-directory", outputDir,
+		"--overwrite",
+		"--service", "pingfederate",
+		"--pingfederate-insecure-trust-all-tls=false",
+		"--pingfederate-ca-certificate-pem-files", "testdata/ssl-server-crt.pem",
+		"--pingfederate-username", os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		"--pingfederate-password", os.Getenv(profiles.PingFederatePasswordOption.EnvVar))
+	testutils.CheckExpectedError(t, err, nil)
+}
+
+// Test Platform Export command fails with --pingfederate-ca-certificate-pem-files set to non-existent file.
+func TestPlatformExportCmd_PingFederateCaCertificatePemFilesInvalid(t *testing.T) {
+	expectedErrorPattern := `^failed to read CA certificate PEM file '.*': open .*: no such file or directory$`
+	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
+		"--service", "pingfederate",
+		"--pingfederate-ca-certificate-pem-files", "invalid/crt.pem",
+		"--pingfederate-username", os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		"--pingfederate-password", os.Getenv(profiles.PingFederatePasswordOption.EnvVar))
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
+}

@@ -3,10 +3,12 @@ package platform_internal
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	pingoneGoClient "github.com/patrickcping/pingone-go-sdk-v2/pingone"
@@ -75,30 +77,41 @@ func RunInternalExport(ctx context.Context, commandVersion string, outputDir, ex
 }
 
 func initPingFederateServices(ctx context.Context, basicAuthFlagsUsed, accessTokenAuthFlagsUsed bool) (err error) {
-	// Todo - Remove InsecureSkipVerify: true
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true, //#nosec G402 -- Todo this needs fixing
-		},
-	}
-
-	if err = initPingFederateApiClient(tr); err != nil {
-		return err
-	}
-
 	// Get all the PingFederate configuration values
 	profileViper := profiles.GetProfileViper()
 	pfClientID := profileViper.GetString(profiles.PingFederateClientIDOption.ViperKey)
 	pfClientSecret := profileViper.GetString(profiles.PingFederateClientSecretOption.ViperKey)
 	pfTokenUrl := profileViper.GetString(profiles.PingFederateTokenURLOption.ViperKey)
-	pfScopes := profileViper.GetString(profiles.PingFederateScopesOption.ViperKey)
+	pfScopes := profileViper.GetStringSlice(profiles.PingFederateScopesOption.ViperKey)
 	pfAccessToken := profileViper.GetString(profiles.PingFederateAccessTokenOption.ViperKey)
 	pfUsername := profileViper.GetString(profiles.PingFederateUsernameOption.ViperKey)
 	pfPassword := profileViper.GetString(profiles.PingFederatePasswordOption.ViperKey)
+	pfInsecureTrustAllTLS := profileViper.GetBool(profiles.PingFederateInsecureTrustAllTLSOption.ViperKey)
+	caCertPemFiles := profileViper.GetStringSlice(profiles.PingFederateCACertificatePemFilesOption.ViperKey)
 
-	pfScopesList := strings.Split(pfScopes, ",")
-	for i, scope := range pfScopesList {
-		pfScopesList[i] = strings.TrimSpace(scope)
+	caCertPool := x509.NewCertPool()
+	for _, caCertPemFile := range caCertPemFiles {
+		caCertPemFile := filepath.Clean(caCertPemFile)
+		caCert, err := os.ReadFile(caCertPemFile)
+		if err != nil {
+			return fmt.Errorf("failed to read CA certificate PEM file '%s': %s", caCertPemFile, err.Error())
+		}
+
+		ok := caCertPool.AppendCertsFromPEM(caCert)
+		if !ok {
+			return fmt.Errorf("failed to parse CA certificate PEM file '%s' to certificate pool", caCertPemFile)
+		}
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: pfInsecureTrustAllTLS, //#nosec G402 -- This is defined by the user (default false), and warned as inappropriate in production.
+			RootCAs:            caCertPool,
+		},
+	}
+
+	if err = initPingFederateApiClient(tr); err != nil {
+		return err
 	}
 
 	switch {
@@ -115,7 +128,7 @@ func initPingFederateServices(ctx context.Context, basicAuthFlagsUsed, accessTok
 			TokenUrl:     pfTokenUrl,
 			ClientId:     pfClientID,
 			ClientSecret: pfClientSecret,
-			Scopes:       pfScopesList,
+			Scopes:       pfScopes,
 		})
 	case pfAccessToken != "":
 		pingfederateContext = context.WithValue(ctx, pingfederateGoClient.ContextAccessToken, pfAccessToken)
@@ -160,6 +173,7 @@ func initPingFederateApiClient(tr *http.Transport) (err error) {
 	profileViper := profiles.GetProfileViper()
 	httpsHost := profileViper.GetString(profiles.PingFederateHttpsHostOption.ViperKey)
 	adminApiPath := profileViper.GetString(profiles.PingFederateAdminApiPathOption.ViperKey)
+	xBypassExternalValidationHeader := profileViper.GetBool(profiles.PingFederateXBypassExternalValidationHeaderOption.ViperKey)
 
 	// default adminApiPath to /pf-admin-api/v1 if not set
 	if adminApiPath == "" {
@@ -172,6 +186,7 @@ func initPingFederateApiClient(tr *http.Transport) (err error) {
 
 	pfClientConfig := pingfederateGoClient.NewConfiguration()
 	pfClientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
+	pfClientConfig.DefaultHeader["X-BypassExternalValidation"] = strconv.FormatBool(xBypassExternalValidationHeader)
 	pfClientConfig.Servers = pingfederateGoClient.ServerConfigurations{
 		{
 			URL: httpsHost + adminApiPath,

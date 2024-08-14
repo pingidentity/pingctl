@@ -137,3 +137,11 @@ func Test_setPingOneRegion_InvalidValue(t *testing.T) {
 	err := setPingOneRegion(profiles.PingOneRegionOption.ViperKey, "invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
+
+// Test setStringSlice() function with valid value
+func Test_setStringSlice_ValidValue(t *testing.T) {
+	testutils_viper.InitVipers(t)
+
+	err := setStringSlice(profiles.PingFederateScopesOption.ViperKey, "email,test,var")
+	testutils.CheckExpectedError(t, err, nil)
+}

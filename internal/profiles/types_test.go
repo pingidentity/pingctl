@@ -97,43 +97,68 @@ func TestOptionTypeFromViperKey(t *testing.T) {
 // Test GetDefaultValue function
 func TestGetDefaultValue(t *testing.T) {
 	// Test GetDefaultValue function with bool type
-	val := profiles.GetDefaultValue(profiles.ENUM_BOOL)
+	val, err := profiles.GetDefaultValue(profiles.ENUM_BOOL)
+	if err != nil {
+		t.Errorf("Expected error %v, but got %v", nil, err)
+	}
 	b, ok := val.(bool)
 	if !ok || b != false {
 		t.Errorf("Expected value %v, but got %v", false, val)
 	}
 
 	// Test GetDefaultValue function with string type
-	val = profiles.GetDefaultValue(profiles.ENUM_STRING)
+	val, err = profiles.GetDefaultValue(profiles.ENUM_STRING)
+	if err != nil {
+		t.Errorf("Expected error %v, but got %v", nil, err)
+	}
 	s, ok := val.(string)
 	if !ok || s != "" {
 		t.Errorf("Expected value %v, but got %v", "", val)
 	}
 
+	// Test GetDefaultValue function with string slice type
+	val, err = profiles.GetDefaultValue(profiles.ENUM_STRING_SLICE)
+	if err != nil {
+		t.Errorf("Expected error %v, but got %v", nil, err)
+	}
+	ss, ok := val.([]string)
+	if !ok || ss != nil {
+		t.Errorf("Expected value %v, but got %v", "", val)
+	}
+
 	// Test GetDefaultValue function with UUID type
-	val = profiles.GetDefaultValue(profiles.ENUM_ID)
+	val, err = profiles.GetDefaultValue(profiles.ENUM_ID)
+	if err != nil {
+		t.Errorf("Expected error %v, but got %v", nil, err)
+	}
 	s, ok = val.(string)
 	if !ok || s != "" {
 		t.Errorf("Expected value %v, but got %v", "", val)
 	}
 
 	// Test GetDefaultValue function with output format type
-	val = profiles.GetDefaultValue(profiles.ENUM_OUTPUT_FORMAT)
+	val, err = profiles.GetDefaultValue(profiles.ENUM_OUTPUT_FORMAT)
+	if err != nil {
+		t.Errorf("Expected error %v, but got %v", nil, err)
+	}
 	o, ok := val.(customtypes.OutputFormat)
 	if !ok || o != customtypes.OutputFormat("text") {
 		t.Errorf("Expected value %v, but got %v", "text", val)
 	}
 
 	// Test GetDefaultValue function with pingone region type
-	val = profiles.GetDefaultValue(profiles.ENUM_PINGONE_REGION)
+	val, err = profiles.GetDefaultValue(profiles.ENUM_PINGONE_REGION)
+	if err != nil {
+		t.Errorf("Expected error %v, but got %v", nil, err)
+	}
 	p, ok := val.(customtypes.PingOneRegion)
 	if !ok || p != customtypes.PingOneRegion("") {
 		t.Errorf("Expected value %v, but got %v", "", val)
 	}
 
 	// Test GetDefaultValue function with random type
-	val = profiles.GetDefaultValue("random")
-	if val != nil {
-		t.Errorf("Expected value %v, but got %v", nil, val)
+	_, err = profiles.GetDefaultValue("random")
+	if err == nil {
+		t.Errorf("Expected error, but got %v", nil)
 	}
 }

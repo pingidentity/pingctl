@@ -33,7 +33,8 @@ pingctl platform export --service pingone-platform --service pingone-sso
 pingctl platform export --service pingone-platform --pingone-client-environment-id envID --pingone-worker-client-id clientID --pingone-worker-client-secret clientSecret --pingone-region region
 pingctl platform export --service pingfederate --pingfederate-username user --pingfederate-password password
 pingctl platform export --service pingfederate --pingfederate-client-id clientID --pingfederate-client-secret clientSecret --pingfederate-token-url tokenURL
-pingctl platform export --service pingfederate --pingfederate-access-token accessToken`,
+pingctl platform export --service pingfederate --pingfederate-access-token accessToken
+pingctl platform export --service pingfederate --x-bypass-external-validation=false --ca-certificate-pem-files "/path/to/cert.pem,/path/to/cert2.pem" --insecure-trust-all-tls=false`,
 		Long:  `Export configuration-as-code packages for the Ping Platform.`,
 		Short: "Export configuration-as-code packages for the Ping Platform.",
 		RunE:  exportRunE,
@@ -56,20 +57,20 @@ func exportRunE(cmd *cobra.Command, args []string) error {
 
 	l.Debug().Msgf("Platform Export Subcommand Called.")
 
-	basicAuthFlagsUsed := false
-	accessTokenAuthFlagsUsed := false
+	pfBasicAuthFlagsUsed := false
+	pfAccessTokenAuthFlagsUsed := false
 
 	//Check if basic auth flags are used
 	if cmd.Flags().Lookup(profiles.PingFederateUsernameOption.CobraParamName).Changed {
-		basicAuthFlagsUsed = true
+		pfBasicAuthFlagsUsed = true
 	}
 
 	//Check if access token auth flags are used
 	if cmd.Flags().Lookup(profiles.PingFederateAccessTokenOption.CobraParamName).Changed {
-		accessTokenAuthFlagsUsed = true
+		pfAccessTokenAuthFlagsUsed = true
 	}
 
-	return platform_internal.RunInternalExport(cmd.Context(), cmd.Root().Version, outputDir, string(exportFormat), overwriteExport, &multiService, basicAuthFlagsUsed, accessTokenAuthFlagsUsed)
+	return platform_internal.RunInternalExport(cmd.Context(), cmd.Root().Version, outputDir, string(exportFormat), overwriteExport, &multiService, pfBasicAuthFlagsUsed, pfAccessTokenAuthFlagsUsed)
 }
 
 func initGeneralExportFlags(cmd *cobra.Command) {
@@ -120,6 +121,7 @@ func initPingOneExportFlags(cmd *cobra.Command) {
 }
 
 func initPingFederateGeneralFlags(cmd *cobra.Command) {
+	// HTTPS host flag
 	cmd.Flags().String(profiles.PingFederateHttpsHostOption.CobraParamName, "", fmt.Sprintf("The PingFederate HTTPS host used to communicate with PingFederate's API.  Also configurable via environment variable %s", profiles.PingFederateHttpsHostOption.EnvVar))
 	profiles.AddFlagBinding(profiles.Binding{
 		Option: profiles.PingFederateHttpsHostOption,
@@ -127,6 +129,7 @@ func initPingFederateGeneralFlags(cmd *cobra.Command) {
 	})
 	profiles.AddEnvVarBinding(profiles.PingFederateHttpsHostOption)
 
+	// Admin API path flag
 	cmd.Flags().String(profiles.PingFederateAdminApiPathOption.CobraParamName, "/pf-admin-api/v1", fmt.Sprintf("The PingFederate API URL path used to communicate with PingFederate's API.  Also configurable via environment variable %s", profiles.PingFederateAdminApiPathOption.EnvVar))
 	profiles.AddFlagBinding(profiles.Binding{
 		Option: profiles.PingFederateAdminApiPathOption,
@@ -134,7 +137,32 @@ func initPingFederateGeneralFlags(cmd *cobra.Command) {
 	})
 	profiles.AddEnvVarBinding(profiles.PingFederateAdminApiPathOption)
 
+	// Require both HTTPS host and admin API path flags to be used together
 	cmd.MarkFlagsRequiredTogether(profiles.PingFederateHttpsHostOption.CobraParamName, profiles.PingFederateAdminApiPathOption.CobraParamName)
+
+	// X-Bypass-External-Validation header flag
+	cmd.Flags().Bool(profiles.PingFederateXBypassExternalValidationHeaderOption.CobraParamName, false, fmt.Sprintf("Header value in request for PingFederate. The connection test will be bypassed when set to true.  Also configurable via environment variable %s", profiles.PingFederateXBypassExternalValidationHeaderOption.EnvVar))
+	profiles.AddFlagBinding(profiles.Binding{
+		Option: profiles.PingFederateXBypassExternalValidationHeaderOption,
+		Flag:   cmd.Flags().Lookup(profiles.PingFederateXBypassExternalValidationHeaderOption.CobraParamName),
+	})
+	profiles.AddEnvVarBinding(profiles.PingFederateXBypassExternalValidationHeaderOption)
+
+	// CA certificate pem files flag
+	cmd.Flags().StringSlice(profiles.PingFederateCACertificatePemFilesOption.CobraParamName, []string{}, fmt.Sprintf("Paths to files containing PEM-encoded certificates to be trusted as root CAs when connecting to the PingFederate server over HTTPS. Accepts comma-separated string to delimit multiple PEM files if necessary.  Also configurable via environment variable %s", profiles.PingFederateCACertificatePemFilesOption.EnvVar))
+	profiles.AddFlagBinding(profiles.Binding{
+		Option: profiles.PingFederateCACertificatePemFilesOption,
+		Flag:   cmd.Flags().Lookup(profiles.PingFederateCACertificatePemFilesOption.CobraParamName),
+	})
+	profiles.AddEnvVarBinding(profiles.PingFederateCACertificatePemFilesOption)
+
+	// Insecure Trust All TLS flag
+	cmd.Flags().Bool(profiles.PingFederateInsecureTrustAllTLSOption.CobraParamName, false, fmt.Sprintf("Set to true to trust any certificate when connecting to the PingFederate server. This is insecure and should not be enabled outside of testing.  Also configurable via environment variable %s", profiles.PingFederateInsecureTrustAllTLSOption.EnvVar))
+	profiles.AddFlagBinding(profiles.Binding{
+		Option: profiles.PingFederateInsecureTrustAllTLSOption,
+		Flag:   cmd.Flags().Lookup(profiles.PingFederateInsecureTrustAllTLSOption.CobraParamName),
+	})
+	profiles.AddEnvVarBinding(profiles.PingFederateInsecureTrustAllTLSOption)
 }
 
 func initPingFederateBasicAuthFlags(cmd *cobra.Command) {
@@ -190,7 +218,7 @@ func initPingFederateClientCredentialsFlags(cmd *cobra.Command) {
 	// When any of the above flags are used, all must be used
 	cmd.MarkFlagsRequiredTogether(profiles.PingFederateClientIDOption.CobraParamName, profiles.PingFederateClientSecretOption.CobraParamName, profiles.PingFederateTokenURLOption.CobraParamName)
 
-	cmd.Flags().String(profiles.PingFederateScopesOption.CobraParamName, "", fmt.Sprintf("The PingFederate OAuth scopes used to authenticate. Multiple scopes can be defined as a comma-separated string.  Also configurable via environment variable %s", profiles.PingFederateScopesOption.EnvVar))
+	cmd.Flags().StringSlice(profiles.PingFederateScopesOption.CobraParamName, []string{}, fmt.Sprintf("The PingFederate OAuth scopes used to authenticate. Accepts comma-separated string to delimit multiple scopes if necessary.  Also configurable via environment variable %s", profiles.PingFederateScopesOption.EnvVar))
 	profiles.AddFlagBinding(profiles.Binding{
 		Option: profiles.PingFederateScopesOption,
 		Flag:   cmd.Flags().Lookup(profiles.PingFederateScopesOption.CobraParamName),

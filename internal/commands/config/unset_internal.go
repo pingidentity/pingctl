@@ -24,7 +24,11 @@ func RunInternalConfigUnset(viperKey string) error {
 		return fmt.Errorf("failed to unset configuration: value type for key %s unrecognized", viperKey)
 	}
 
-	profiles.GetProfileViper().Set(viperKey, profiles.GetDefaultValue(valueType))
+	defVal, err := profiles.GetDefaultValue(valueType)
+	if err != nil {
+		return fmt.Errorf("failed to unset configuration: %v", err)
+	}
+	profiles.GetProfileViper().Set(viperKey, defVal)
 
 	if err := profiles.SaveProfileViperToFile(); err != nil {
 		return err

@@ -31,12 +31,15 @@ default:
         basicauth:
             password: "%s"
             username: "%s"
+        caCertificatePemFiles: "%s"
         clientcredentialsauth:
             clientid: "%s"
             clientsecret: "%s"
             scopes: "%s"
             tokenurl: "%s"
         httpshost: "%s"
+        insecureTrustAllTLS: true
+        xBypassExternalValidationHeader: true
 production:
     description: "test profile description"
     pingctl:
@@ -57,18 +60,22 @@ production:
         basicauth:
             password: ""
             username: ""
+        caCertificatePemFiles: []
         clientcredentialsauth:
             clientid: ""
             clientsecret: ""
-            scopes: ""
+            scopes: []
             tokenurl: ""
-        httpshost: ""`,
+        httpshost: ""
+        insecureTrustAllTLS: false
+        xBypassExternalValidationHeader: false`,
 		os.Getenv(profiles.PingOneRegionOption.EnvVar),
 		os.Getenv(profiles.PingOneWorkerClientIDOption.EnvVar),
 		os.Getenv(profiles.PingOneWorkerClientSecretOption.EnvVar),
 		os.Getenv(profiles.PingOneWorkerEnvironmentIDOption.EnvVar),
 		os.Getenv(profiles.PingFederatePasswordOption.EnvVar),
 		os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
+		os.Getenv(profiles.PingFederateCACertificatePemFilesOption.EnvVar),
 		os.Getenv(profiles.PingFederateClientIDOption.EnvVar),
 		os.Getenv(profiles.PingFederateClientSecretOption.EnvVar),
 		os.Getenv(profiles.PingFederateScopesOption.EnvVar),

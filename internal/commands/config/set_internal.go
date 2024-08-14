@@ -75,6 +75,8 @@ func setValue(viperKey, value string, valueType profiles.OptionType) error {
 	case profiles.ENUM_STRING:
 		profiles.GetProfileViper().Set(viperKey, string(value))
 		return nil
+	case profiles.ENUM_STRING_SLICE:
+		return setStringSlice(viperKey, value)
 	default:
 		return fmt.Errorf("failed to set configuration: variable type for key '%s' is not recognized", viperKey)
 	}
@@ -120,6 +122,18 @@ func setPingOneRegion(viperKey string, value string) error {
 	}
 
 	profiles.GetProfileViper().Set(viperKey, region)
+
+	return nil
+}
+
+func setStringSlice(viperKey string, value string) error {
+	ss := []string{}
+
+	value = strings.TrimSpace(value)
+	for _, v := range strings.Split(value, ",") {
+		ss = append(ss, strings.TrimSpace(v))
+	}
+	profiles.GetProfileViper().Set(viperKey, ss)
 
 	return nil
 }

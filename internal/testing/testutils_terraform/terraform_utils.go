@@ -177,7 +177,7 @@ func InitPingFederateTerraform(t *testing.T) {
 		}
 	}
 }
-	
+
 provider "pingfederate" {
   client_id       = "%s"
   client_secret   = "%s"

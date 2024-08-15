@@ -122,8 +122,8 @@ func TestGetDefaultValue(t *testing.T) {
 		t.Errorf("Expected error %v, but got %v", nil, err)
 	}
 	ss, ok := val.([]string)
-	if !ok || ss != nil {
-		t.Errorf("Expected value %v, but got %v", "", val)
+	if !ok || !slices.Equal(ss, []string{}) {
+		t.Errorf("Expected value %v, but got %v", []string{}, val)
 	}
 
 	// Test GetDefaultValue function with UUID type

@@ -54,6 +54,10 @@ func Example_runInternalConfigProfileDescribe() {
 	// Set Options:
 	//  - pingctl.outputFormat: text
 	//  - pingctl.color: true
+	//  - pingfederate.clientCredentialsAuth.scopes: []
+	//  - pingfederate.xBypassExternalValidationHeader: false
+	//  - pingfederate.caCertificatePemFiles: []
+	//  - pingfederate.insecureTrustAllTLS: false
 	//
 	// Unset Options:
 	//  - pingone.export.environmentID
@@ -68,6 +72,5 @@ func Example_runInternalConfigProfileDescribe() {
 	//  - pingfederate.clientCredentialsAuth.clientID
 	//  - pingfederate.clientCredentialsAuth.clientSecret
 	//  - pingfederate.clientCredentialsAuth.tokenURL
-	//  - pingfederate.clientCredentialsAuth.scopes
 	//  - pingfederate.accessTokenAuth.accessToken
 }

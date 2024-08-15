@@ -27,7 +27,7 @@ default:
     pingfederate:
         accesstokenauth:
             accesstoken: ""
-        adminapipath: ""
+        adminapipath: "%s"
         basicauth:
             password: "%s"
             username: "%s"
@@ -73,6 +73,7 @@ production:
 		os.Getenv(profiles.PingOneWorkerClientIDOption.EnvVar),
 		os.Getenv(profiles.PingOneWorkerClientSecretOption.EnvVar),
 		os.Getenv(profiles.PingOneWorkerEnvironmentIDOption.EnvVar),
+		os.Getenv(profiles.PingFederateAdminApiPathOption.EnvVar),
 		os.Getenv(profiles.PingFederatePasswordOption.EnvVar),
 		os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
 		os.Getenv(profiles.PingFederateCACertificatePemFilesOption.EnvVar),

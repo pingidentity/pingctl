@@ -159,7 +159,7 @@ func printJson(opts Opts) {
 			l.Fatal().Msg(opts.FatalMessage)
 		}
 	default: //ENUM_RESULT_SUCCESS, ENUM_RESULT_NIL, ENUM_RESULT_NOACTION_OK
-		l.Info().Msgf(string(jsonOut))
+		l.Info().Msg(string(jsonOut))
 	}
 
 }

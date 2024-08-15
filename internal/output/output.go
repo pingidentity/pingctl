@@ -128,7 +128,7 @@ func printText(opts Opts) {
 	// Inform the user of a fatal error and log the fatal error. This exits the program.
 	if opts.FatalMessage != "" {
 		fmt.Println(boldRed("Fatal: %s", opts.FatalMessage))
-		l.Fatal().Msgf(opts.FatalMessage)
+		l.Fatal().Msg(opts.FatalMessage)
 	}
 
 }
@@ -147,7 +147,7 @@ func printJson(opts Opts) {
 
 	switch opts.Result {
 	case ENUM_RESULT_NOACTION_WARN:
-		l.Warn().Msgf(string(jsonOut))
+		l.Warn().Msg(string(jsonOut))
 	case ENUM_RESULT_FAILURE:
 		// Log the error if exists
 		if opts.ErrorMessage != "" {
@@ -156,7 +156,7 @@ func printJson(opts Opts) {
 
 		// Log the fatal error if exists. This exits the program.
 		if opts.FatalMessage != "" {
-			l.Fatal().Msgf(opts.FatalMessage)
+			l.Fatal().Msg(opts.FatalMessage)
 		}
 	default: //ENUM_RESULT_SUCCESS, ENUM_RESULT_NIL, ENUM_RESULT_NOACTION_OK
 		l.Info().Msgf(string(jsonOut))

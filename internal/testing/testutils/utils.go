@@ -59,7 +59,7 @@ func GetPingOneClientInfo(t *testing.T) *connector.PingOneClientInfo {
 		// Initialize the API client
 		client, err := apiConfig.APIClient(ctx)
 		if err != nil {
-			t.Fatalf(err.Error())
+			t.Fatal(err.Error())
 		}
 
 		PingOneClientInfo = &connector.PingOneClientInfo{

@@ -108,7 +108,7 @@ func printText(opts Opts) {
 
 	// Supply the user a formatted message and a result status if any.
 	fmt.Println(resultColor(resultFormat, opts.Message, opts.Result))
-	l.Info().Msgf(resultColor(resultFormat, opts.Message, opts.Result))
+	l.Info().Msg(resultColor(resultFormat, opts.Message, opts.Result))
 
 	// Output and log any additional key/value pairs supplied to the user.
 	if opts.Fields != nil {
@@ -122,7 +122,7 @@ func printText(opts Opts) {
 	// Inform the user of an error and log the error
 	if opts.ErrorMessage != "" {
 		fmt.Println(red("Error: %s", opts.ErrorMessage))
-		l.Error().Msgf(opts.ErrorMessage)
+		l.Error().Msg(opts.ErrorMessage)
 	}
 
 	// Inform the user of a fatal error and log the fatal error. This exits the program.
@@ -151,7 +151,7 @@ func printJson(opts Opts) {
 	case ENUM_RESULT_FAILURE:
 		// Log the error if exists
 		if opts.ErrorMessage != "" {
-			l.Error().Msgf(opts.ErrorMessage)
+			l.Error().Msg(opts.ErrorMessage)
 		}
 
 		// Log the fatal error if exists. This exits the program.

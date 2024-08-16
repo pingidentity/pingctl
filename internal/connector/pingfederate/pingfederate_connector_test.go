@@ -46,6 +46,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Reference to undeclared resource",
 			},
 		},
+		{
+			name:          "PingFederateAuthenticationPoliciesSettings",
+			resource:      resources.AuthenticationPoliciesSettings(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

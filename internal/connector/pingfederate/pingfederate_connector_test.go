@@ -31,6 +31,13 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource:      resources.AuthenticationApiSettings(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
+		{
+			name:     "PingFederateAuthenticationPolicies",
+			resource: resources.AuthenticationPolicies(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

@@ -29,7 +29,7 @@ func (r *PingFederateAuthenticationApiSettingsResource) ExportAll() (*[]connecto
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	authnApiSettingsId := "authn_api_settings_id"
+	authnApiSettingsId := "authentication_api_settings_singleton_id"
 	authnApiSettingsName := "Authentication API Settings"
 
 	commentData := map[string]string{

@@ -141,7 +141,7 @@ func initPingFederateGeneralFlags(cmd *cobra.Command) {
 	cmd.MarkFlagsRequiredTogether(profiles.PingFederateHttpsHostOption.CobraParamName, profiles.PingFederateAdminApiPathOption.CobraParamName)
 
 	// X-Bypass-External-Validation header flag
-	cmd.Flags().Bool(profiles.PingFederateXBypassExternalValidationHeaderOption.CobraParamName, false, fmt.Sprintf("Header value in request for PingFederate. The connection test will be bypassed when set to true.  Also configurable via environment variable %s", profiles.PingFederateXBypassExternalValidationHeaderOption.EnvVar))
+	cmd.Flags().Bool(profiles.PingFederateXBypassExternalValidationHeaderOption.CobraParamName, false, fmt.Sprintf("Header value in request for PingFederate. PingFederate's connection tests will be bypassed when set to true.  Also configurable via environment variable %s", profiles.PingFederateXBypassExternalValidationHeaderOption.EnvVar))
 	profiles.AddFlagBinding(profiles.Binding{
 		Option: profiles.PingFederateXBypassExternalValidationHeaderOption,
 		Flag:   cmd.Flags().Lookup(profiles.PingFederateXBypassExternalValidationHeaderOption.CobraParamName),

@@ -264,7 +264,6 @@ default:
 		os.Getenv(profiles.PingFederateHttpsHostOption.EnvVar)))
 
 	expectedErrorPattern := `^failed to initialize PingFederate API client\. none of the following sets of authentication configuration values are set: OAuth2 client credentials \(client ID, client secret, token URL\), Access token, or Basic Authentication credentials \(username, password\)\. configure these properties via parameter flags, environment variables, or the tool\'s configuration file \(default: \$HOME/\.pingctl/config\.yaml\)$`
-	//expectedErrorPattern := `^failed to initialize pingfederate API client\. the pingfederate https host configuration value is not set: configure this property via parameter flags, environment variables, or the tool\'s configuration file \(default: \$HOME/\.pingctl/config\.yaml\)$`
 	err := initPingFederateServices(context.Background(), false, false)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }

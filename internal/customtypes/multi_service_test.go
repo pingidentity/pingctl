@@ -25,7 +25,7 @@ func TestMultiService_GetServices(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 
 	services := multiService.GetServices()
-	if services == nil {
+	if services == nil || *services == nil {
 		t.Fatal("Expected non-nil services slice")
 	}
 

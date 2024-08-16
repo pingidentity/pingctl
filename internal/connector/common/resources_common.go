@@ -12,6 +12,12 @@ import (
 
 func HandleClientResponse(response *http.Response, err error, apiFunctionName string, resourceType string) error {
 	l := logger.Get()
+
+	if response == nil {
+		l.Error().Err(err).Msgf("%s Request for resource '%s' was not successful. Response is nil.", apiFunctionName, resourceType)
+		return fmt.Errorf("%s Request for resource '%s' was not successful. Response is nil. Error: %v", apiFunctionName, resourceType, err)
+	}
+
 	defer response.Body.Close()
 
 	if err != nil || response.StatusCode == 404 || response.StatusCode >= 300 {

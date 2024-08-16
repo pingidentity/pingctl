@@ -11,8 +11,8 @@ import (
 
 func TestSchemaAttributeExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
-	resource := resources.SchemaAttribute(sdkClientInfo)
+	PingOneClientInfo := testutils.GetPingOneClientInfo(t)
+	resource := resources.SchemaAttribute(PingOneClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{

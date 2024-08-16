@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneMFAFido2PolicyResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneMFAFido2PolicyResource
-func MFAFido2Policy(clientInfo *connector.SDKClientInfo) *PingoneMFAFido2PolicyResource {
+func MFAFido2Policy(clientInfo *connector.PingOneClientInfo) *PingoneMFAFido2PolicyResource {
 	return &PingoneMFAFido2PolicyResource{
 		clientInfo: clientInfo,
 	}

@@ -2,6 +2,8 @@ package testutils
 
 import (
 	"context"
+	"crypto/tls"
+	"net/http"
 	"os"
 	"regexp"
 	"sync"
@@ -10,34 +12,35 @@ import (
 	"github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/profiles"
+	pingfederateGoClient "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 )
 
 var (
-	envIdOnce     sync.Once
-	apiClientOnce sync.Once
-	sdkClientInfo *connector.SDKClientInfo
-	environmentId string
+	envIdOnce         sync.Once
+	apiClientOnce     sync.Once
+	PingOneClientInfo *connector.PingOneClientInfo
+	environmentId     string
 )
 
 func GetEnvironmentID() string {
 	envIdOnce.Do(func() {
-		environmentId = os.Getenv(profiles.WorkerEnvironmentIDOption.EnvVar)
+		environmentId = os.Getenv(profiles.PingOneWorkerEnvironmentIDOption.EnvVar)
 	})
 
 	return environmentId
 }
 
 // Utility method to initialize a PingOne SDK client for testing
-func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
+func GetPingOneClientInfo(t *testing.T) *connector.PingOneClientInfo {
 	t.Helper()
 
 	apiClientOnce.Do(func() {
 		// Grab environment vars for initializing the API client.
 		// These are set in GitHub Actions.
-		clientID := os.Getenv(profiles.WorkerClientIDOption.EnvVar)
-		clientSecret := os.Getenv(profiles.WorkerClientSecretOption.EnvVar)
+		clientID := os.Getenv(profiles.PingOneWorkerClientIDOption.EnvVar)
+		clientSecret := os.Getenv(profiles.PingOneWorkerClientSecretOption.EnvVar)
 		environmentId := GetEnvironmentID()
-		region := os.Getenv(profiles.RegionOption.EnvVar)
+		region := os.Getenv(profiles.PingOneRegionOption.EnvVar)
 
 		if clientID == "" || clientSecret == "" || environmentId == "" || region == "" {
 			t.Fatalf("Unable to retrieve env var value for one or more of clientID, clientSecret, environmentID, region.")
@@ -56,10 +59,10 @@ func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
 		// Initialize the API client
 		client, err := apiConfig.APIClient(ctx)
 		if err != nil {
-			t.Fatalf(err.Error())
+			t.Fatal(err.Error())
 		}
 
-		sdkClientInfo = &connector.SDKClientInfo{
+		PingOneClientInfo = &connector.PingOneClientInfo{
 			Context:             ctx,
 			ApiClient:           client,
 			ApiClientId:         &clientID,
@@ -67,7 +70,43 @@ func GetPingOneSDKClientInfo(t *testing.T) *connector.SDKClientInfo {
 		}
 	})
 
-	return sdkClientInfo
+	return PingOneClientInfo
+}
+
+func GetPingFederateClientInfo(t *testing.T) *connector.PingFederateClientInfo {
+	t.Helper()
+
+	httpsHost := os.Getenv(profiles.PingFederateHttpsHostOption.EnvVar)
+	adminApiPath := os.Getenv(profiles.PingFederateAdminApiPathOption.EnvVar)
+	pfUsername := os.Getenv(profiles.PingFederateUsernameOption.EnvVar)
+	pfPassword := os.Getenv(profiles.PingFederatePasswordOption.EnvVar)
+
+	if httpsHost == "" || adminApiPath == "" || pfUsername == "" || pfPassword == "" {
+		t.Fatalf("Unable to retrieve env var value for one or more of httpsHost, adminApiPath, pfUsername, pfPassword.")
+	}
+
+	pfClientConfig := pingfederateGoClient.NewConfiguration()
+	pfClientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
+	pfClientConfig.Servers = pingfederateGoClient.ServerConfigurations{
+		{
+			URL: httpsHost + adminApiPath,
+		},
+	}
+	httpClient := &http.Client{Transport: &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true, //#nosec G402 -- This is a test
+		}}}
+	pfClientConfig.HTTPClient = httpClient
+
+	apiClient := pingfederateGoClient.NewAPIClient(pfClientConfig)
+
+	return &connector.PingFederateClientInfo{
+		ApiClient: apiClient,
+		Context: context.WithValue(context.Background(), pingfederateGoClient.ContextBasicAuth, pingfederateGoClient.BasicAuth{
+			UserName: pfUsername,
+			Password: pfPassword,
+		}),
+	}
 }
 
 func ValidateImportBlocks(t *testing.T, resource connector.ExportableResource, expectedImportBlocks *[]connector.ImportBlock) {

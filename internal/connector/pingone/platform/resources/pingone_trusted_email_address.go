@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneTrustedEmailAddressResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneTrustedEmailAddressResource
-func TrustedEmailAddress(clientInfo *connector.SDKClientInfo) *PingoneTrustedEmailAddressResource {
+func TrustedEmailAddress(clientInfo *connector.PingOneClientInfo) *PingoneTrustedEmailAddressResource {
 	return &PingoneTrustedEmailAddressResource{
 		clientInfo: clientInfo,
 	}

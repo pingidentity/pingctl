@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneGatewayResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneGatewayResource
-func Gateway(clientInfo *connector.SDKClientInfo) *PingoneGatewayResource {
+func Gateway(clientInfo *connector.PingOneClientInfo) *PingoneGatewayResource {
 	return &PingoneGatewayResource{
 		clientInfo: clientInfo,
 	}

@@ -12,11 +12,11 @@ var (
 )
 
 type PingoneMFASettingsResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneMFASettingsResource
-func MFASettings(clientInfo *connector.SDKClientInfo) *PingoneMFASettingsResource {
+func MFASettings(clientInfo *connector.PingOneClientInfo) *PingoneMFASettingsResource {
 	return &PingoneMFASettingsResource{
 		clientInfo: clientInfo,
 	}

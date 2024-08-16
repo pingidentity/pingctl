@@ -10,8 +10,8 @@ import (
 
 func TestFormRecaptchaV2Export(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
-	resource := resources.FormRecaptchaV2(sdkClientInfo)
+	PingOneClientInfo := testutils.GetPingOneClientInfo(t)
+	resource := resources.FormRecaptchaV2(PingOneClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{

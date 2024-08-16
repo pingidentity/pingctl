@@ -95,7 +95,11 @@ func CreateNewProfile(pName, desc string, setActive bool) (err error) {
 		}
 
 		// Set all options to their default state
-		newProfileViper.Set(opt.ViperKey, GetDefaultValue(opt.Type))
+		defVal, err := GetDefaultValue(opt.Type)
+		if err != nil {
+			return fmt.Errorf("failed to create new profile: %v", err)
+		}
+		newProfileViper.Set(opt.ViperKey, defVal)
 	}
 
 	// set the new profile description

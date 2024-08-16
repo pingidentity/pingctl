@@ -10,9 +10,9 @@ import (
 )
 
 func TestProtectTerraformPlan(t *testing.T) {
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
+	PingOneClientInfo := testutils.GetPingOneClientInfo(t)
 
-	testutils_terraform.InitTerraform(t)
+	testutils_terraform.InitPingOneTerraform(t)
 
 	testCases := []struct {
 		name          string
@@ -21,12 +21,12 @@ func TestProtectTerraformPlan(t *testing.T) {
 	}{
 		{
 			name:          "RiskPolicy",
-			resource:      resources.RiskPolicy(sdkClientInfo),
+			resource:      resources.RiskPolicy(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 		{
 			name:          "RiskPredictor",
-			resource:      resources.RiskPredictor(sdkClientInfo),
+			resource:      resources.RiskPredictor(PingOneClientInfo),
 			ignoredErrors: nil,
 		},
 	}

@@ -15,11 +15,11 @@ var (
 )
 
 type PingoneGatewayRoleAssignmentResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneGatewayRoleAssignmentResource
-func GatewayRoleAssignment(clientInfo *connector.SDKClientInfo) *PingoneGatewayRoleAssignmentResource {
+func GatewayRoleAssignment(clientInfo *connector.PingOneClientInfo) *PingoneGatewayRoleAssignmentResource {
 	return &PingoneGatewayRoleAssignmentResource{
 		clientInfo: clientInfo,
 	}

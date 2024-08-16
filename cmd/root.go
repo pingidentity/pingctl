@@ -48,7 +48,7 @@ func init() {
 	// Default the config in $home/.pingctl directory with name "config.yaml".
 	defaultCfgFile = fmt.Sprintf("%s/.pingctl/config.yaml", home)
 
-	cobra.OnInitialize(initViperAndProfile)
+	cobra.OnInitialize(initViperProfile)
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -95,13 +95,11 @@ func NewRootCommand() *cobra.Command {
 	return cmd
 }
 
-func initViperAndProfile() {
+func initViperProfile() {
 	l := logger.Get()
 
-	// If no configuration file location is specified, use the default configuration file location
-	if cfgFile == "" {
-		initDefaultConfigFile()
-	}
+	// Handle the config file location
+	checkCfgFileLocation()
 
 	//Configure the main viper instance
 	initMainViper()
@@ -136,6 +134,72 @@ func initViperAndProfile() {
 	if err := profiles.ApplyBindingsToProfileViper(); err != nil {
 		output.Print(output.Opts{
 			Message:      "Failed to apply bindings to profile viper",
+			Result:       output.ENUM_RESULT_FAILURE,
+			FatalMessage: err.Error(),
+		})
+	}
+}
+
+func checkCfgFileLocation() {
+	l := logger.Get()
+
+	// If no configuration file location is specified, use the default configuration file location
+	if cfgFile == "" {
+		l.Debug().Msgf("No configuration file location specified. Using default configuration file location: %s", defaultCfgFile)
+		cfgFile = defaultCfgFile
+	}
+
+	// Check existence of configuration file
+	_, err := os.Stat(cfgFile)
+	if os.IsNotExist(err) {
+		// Only create a new configuration file if it is the default configuration file location
+		if cfgFile == defaultCfgFile {
+			output.Print(output.Opts{
+				Message: fmt.Sprintf("Pingctl configuration file '%s' does not exist.", cfgFile),
+				Result:  output.ENUM_RESULT_NOACTION_WARN,
+			})
+
+			createDefaultConfigFile()
+		} else {
+			output.Print(output.Opts{
+				Message:      fmt.Sprintf("Configuration file '%s' does not exist.", cfgFile),
+				Result:       output.ENUM_RESULT_FAILURE,
+				FatalMessage: fmt.Sprintf("Configuration file '%s' does not exist. Use the default configuration file location or specify a valid configuration file location with the --config flag.", cfgFile),
+			})
+		}
+	} else if err != nil {
+		output.Print(output.Opts{
+			Message:      fmt.Sprintf("Failed to check if configuration file '%s' exists", cfgFile),
+			Result:       output.ENUM_RESULT_FAILURE,
+			FatalMessage: err.Error(),
+		})
+	}
+
+}
+
+func createDefaultConfigFile() {
+	l := logger.Get()
+	l.Debug().Msgf("Creating new pingctl configuration file at: %s", cfgFile)
+
+	// MkdirAll does nothing if directories already exist. Create needed directories for config file location.
+	err := os.MkdirAll(filepath.Dir(cfgFile), os.ModePerm)
+	if err != nil {
+		output.Print(output.Opts{
+			Message:      fmt.Sprintf("Failed to make directories needed for new pingctl configuration file: %s", cfgFile),
+			Result:       output.ENUM_RESULT_FAILURE,
+			FatalMessage: err.Error(),
+		})
+	}
+
+	tempViper := viper.New()
+	tempViper.Set(profiles.ProfileOption.ViperKey, defaultProfileName)
+
+	// SafeWriteConfigAs writes current configuration to a given filename if it does not exist.
+	// Use global viper instance as main viper instance is not yet configured.
+	err = tempViper.SafeWriteConfigAs(cfgFile)
+	if err != nil {
+		output.Print(output.Opts{
+			Message:      fmt.Sprintf("Failed to create configuration file at: %s", cfgFile),
 			Result:       output.ENUM_RESULT_FAILURE,
 			FatalMessage: err.Error(),
 		})
@@ -183,46 +247,5 @@ func initMainViper() {
 			Result:       output.ENUM_RESULT_FAILURE,
 			FatalMessage: err.Error(),
 		})
-	}
-}
-
-func initDefaultConfigFile() {
-	l := logger.Get()
-
-	l.Debug().Msgf("No configuration file location specified. Using default configuration file location: %s", defaultCfgFile)
-	cfgFile = defaultCfgFile
-
-	// Make sure the default config file exists, and if not, seed a new file
-	if _, err := os.Stat(cfgFile); os.IsNotExist(err) {
-		output.Print(output.Opts{
-			Message: fmt.Sprintf("pingctl's configuration file does not exist. Seeding a new file at location: %s", cfgFile),
-			Result:  output.ENUM_RESULT_NOACTION_WARN,
-		})
-
-		// MkdirAll does nothing if directories already exist. Create needed directories for config file location.
-		err := os.MkdirAll(filepath.Dir(cfgFile), os.ModePerm)
-		if err != nil {
-			output.Print(output.Opts{
-				Message:      fmt.Sprintf("Failed to make directories needed for filepath: %s", cfgFile),
-				Result:       output.ENUM_RESULT_FAILURE,
-				FatalMessage: err.Error(),
-			})
-		}
-
-		// No viper instance is configured yet, so to create a valid configuration file,
-		// we need to create a new viper instance and set the configuration options to their default values.
-		tempViper := viper.New()
-		tempViper.Set(profiles.ProfileOption.ViperKey, defaultProfileName)
-
-		// SafeWriteConfigAs writes current configuration to a given filename if it does not exist.
-		// Use global viper instance as main viper instance is not yet configured.
-		err = tempViper.SafeWriteConfigAs(cfgFile)
-		if err != nil {
-			output.Print(output.Opts{
-				Message:      fmt.Sprintf("Failed to create configuration file at: %s", cfgFile),
-				Result:       output.ENUM_RESULT_FAILURE,
-				FatalMessage: err.Error(),
-			})
-		}
 	}
 }

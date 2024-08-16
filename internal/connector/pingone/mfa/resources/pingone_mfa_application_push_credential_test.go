@@ -11,8 +11,8 @@ import (
 
 func TestMFAApplicationPushCredentialExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
-	resource := resources.MFAApplicationPushCredential(sdkClientInfo)
+	PingOneClientInfo := testutils.GetPingOneClientInfo(t)
+	resource := resources.MFAApplicationPushCredential(PingOneClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{

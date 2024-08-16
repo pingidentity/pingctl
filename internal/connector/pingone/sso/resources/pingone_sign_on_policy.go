@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneSignOnPolicyResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneSignOnPolicyResource
-func SignOnPolicy(clientInfo *connector.SDKClientInfo) *PingoneSignOnPolicyResource {
+func SignOnPolicy(clientInfo *connector.PingOneClientInfo) *PingoneSignOnPolicyResource {
 	return &PingoneSignOnPolicyResource{
 		clientInfo: clientInfo,
 	}

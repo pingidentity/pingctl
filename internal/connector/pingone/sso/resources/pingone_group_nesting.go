@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneGroupNestingResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneGroupNestingResource
-func GroupNesting(clientInfo *connector.SDKClientInfo) *PingoneGroupNestingResource {
+func GroupNesting(clientInfo *connector.PingOneClientInfo) *PingoneGroupNestingResource {
 	return &PingoneGroupNestingResource{
 		clientInfo: clientInfo,
 	}

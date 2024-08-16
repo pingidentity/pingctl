@@ -11,8 +11,8 @@ import (
 
 func TestFormExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
-	resource := resources.Form(sdkClientInfo)
+	PingOneClientInfo := testutils.GetPingOneClientInfo(t)
+	resource := resources.Form(PingOneClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{

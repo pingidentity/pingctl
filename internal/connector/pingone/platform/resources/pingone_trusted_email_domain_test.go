@@ -11,8 +11,8 @@ import (
 
 func TestTrustedEmailDomainExport(t *testing.T) {
 	// Get initialized apiClient and resource
-	sdkClientInfo := testutils.GetPingOneSDKClientInfo(t)
-	resource := resources.TrustedEmailDomain(sdkClientInfo)
+	PingOneClientInfo := testutils.GetPingOneClientInfo(t)
+	resource := resources.TrustedEmailDomain(PingOneClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{

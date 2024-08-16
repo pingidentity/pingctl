@@ -123,6 +123,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     env:
+      PING_IDENTITY_CONFIG: ${{ secrets.PING_IDENTITY_CONFIG }}
       PINGCTL_PINGONE_WORKER_CLIENT_ID: ${{ secrets.PINGCTL_PINGONE_WORKER_CLIENT_ID }}
       PINGCTL_PINGONE_WORKER_CLIENT_SECRET: ${{ secrets.PINGCTL_PINGONE_WORKER_CLIENT_SECRET }}
       PINGCTL_PINGONE_REGION: ${{ secrets.PINGCTL_PINGONE_REGION }}
@@ -134,6 +135,15 @@ jobs:
       PINGCTL_LOG_LEVEL: ${{ vars.PINGCTL_LOG_LEVEL }}
       PINGCTL_LOG_PATH: ${{ vars.PINGCTL_LOG_PATH }}
       PINGCTL_PINGONE_PROVIDER_VERSION: ${{ vars.PINGCTL_PINGONE_PROVIDER_VERSION }}
+      PINGCTL_PINGFEDERATE_ADMIN_API_PATH: ${{ secrets.PINGCTL_PINGFEDERATE_ADMIN_API_PATH }}
+      PINGCTL_PINGFEDERATE_CLIENT_ID: ${{ secrets.PINGCTL_PINGFEDERATE_CLIENT_ID }}
+      PINGCTL_PINGFEDERATE_CLIENT_SECRET: ${{ secrets.PINGCTL_PINGFEDERATE_CLIENT_SECRET }}
+      PINGCTL_PINGFEDERATE_HTTPS_HOST: ${{ secrets.PINGCTL_PINGFEDERATE_HTTPS_HOST }}
+      PINGCTL_PINGFEDERATE_PASSWORD: ${{ secrets.PINGCTL_PINGFEDERATE_PASSWORD }}
+      PINGCTL_PINGFEDERATE_SCOPES: ${{ secrets.PINGCTL_PINGFEDERATE_SCOPES }}
+      PINGCTL_PINGFEDERATE_TOKEN_URL: ${{ secrets.PINGCTL_PINGFEDERATE_TOKEN_URL }}
+      PINGCTL_PINGFEDERATE_USERNAME: ${{ secrets.PINGCTL_PINGFEDERATE_USERNAME }}
+      PINGCTL_PINGFEDERATE_PROVIDER_VERSION: ${{ vars.PINGCTL_PINGFEDERATE_PROVIDER_VERSION }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -143,4 +153,4 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
-      - run: make test
+      - run: mkdir -p $HOME/.pingidentity/ && echo "$PING_IDENTITY_CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make starttestcontainer && make test && make removetestcontainer

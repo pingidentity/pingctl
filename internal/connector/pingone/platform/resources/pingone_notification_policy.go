@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneNotificationPolicyResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneNotificationPolicyResource
-func NotificationPolicy(clientInfo *connector.SDKClientInfo) *PingoneNotificationPolicyResource {
+func NotificationPolicy(clientInfo *connector.PingOneClientInfo) *PingoneNotificationPolicyResource {
 	return &PingoneNotificationPolicyResource{
 		clientInfo: clientInfo,
 	}

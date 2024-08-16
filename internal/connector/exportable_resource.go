@@ -6,7 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
+	pingoneGoClient "github.com/patrickcping/pingone-go-sdk-v2/pingone"
+	pingfederateGoClient "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 )
 
 type ImportBlock struct {
@@ -16,11 +17,16 @@ type ImportBlock struct {
 	ResourceID         string
 }
 
-type SDKClientInfo struct {
-	ApiClient           *sdk.Client
+type PingOneClientInfo struct {
+	ApiClient           *pingoneGoClient.Client
 	ApiClientId         *string
 	Context             context.Context
 	ExportEnvironmentID string
+}
+
+type PingFederateClientInfo struct {
+	ApiClient *pingfederateGoClient.APIClient
+	Context   context.Context
 }
 
 // A connector that allows exporting configuration

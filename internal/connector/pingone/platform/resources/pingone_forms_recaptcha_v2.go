@@ -12,11 +12,11 @@ var (
 )
 
 type PingoneFormRecaptchaV2Resource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneFormRecaptchaV2Resource
-func FormRecaptchaV2(clientInfo *connector.SDKClientInfo) *PingoneFormRecaptchaV2Resource {
+func FormRecaptchaV2(clientInfo *connector.PingOneClientInfo) *PingoneFormRecaptchaV2Resource {
 	return &PingoneFormRecaptchaV2Resource{
 		clientInfo: clientInfo,
 	}

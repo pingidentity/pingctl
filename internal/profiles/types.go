@@ -1,6 +1,7 @@
 package profiles
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
@@ -27,6 +28,7 @@ const (
 	ENUM_OUTPUT_FORMAT  OptionType = "ENUM_OUTPUT_FORMAT"
 	ENUM_PINGONE_REGION OptionType = "ENUM_PINGONE_REGION"
 	ENUM_STRING         OptionType = "ENUM_STRING"
+	ENUM_STRING_SLICE   OptionType = "ENUM_STRING_SLICE"
 )
 
 var (
@@ -48,40 +50,112 @@ var (
 		EnvVar:         "PINGCTL_ACTIVE_PROFILE",
 		Type:           ENUM_STRING,
 	}
-	ExportEnvironmentIDOption = Option{
+	ProfileDescriptionOption = Option{
+		CobraParamName: "description",
+		ViperKey:       "description",
+		Type:           ENUM_STRING,
+	}
+	PingOneExportEnvironmentIDOption = Option{
 		CobraParamName: "pingone-export-environment-id",
 		ViperKey:       "pingone.export.environmentID",
 		EnvVar:         "PINGCTL_PINGONE_EXPORT_ENVIRONMENT_ID",
 		Type:           ENUM_ID,
 	}
-	WorkerEnvironmentIDOption = Option{
+	PingOneWorkerEnvironmentIDOption = Option{
 		CobraParamName: "pingone-worker-environment-id",
 		ViperKey:       "pingone.worker.environmentID",
 		EnvVar:         "PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID",
 		Type:           ENUM_ID,
 	}
-	WorkerClientIDOption = Option{
+	PingOneWorkerClientIDOption = Option{
 		CobraParamName: "pingone-worker-client-id",
 		ViperKey:       "pingone.worker.clientID",
 		EnvVar:         "PINGCTL_PINGONE_WORKER_CLIENT_ID",
 		Type:           ENUM_ID,
 	}
-	WorkerClientSecretOption = Option{
+	PingOneWorkerClientSecretOption = Option{
 		CobraParamName: "pingone-worker-client-secret",
 		ViperKey:       "pingone.worker.clientSecret",
 		EnvVar:         "PINGCTL_PINGONE_WORKER_CLIENT_SECRET",
 		Type:           ENUM_STRING,
 	}
-	RegionOption = Option{
+	PingOneRegionOption = Option{
 		CobraParamName: "pingone-region",
 		ViperKey:       "pingone.region",
 		EnvVar:         "PINGCTL_PINGONE_REGION",
 		Type:           ENUM_PINGONE_REGION,
 	}
-	ProfileDescriptionOption = Option{
-		CobraParamName: "description",
-		ViperKey:       "description",
+	PingFederateUsernameOption = Option{
+		CobraParamName: "pingfederate-username",
+		ViperKey:       "pingfederate.basicAuth.username",
+		EnvVar:         "PINGCTL_PINGFEDERATE_USERNAME",
 		Type:           ENUM_STRING,
+	}
+	PingFederatePasswordOption = Option{
+		CobraParamName: "pingfederate-password",
+		ViperKey:       "pingfederate.basicAuth.password",
+		EnvVar:         "PINGCTL_PINGFEDERATE_PASSWORD",
+		Type:           ENUM_STRING,
+	}
+	PingFederateHttpsHostOption = Option{
+		CobraParamName: "pingfederate-https-host",
+		ViperKey:       "pingfederate.httpsHost",
+		EnvVar:         "PINGCTL_PINGFEDERATE_HTTPS_HOST",
+		Type:           ENUM_STRING,
+	}
+	PingFederateAdminApiPathOption = Option{
+		CobraParamName: "pingfederate-admin-api-path",
+		ViperKey:       "pingfederate.adminApiPath",
+		EnvVar:         "PINGCTL_PINGFEDERATE_ADMIN_API_PATH",
+		Type:           ENUM_STRING,
+	}
+	PingFederateClientIDOption = Option{
+		CobraParamName: "pingfederate-client-id",
+		ViperKey:       "pingfederate.clientCredentialsAuth.clientID",
+		EnvVar:         "PINGCTL_PINGFEDERATE_CLIENT_ID",
+		Type:           ENUM_STRING,
+	}
+	PingFederateClientSecretOption = Option{
+		CobraParamName: "pingfederate-client-secret",
+		ViperKey:       "pingfederate.clientCredentialsAuth.clientSecret",
+		EnvVar:         "PINGCTL_PINGFEDERATE_CLIENT_SECRET",
+		Type:           ENUM_STRING,
+	}
+	PingFederateTokenURLOption = Option{
+		CobraParamName: "pingfederate-token-url",
+		ViperKey:       "pingfederate.clientCredentialsAuth.tokenURL",
+		EnvVar:         "PINGCTL_PINGFEDERATE_TOKEN_URL",
+		Type:           ENUM_STRING,
+	}
+	PingFederateScopesOption = Option{
+		CobraParamName: "pingfederate-scopes",
+		ViperKey:       "pingfederate.clientCredentialsAuth.scopes",
+		EnvVar:         "PINGCTL_PINGFEDERATE_SCOPES",
+		Type:           ENUM_STRING_SLICE,
+	}
+	PingFederateAccessTokenOption = Option{
+		CobraParamName: "pingfederate-access-token",
+		ViperKey:       "pingfederate.accessTokenAuth.accessToken",
+		EnvVar:         "PINGCTL_PINGFEDERATE_ACCESS_TOKEN",
+		Type:           ENUM_STRING,
+	}
+	PingFederateXBypassExternalValidationHeaderOption = Option{
+		CobraParamName: "pingfederate-x-bypass-external-validation-header",
+		ViperKey:       "pingfederate.xBypassExternalValidationHeader",
+		EnvVar:         "PINGCTL_PINGFEDERATE_X_BYPASS_EXTERNAL_VALIDATION_HEADER",
+		Type:           ENUM_BOOL,
+	}
+	PingFederateCACertificatePemFilesOption = Option{
+		CobraParamName: "pingfederate-ca-certificate-pem-files",
+		ViperKey:       "pingfederate.caCertificatePemFiles",
+		EnvVar:         "PINGCTL_PINGFEDERATE_CA_CERTIFICATE_PEM_FILES",
+		Type:           ENUM_STRING_SLICE,
+	}
+	PingFederateInsecureTrustAllTLSOption = Option{
+		CobraParamName: "pingfederate-insecure-trust-all-tls",
+		ViperKey:       "pingfederate.insecureTrustAllTLS",
+		EnvVar:         "PINGCTL_PINGFEDERATE_INSECURE_TRUST_ALL_TLS",
+		Type:           ENUM_BOOL,
 	}
 
 	ConfigOptions = ConfigOpts{
@@ -89,12 +163,24 @@ var (
 			OutputOption,
 			ColorOption,
 			ProfileOption,
-			ExportEnvironmentIDOption,
-			WorkerEnvironmentIDOption,
-			WorkerClientIDOption,
-			WorkerClientSecretOption,
-			RegionOption,
+			PingOneExportEnvironmentIDOption,
+			PingOneWorkerEnvironmentIDOption,
+			PingOneWorkerClientIDOption,
+			PingOneWorkerClientSecretOption,
+			PingOneRegionOption,
 			ProfileDescriptionOption,
+			PingFederateUsernameOption,
+			PingFederatePasswordOption,
+			PingFederateHttpsHostOption,
+			PingFederateAdminApiPathOption,
+			PingFederateClientIDOption,
+			PingFederateClientSecretOption,
+			PingFederateTokenURLOption,
+			PingFederateScopesOption,
+			PingFederateAccessTokenOption,
+			PingFederateXBypassExternalValidationHeaderOption,
+			PingFederateCACertificatePemFilesOption,
+			PingFederateInsecureTrustAllTLSOption,
 		},
 	}
 )
@@ -144,18 +230,21 @@ func OptionTypeFromViperKey(key string) (optType OptionType, ok bool) {
 	return "", false
 }
 
-func GetDefaultValue(optType OptionType) (val any) {
+func GetDefaultValue(optType OptionType) (val any, err error) {
 	switch optType {
 	case ENUM_BOOL:
-		return false
+		return false, nil
 	case ENUM_ID:
-		return ""
+		return "", nil
 	case ENUM_OUTPUT_FORMAT:
-		return customtypes.OutputFormat("text")
+		return customtypes.OutputFormat("text"), nil
 	case ENUM_PINGONE_REGION:
-		return customtypes.PingOneRegion("")
+		return customtypes.PingOneRegion(""), nil
 	case ENUM_STRING:
-		return ""
+		return "", nil
+	case ENUM_STRING_SLICE:
+		return []string{}, nil
+	default:
+		return nil, fmt.Errorf("failed to get default value: invalid option type %s", optType)
 	}
-	return nil
 }

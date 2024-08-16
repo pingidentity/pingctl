@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneGroupResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneGroupResource
-func Group(clientInfo *connector.SDKClientInfo) *PingoneGroupResource {
+func Group(clientInfo *connector.PingOneClientInfo) *PingoneGroupResource {
 	return &PingoneGroupResource{
 		clientInfo: clientInfo,
 	}

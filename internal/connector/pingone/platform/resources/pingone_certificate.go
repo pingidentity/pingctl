@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneCertificateResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneCertificateResource
-func Certificate(clientInfo *connector.SDKClientInfo) *PingoneCertificateResource {
+func Certificate(clientInfo *connector.PingOneClientInfo) *PingoneCertificateResource {
 	return &PingoneCertificateResource{
 		clientInfo: clientInfo,
 	}

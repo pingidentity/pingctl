@@ -12,11 +12,11 @@ var (
 )
 
 type PingoneEnvironmentResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneEnvironmentResource
-func Environment(clientInfo *connector.SDKClientInfo) *PingoneEnvironmentResource {
+func Environment(clientInfo *connector.PingOneClientInfo) *PingoneEnvironmentResource {
 	return &PingoneEnvironmentResource{
 		clientInfo: clientInfo,
 	}

@@ -14,11 +14,11 @@ var (
 )
 
 type PingonePasswordPolicyResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingonePasswordPolicyResource
-func PasswordPolicy(clientInfo *connector.SDKClientInfo) *PingonePasswordPolicyResource {
+func PasswordPolicy(clientInfo *connector.PingOneClientInfo) *PingonePasswordPolicyResource {
 	return &PingonePasswordPolicyResource{
 		clientInfo: clientInfo,
 	}

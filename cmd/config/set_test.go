@@ -52,7 +52,7 @@ func TestConfigSetCmd_NoValueProvided(t *testing.T) {
 
 // Test Config Set Command for key 'pingone.worker.clientId' updates viper configuration
 func TestConfigSetCmd_CheckViperConfig(t *testing.T) {
-	viperKey := profiles.WorkerClientIDOption.ViperKey
+	viperKey := profiles.PingOneWorkerClientIDOption.ViperKey
 	viperNewUUID := "12345678-1234-1234-1234-123456789012"
 
 	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=%s", viperKey, viperNewUUID))

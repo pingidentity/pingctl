@@ -14,11 +14,11 @@ var (
 )
 
 type PingoneKeyRotationPolicyResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneKeyRotationPolicyResource
-func KeyRotationPolicy(clientInfo *connector.SDKClientInfo) *PingoneKeyRotationPolicyResource {
+func KeyRotationPolicy(clientInfo *connector.PingOneClientInfo) *PingoneKeyRotationPolicyResource {
 	return &PingoneKeyRotationPolicyResource{
 		clientInfo: clientInfo,
 	}

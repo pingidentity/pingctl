@@ -15,11 +15,11 @@ var (
 )
 
 type PingoneRiskPredictorResource struct {
-	clientInfo *connector.SDKClientInfo
+	clientInfo *connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneRiskPredictorResource
-func RiskPredictor(clientInfo *connector.SDKClientInfo) *PingoneRiskPredictorResource {
+func RiskPredictor(clientInfo *connector.PingOneClientInfo) *PingoneRiskPredictorResource {
 	return &PingoneRiskPredictorResource{
 		clientInfo: clientInfo,
 	}

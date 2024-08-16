@@ -3,7 +3,7 @@ package platform
 import (
 	"context"
 
-	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
+	pingoneGoClient "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/platform/resources"
@@ -21,13 +21,13 @@ var (
 )
 
 type PingonePlatformConnector struct {
-	clientInfo connector.SDKClientInfo
+	clientInfo connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingonePlatformConnector
-func PlatformConnector(ctx context.Context, apiClient *sdk.Client, apiClientId *string, exportEnvironmentID string) *PingonePlatformConnector {
+func PlatformConnector(ctx context.Context, apiClient *pingoneGoClient.Client, apiClientId *string, exportEnvironmentID string) *PingonePlatformConnector {
 	return &PingonePlatformConnector{
-		clientInfo: connector.SDKClientInfo{
+		clientInfo: connector.PingOneClientInfo{
 			Context:             ctx,
 			ApiClient:           apiClient,
 			ApiClientId:         apiClientId,

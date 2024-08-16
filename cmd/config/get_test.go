@@ -23,7 +23,7 @@ func TestConfigGetCmd_TooManyArgs(t *testing.T) {
 
 // Test Config Get Command Executes when provided a full key
 func TestConfigGetCmd_FullKey(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "get", profiles.WorkerClientIDOption.ViperKey)
+	err := testutils_cobra.ExecutePingctl(t, "config", "get", profiles.PingOneWorkerClientIDOption.ViperKey)
 	testutils.CheckExpectedError(t, err, nil)
 }
 

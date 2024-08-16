@@ -3,7 +3,7 @@ package mfa
 import (
 	"context"
 
-	sdk "github.com/patrickcping/pingone-go-sdk-v2/pingone"
+	pingoneGoClient "github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/connector/pingone/mfa/resources"
@@ -21,13 +21,13 @@ var (
 )
 
 type PingoneMFAConnector struct {
-	clientInfo connector.SDKClientInfo
+	clientInfo connector.PingOneClientInfo
 }
 
 // Utility method for creating a PingoneMFAConnector
-func MFAConnector(ctx context.Context, apiClient *sdk.Client, apiClientId *string, exportEnvironmentID string) *PingoneMFAConnector {
+func MFAConnector(ctx context.Context, apiClient *pingoneGoClient.Client, apiClientId *string, exportEnvironmentID string) *PingoneMFAConnector {
 	return &PingoneMFAConnector{
-		clientInfo: connector.SDKClientInfo{
+		clientInfo: connector.PingOneClientInfo{
 			Context:             ctx,
 			ApiClient:           apiClient,
 			ApiClientId:         apiClientId,

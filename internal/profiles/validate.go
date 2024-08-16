@@ -105,6 +105,10 @@ func validateProfileValues(profileViper *viper.Viper) error {
 			if err := validateString(profileViper, viperKey); err != nil {
 				return err
 			}
+		case ENUM_STRING_SLICE:
+			if err := validateStringSlice(profileViper, viperKey); err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("failed to validate pingctl configuration: variable type for key '%s' is not recognized", viperKey)
 		}
@@ -188,6 +192,35 @@ func validateString(profileViper *viper.Viper, viperKey string) error {
 		profileViper.Set(viperKey, valueString)
 	default:
 		return fmt.Errorf("failed to validate pingctl configuration: variable type for key '%s' is not string", viperKey)
+	}
+	return nil
+}
+
+func validateStringSlice(profileViper *viper.Viper, viperKey string) error {
+	value := profileViper.Get(viperKey)
+	switch valueStringSlice := value.(type) {
+	case string:
+		ss := []string{}
+		s := strings.TrimSpace(valueStringSlice)
+		for _, v := range strings.Split(s, ",") {
+			ss = append(ss, strings.TrimSpace(v))
+		}
+		profileViper.Set(viperKey, ss)
+	case []string:
+		profileViper.Set(viperKey, valueStringSlice)
+	case []interface{}:
+		ss := []string{}
+		for _, v := range valueStringSlice {
+			switch valueString := v.(type) {
+			case string:
+				ss = append(ss, valueString)
+			default:
+				return fmt.Errorf("failed to validate pingctl configuration: variable type for key '%s' is not a string slice", viperKey)
+			}
+		}
+		profileViper.Set(viperKey, ss)
+	default:
+		return fmt.Errorf("failed to validate pingctl configuration: variable type for key '%s' is not a string slice", viperKey)
 	}
 	return nil
 }

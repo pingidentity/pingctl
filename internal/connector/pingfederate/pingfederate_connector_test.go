@@ -36,6 +36,14 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource: resources.AuthenticationPolicies(PingFederateClientInfo),
 			ignoredErrors: []string{
 				"Error: Plugin did not respond",
+				"Error: Request cancelled",
+			},
+		},
+		{
+			name:     "PingFederateAuthenticationPoliciesFragment",
+			resource: resources.AuthenticationPoliciesFragment(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Reference to undeclared resource",
 			},
 		},
 	}

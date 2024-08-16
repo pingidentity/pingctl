@@ -133,7 +133,7 @@ func Test_initPingFederateServices(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	// Test the function
-	err := initPingFederateServices(context.Background(), false, false)
+	err := initPingFederateServices(context.Background(), "v1.2.3", false, false)
 	testutils.CheckExpectedError(t, err, nil)
 
 	// Check the API client is not nil
@@ -152,7 +152,7 @@ func Test_initPingFederateServices_basicAuth(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	// Test the function
-	err := initPingFederateServices(context.Background(), true, false)
+	err := initPingFederateServices(context.Background(), "v1.2.3", true, false)
 	testutils.CheckExpectedError(t, err, nil)
 
 	// Check the API client is not nil
@@ -194,7 +194,7 @@ func Test_initPingFederateServices_clientCredentials(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	// Test the function
-	err := initPingFederateServices(context.Background(), false, false)
+	err := initPingFederateServices(context.Background(), "v1.2.3", false, false)
 	testutils.CheckExpectedError(t, err, nil)
 
 	// Check the API client is not nil
@@ -264,7 +264,7 @@ default:
 		os.Getenv(profiles.PingFederateHttpsHostOption.EnvVar)))
 
 	expectedErrorPattern := `^failed to initialize PingFederate API client\. none of the following sets of authentication configuration values are set: OAuth2 client credentials \(client ID, client secret, token URL\), Access token, or Basic Authentication credentials \(username, password\)\. configure these properties via parameter flags, environment variables, or the tool\'s configuration file \(default: \$HOME/\.pingctl/config\.yaml\)$`
-	err := initPingFederateServices(context.Background(), false, false)
+	err := initPingFederateServices(context.Background(), "v1.2.3", false, false)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -299,7 +299,7 @@ default:
         httpshost: ""`)
 
 	expectedErrorPattern := `^failed to initialize pingfederate API client\. the pingfederate https host configuration value is not set: configure this property via parameter flags, environment variables, or the tool\'s configuration file \(default: \$HOME/\.pingctl/config\.yaml\)$`
-	err := initPingFederateServices(context.Background(), false, false)
+	err := initPingFederateServices(context.Background(), "v1.2.3", false, false)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -423,7 +423,7 @@ func Test_initPingFederateApiClient(t *testing.T) {
 	}
 
 	// Test the function
-	err := initPingFederateApiClient(tr)
+	err := initPingFederateApiClient(tr, "v1.2.3")
 	testutils.CheckExpectedError(t, err, nil)
 
 	// Check the API client is not nil
@@ -487,14 +487,14 @@ default:
         httpshost: ""`)
 
 	expectedErrorPattern := `^failed to initialize pingfederate API client\. the pingfederate https host configuration value is not set: configure this property via parameter flags, environment variables, or the tool's configuration file \(default: \$HOME/\.pingctl/config\.yaml\)$`
-	err := initPingFederateApiClient(&http.Transport{})
+	err := initPingFederateApiClient(&http.Transport{}, "v1.2.3")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test initPingFederateApiClient function fails on nil transport
 func Test_initPingFederateApiClient_nilTransport(t *testing.T) {
 	expectedErrorPattern := `^failed to initialize pingfederate API client\. http transport is nil$`
-	err := initPingFederateApiClient(nil)
+	err := initPingFederateApiClient(nil, "v1.2.3")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -785,7 +785,7 @@ func Test_exportConnectors(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	// init the pingfederate services
-	err := initPingFederateServices(context.Background(), false, false)
+	err := initPingFederateServices(context.Background(), "v1.2.3", false, false)
 	if err != nil {
 		t.Fatalf("initPingFederateServices() error = %v", err)
 	}
@@ -815,7 +815,7 @@ func Test_exportConnectors_invalidExportFormat(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	// init the pingfederate services
-	err := initPingFederateServices(context.Background(), false, false)
+	err := initPingFederateServices(context.Background(), "v1.2.3", false, false)
 	if err != nil {
 		t.Fatalf("initPingFederateServices() error = %v", err)
 	}
@@ -838,7 +838,7 @@ func Test_exportConnectors_invalidOutputDir(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	// init the pingfederate services
-	err := initPingFederateServices(context.Background(), false, false)
+	err := initPingFederateServices(context.Background(), "v1.2.3", false, false)
 	if err != nil {
 		t.Fatalf("initPingFederateServices() error = %v", err)
 	}

@@ -26,6 +26,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Invalid Attribute Value", // TODO - Remove with PDI-1925 fix
 			},
 		},
+		{
+			name:          "PingFederateAuthenticationApiSettings",
+			resource:      resources.AuthenticationApiSettings(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

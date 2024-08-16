@@ -45,6 +45,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.AuthenticationPolicies(&c.clientInfo),
 		resources.AuthenticationPoliciesFragment(&c.clientInfo),
 		resources.AuthenticationPoliciesSettings(&c.clientInfo),
+		resources.AuthenticationPolicyContract(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)

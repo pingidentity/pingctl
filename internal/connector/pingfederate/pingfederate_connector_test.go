@@ -51,6 +51,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource:      resources.AuthenticationPoliciesSettings(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
+		{
+			name:          "PingFederateAuthenticationPolicyContract",
+			resource:      resources.AuthenticationPolicyContract(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

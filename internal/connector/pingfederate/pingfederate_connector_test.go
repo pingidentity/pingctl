@@ -115,6 +115,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Property Required:",
 			},
 		},
+		{
+			name:          "PingFederateLocalIdentityIdentityProfile",
+			resource:      resources.LocalIdentityIdentityProfile(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

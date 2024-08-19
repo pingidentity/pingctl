@@ -10,8 +10,8 @@ import (
 	"github.com/pingidentity/pingctl/internal/logger"
 )
 
-var (
-	SINGlETON_ID_COMMENT_DATA = "This resource is a singleton, so the value of 'ID' in the import block does not matter - it is just a placeholder and required by terraform."
+const (
+	SINGLETON_ID_COMMENT_DATA = "This resource is a singleton, so the value of 'ID' in the import block does not matter - it is just a placeholder and required by terraform."
 )
 
 func HandleClientResponse(response *http.Response, err error, apiFunctionName string, resourceType string) error {

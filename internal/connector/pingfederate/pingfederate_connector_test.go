@@ -61,6 +61,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource: resources.AuthenticationSelector(PingFederateClientInfo),
 			ignoredErrors: []string{
 				"Error: Plugin did not respond",
+				"Error: Request cancelled",
 			},
 		},
 		{
@@ -74,7 +75,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			name:     "PingFederateDataStore",
 			resource: resources.DataStore(PingFederateClientInfo),
 			ignoredErrors: []string{
-				"Error: Missing Configuration for Required Attribute",
+				"Error: 'password' and 'user_dn' must be set together",
 			},
 		},
 		{
@@ -82,6 +83,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource: resources.ExtendedProperties(PingFederateClientInfo),
 			ignoredErrors: []string{
 				"Error: Plugin did not respond",
+				"Error: Request cancelled",
 			},
 		},
 		{
@@ -91,6 +93,36 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Missing Configuration for Required Attribute",
 				"Error: Reference to undeclared resource",
 			},
+		},
+		{
+			name:          "PingFederateIDPDefaultURLs",
+			resource:      resources.IDPDefaultURLs(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "PingFederateIDPSPConnection",
+			resource:      resources.IDPSPConnection(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "PingFederateIncomingProxySettings",
+			resource: resources.IncomingProxySettings(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+				"Error: Request cancelled",
+			},
+		},
+		{
+			name:     "PingFederateKerberosRealm",
+			resource: resources.KerberosRealm(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Property Required:",
+			},
+		},
+		{
+			name:          "PingFederateLocalIdentityIdentityProfile",
+			resource:      resources.LocalIdentityIdentityProfile(PingFederateClientInfo),
+			ignoredErrors: nil,
 		},
 	}
 

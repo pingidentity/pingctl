@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 	"testing"
 
@@ -25,14 +24,34 @@ var (
 func ValidateTerraformPlan(t *testing.T, resource connector.ExportableResource, ignoredErrors []string) {
 	t.Helper()
 
+	usedIgnoreErrors := map[string]bool{}
+	for _, ignoredError := range ignoredErrors {
+		usedIgnoreErrors[ignoredError] = false
+	}
+
 	jsonOutputs := singleResourceTerraformPlanGenerateConfigOut(t, resource)
 
 	for _, output := range jsonOutputs {
 		if output["@level"] == "error" {
 			// Ignore errors
-			if ignoredErrors == nil || !slices.Contains(ignoredErrors, output["@message"].(string)) {
+			ignore := false
+			for _, ignoredError := range ignoredErrors {
+				if output["@message"] == ignoredError {
+					usedIgnoreErrors[ignoredError] = true
+					ignore = true
+					break
+				}
+			}
+
+			if !ignore {
 				t.Errorf("%v\n%v", output["@message"], output["diagnostic"])
 			}
+		}
+	}
+
+	for ignoredError, used := range usedIgnoreErrors {
+		if !used {
+			t.Logf("WARNING: Ignored error not used: %v", ignoredError)
 		}
 	}
 }

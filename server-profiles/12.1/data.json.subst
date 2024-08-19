@@ -618,6 +618,77 @@
       ]
     },
     {
+      "resourceType": "/idp/spConnections",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "type": "SP",
+          "id": "iIoQK.-GWcXI5kLp4KDNxQqAhDF",
+          "name": "test",
+          "entityId": "test",
+          "active": true,
+          "contactInfo": {},
+          "loggingMode": "STANDARD",
+          "virtualEntityIds": [],
+          "licenseConnectionGroup": "",
+          "credentials": {
+            "certs": [],
+            "signingSettings": {
+              "signingKeyPairRef": {
+                "id": "419x9yg43rlawqwq9v6az997k",
+                "location": "https://localhost:9999/pf-admin-api/v1/keyPairs/signing/419x9yg43rlawqwq9v6az997k"
+              },
+              "algorithm": "SHA256withRSA",
+              "includeCertInSignature": false,
+              "includeRawKeyInSignature": false
+            }
+          },
+          "modificationDate": "2024-08-19T20:05:54.484Z",
+          "creationDate": "2024-08-19T20:05:54.483Z",
+          "wsTrust": {
+            "partnerServiceIds": [
+              "test"
+            ],
+            "oAuthAssertionProfiles": false,
+            "defaultTokenType": "SAML20",
+            "generateKey": false,
+            "encryptSaml2Assertion": false,
+            "minutesBefore": 5,
+            "minutesAfter": 30,
+            "attributeContract": {
+              "coreAttributes": [
+                {
+                  "name": "TOKEN_SUBJECT"
+                }
+              ],
+              "extendedAttributes": []
+            },
+            "tokenProcessorMappings": [
+              {
+                "attributeSources": [],
+                "attributeContractFulfillment": {
+                  "TOKEN_SUBJECT": {
+                    "source": {
+                      "type": "NO_MAPPING"
+                    }
+                  }
+                },
+                "issuanceCriteria": {
+                  "conditionalCriteria": []
+                },
+                "idpTokenProcessorRef": {
+                  "id": "tokenprocessor",
+                  "location": "https://localhost:9999/pf-admin-api/v1/idp/tokenProcessors/tokenprocessor"
+                },
+                "restrictedVirtualEntityIds": []
+              }
+            ]
+          },
+          "connectionTargetType": "STANDARD"
+        }
+      ]
+    },
+    {
       "resourceType": "/sp/adapters",
       "operationType": "SAVE",
       "items": [
@@ -910,6 +981,37 @@
         }
       ],
       "resourceType": "/idp/tokenProcessors"
+    },
+    {
+      "resourceType": "/kerberos/realms",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "testKerberosRealm",
+          "kerberosRealmName": "Test Kerberos Realm",
+          "keyDistributionCenters": [
+            "distCenterTest"
+          ],
+          "kerberosUsername": "user",
+          "kerberosEncryptedPassword": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMi4xLjAuNCJ9..eSVByfqXC4TmafBIHhQ4aA.QrCCJ_z5orXIZMraSTB-4Q.MrXxFpCyS2s3aXjQsGW0bQ",
+          "retainPreviousKeysOnPasswordChange": true,
+          "suppressDomainNameConcatenation": true,
+          "connectionType": "DIRECT"
+        }
+      ]
+    },
+    {
+      "resourceType": "/kerberos/realms/settings",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "forceTcp": false,
+          "kdcTimeout": "3",
+          "debugLogOutput": false,
+          "kdcRetries": "3",
+          "keySetRetentionPeriodMins": 610
+        }
+      ]
     },
     {
       "resourceType": "/idp/adapters",

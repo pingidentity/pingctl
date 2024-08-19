@@ -8,29 +8,29 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingFederateAuthenticationPoliciesResource{}
+	_ connector.ExportableResource = &PingFederateIncomingProxySettingsResource{}
 )
 
-type PingFederateAuthenticationPoliciesResource struct {
+type PingFederateIncomingProxySettingsResource struct {
 	clientInfo *connector.PingFederateClientInfo
 }
 
-// Utility method for creating a PingFederateAuthenticationPoliciesResource
-func AuthenticationPolicies(clientInfo *connector.PingFederateClientInfo) *PingFederateAuthenticationPoliciesResource {
-	return &PingFederateAuthenticationPoliciesResource{
+// Utility method for creating a PingFederateIncomingProxySettingsResource
+func IncomingProxySettings(clientInfo *connector.PingFederateClientInfo) *PingFederateIncomingProxySettingsResource {
+	return &PingFederateIncomingProxySettingsResource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingFederateAuthenticationPoliciesResource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingFederateIncomingProxySettingsResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	importBlocks := []connector.ImportBlock{}
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	authnPoliciesId := "authentication_policies_singleton_id"
-	authnPoliciesName := "Authentication Policies"
+	incomingProxySettingsId := "incoming_proxy_settings_singleton_id"
+	incomingProxySettingsName := "Incoming Proxy Settings"
 
 	commentData := map[string]string{
 		"Resource Type": r.ResourceType(),
@@ -39,14 +39,14 @@ func (r *PingFederateAuthenticationPoliciesResource) ExportAll() (*[]connector.I
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType:       r.ResourceType(),
-		ResourceName:       authnPoliciesName,
-		ResourceID:         authnPoliciesId,
+		ResourceName:       incomingProxySettingsName,
+		ResourceID:         incomingProxySettingsId,
 		CommentInformation: common.GenerateCommentInformation(commentData),
 	})
 
 	return &importBlocks, nil
 }
 
-func (r *PingFederateAuthenticationPoliciesResource) ResourceType() string {
-	return "pingfederate_authentication_policies"
+func (r *PingFederateIncomingProxySettingsResource) ResourceType() string {
+	return "pingfederate_incoming_proxy_settings"
 }

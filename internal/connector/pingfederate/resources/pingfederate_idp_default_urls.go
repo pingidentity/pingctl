@@ -8,29 +8,29 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingFederateAuthenticationPoliciesResource{}
+	_ connector.ExportableResource = &PingFederateExtendedPropertiesResource{}
 )
 
-type PingFederateAuthenticationPoliciesResource struct {
+type PingFederateIDPDefaultURLsResource struct {
 	clientInfo *connector.PingFederateClientInfo
 }
 
-// Utility method for creating a PingFederateAuthenticationPoliciesResource
-func AuthenticationPolicies(clientInfo *connector.PingFederateClientInfo) *PingFederateAuthenticationPoliciesResource {
-	return &PingFederateAuthenticationPoliciesResource{
+// Utility method for creating a PingFederateIDPDefaultURLsResource
+func IDPDefaultURLs(clientInfo *connector.PingFederateClientInfo) *PingFederateIDPDefaultURLsResource {
+	return &PingFederateIDPDefaultURLsResource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingFederateAuthenticationPoliciesResource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingFederateIDPDefaultURLsResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	importBlocks := []connector.ImportBlock{}
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	authnPoliciesId := "authentication_policies_singleton_id"
-	authnPoliciesName := "Authentication Policies"
+	idpDefaultURLsId := "idp_default_urls_singleton_id"
+	idpDefaultURLsName := "IDP Default URLs"
 
 	commentData := map[string]string{
 		"Resource Type": r.ResourceType(),
@@ -39,14 +39,14 @@ func (r *PingFederateAuthenticationPoliciesResource) ExportAll() (*[]connector.I
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType:       r.ResourceType(),
-		ResourceName:       authnPoliciesName,
-		ResourceID:         authnPoliciesId,
+		ResourceName:       idpDefaultURLsName,
+		ResourceID:         idpDefaultURLsId,
 		CommentInformation: common.GenerateCommentInformation(commentData),
 	})
 
 	return &importBlocks, nil
 }
 
-func (r *PingFederateAuthenticationPoliciesResource) ResourceType() string {
-	return "pingfederate_authentication_policies"
+func (r *PingFederateIDPDefaultURLsResource) ResourceType() string {
+	return "pingfederate_idp_default_urls"
 }

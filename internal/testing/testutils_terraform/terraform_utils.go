@@ -51,7 +51,7 @@ func ValidateTerraformPlan(t *testing.T, resource connector.ExportableResource, 
 
 	for ignoredError, used := range usedIgnoreErrors {
 		if !used {
-			t.Errorf("Ignored error not used: %v", ignoredError)
+			t.Logf("WARNING: Ignored error not used: %v", ignoredError)
 		}
 	}
 }

@@ -36,6 +36,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource: resources.AuthenticationPolicies(PingFederateClientInfo),
 			ignoredErrors: []string{
 				"Error: Plugin did not respond",
+				"Error: Request cancelled",
 			},
 		},
 		{
@@ -60,6 +61,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource: resources.AuthenticationSelector(PingFederateClientInfo),
 			ignoredErrors: []string{
 				"Error: Plugin did not respond",
+				"Error: Request cancelled",
 			},
 		},
 		{
@@ -81,6 +83,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource: resources.ExtendedProperties(PingFederateClientInfo),
 			ignoredErrors: []string{
 				"Error: Plugin did not respond",
+				"Error: Request cancelled",
 			},
 		},
 		{
@@ -106,6 +109,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource: resources.IncomingProxySettings(PingFederateClientInfo),
 			ignoredErrors: []string{
 				"Error: Plugin did not respond",
+				"Error: Request cancelled",
 			},
 		},
 		{

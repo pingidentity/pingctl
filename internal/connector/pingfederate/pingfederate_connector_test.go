@@ -63,6 +63,13 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Plugin did not respond",
 			},
 		},
+		{
+			name:     "PingFederateCertificateCA",
+			resource: resources.CertificateCA(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Invalid Attribute Value Length",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

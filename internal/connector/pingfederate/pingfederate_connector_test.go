@@ -92,6 +92,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Reference to undeclared resource",
 			},
 		},
+		{
+			name:          "PingFederateIDPDefaultURLs",
+			resource:      resources.IDPDefaultURLs(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

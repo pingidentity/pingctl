@@ -84,6 +84,14 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Plugin did not respond",
 			},
 		},
+		{
+			name:     "PingFederateIDPAdapter",
+			resource: resources.IDPAdapter(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Missing Configuration for Required Attribute",
+				"Error: Reference to undeclared resource",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

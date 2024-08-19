@@ -101,6 +101,13 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource:      resources.IDPSPConnection(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
+		{
+			name:     "PingFederateIncomingProxySettings",
+			resource: resources.IncomingProxySettings(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

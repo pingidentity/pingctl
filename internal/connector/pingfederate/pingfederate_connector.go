@@ -52,6 +52,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.ExtendedProperties(&c.clientInfo),
 		resources.IDPAdapter(&c.clientInfo),
 		resources.IDPDefaultURLs(&c.clientInfo),
+		resources.IDPSPConnection(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)

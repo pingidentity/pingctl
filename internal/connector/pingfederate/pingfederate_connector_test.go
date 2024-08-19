@@ -36,7 +36,6 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource: resources.AuthenticationPolicies(PingFederateClientInfo),
 			ignoredErrors: []string{
 				"Error: Plugin did not respond",
-				"Error: Request cancelled",
 			},
 		},
 		{
@@ -74,7 +73,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			name:     "PingFederateDataStore",
 			resource: resources.DataStore(PingFederateClientInfo),
 			ignoredErrors: []string{
-				"Error: Missing Configuration for Required Attribute",
+				"Error: 'password' and 'user_dn' must be set together",
 			},
 		},
 		{
@@ -95,6 +94,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 		{
 			name:          "PingFederateIDPDefaultURLs",
 			resource:      resources.IDPDefaultURLs(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "PingFederateIDPSPConnection",
+			resource:      resources.IDPSPConnection(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
 	}

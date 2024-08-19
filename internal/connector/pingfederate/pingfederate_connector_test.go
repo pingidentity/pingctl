@@ -77,6 +77,13 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Missing Configuration for Required Attribute",
 			},
 		},
+		{
+			name:     "PingFederateExtendedProperties",
+			resource: resources.ExtendedProperties(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

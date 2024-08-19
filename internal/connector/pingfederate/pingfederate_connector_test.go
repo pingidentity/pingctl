@@ -108,6 +108,13 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Plugin did not respond",
 			},
 		},
+		{
+			name:     "PingFederateKerberosRealm",
+			resource: resources.KerberosRealm(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Property Required:",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

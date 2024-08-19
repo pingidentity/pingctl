@@ -54,6 +54,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.IDPDefaultURLs(&c.clientInfo),
 		resources.IDPSPConnection(&c.clientInfo),
 		resources.IncomingProxySettings(&c.clientInfo),
+		resources.KerberosRealm(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)

@@ -983,6 +983,37 @@
       "resourceType": "/idp/tokenProcessors"
     },
     {
+      "resourceType": "/kerberos/realms",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "testKerberosRealm",
+          "kerberosRealmName": "Test Kerberos Realm",
+          "keyDistributionCenters": [
+            "distCenterTest"
+          ],
+          "kerberosUsername": "user",
+          "kerberosEncryptedPassword": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMi4xLjAuNCJ9..eSVByfqXC4TmafBIHhQ4aA.QrCCJ_z5orXIZMraSTB-4Q.MrXxFpCyS2s3aXjQsGW0bQ",
+          "retainPreviousKeysOnPasswordChange": true,
+          "suppressDomainNameConcatenation": true,
+          "connectionType": "DIRECT"
+        }
+      ]
+    },
+    {
+      "resourceType": "/kerberos/realms/settings",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "forceTcp": false,
+          "kdcTimeout": "3",
+          "debugLogOutput": false,
+          "kdcRetries": "3",
+          "keySetRetentionPeriodMins": 610
+        }
+      ]
+    },
+    {
       "resourceType": "/idp/adapters",
       "operationType": "SAVE",
       "items": [

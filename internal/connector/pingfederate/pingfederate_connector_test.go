@@ -70,6 +70,13 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Invalid Attribute Value Length",
 			},
 		},
+		{
+			name:     "PingFederateDataStore",
+			resource: resources.DataStore(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Missing Configuration for Required Attribute",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

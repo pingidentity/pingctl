@@ -33,9 +33,8 @@ func (r *PingFederateAuthenticationApiSettingsResource) ExportAll() (*[]connecto
 	authnApiSettingsName := "Authentication API Settings"
 
 	commentData := map[string]string{
-		"Resource Type": r.ResourceType(),
-		"Authentication API Settings Resource ID":   authnApiSettingsId,
-		"Authentication API Settings Resource Name": authnApiSettingsName,
+		"Resource Type":         r.ResourceType(),
+		"Singleton Name and ID": "This resource is a singleton, so the value of 'name' and 'ID' in the import block does not matter - it is just a placeholder and required by terraform.",
 	}
 
 	importBlocks = append(importBlocks, connector.ImportBlock{

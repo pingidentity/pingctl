@@ -26,6 +26,36 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Invalid Attribute Value", // TODO - Remove with PDI-1925 fix
 			},
 		},
+		{
+			name:          "PingFederateAuthenticationApiSettings",
+			resource:      resources.AuthenticationApiSettings(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "PingFederateAuthenticationPolicies",
+			resource: resources.AuthenticationPolicies(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+				"Error: Request cancelled",
+			},
+		},
+		{
+			name:     "PingFederateAuthenticationPoliciesFragment",
+			resource: resources.AuthenticationPoliciesFragment(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Reference to undeclared resource",
+			},
+		},
+		{
+			name:          "PingFederateAuthenticationPoliciesSettings",
+			resource:      resources.AuthenticationPoliciesSettings(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "PingFederateAuthenticationPolicyContract",
+			resource:      resources.AuthenticationPolicyContract(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

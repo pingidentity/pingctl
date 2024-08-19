@@ -265,10 +265,13 @@ func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlagsWithAccessToken
 // Test Platform Export command fails with invalid basic auth flags while there is valid client credentials in config.
 // This is because cobra/viper model prioritizes flags over config values.
 func TestPlatformExportCmd_PingFederateClientCredentialsAuthFlagsWithInvalidBasicAuth(t *testing.T) {
+	outputDir := t.TempDir()
+
 	expectedErrorPattern := `^failed to export 'pingfederate' service: failed to export resource .*\. err: .* Request for resource '.*' was not successful\.\s+Response Code: 401 Unauthorized\s+Response Body: {{"resultId":"invalid_credentials","message":"The credentials you provided were not recognized\."}}\s+Error: 401 Unauthorized$`
 	err := testutils_cobra.ExecutePingctl(t, "platform", "export",
 		"--pingfederate-username", os.Getenv(profiles.PingFederateUsernameOption.EnvVar),
 		"--pingfederate-password", "invalid",
+		"--output-directory", outputDir,
 		"--service", "pingfederate",
 		"--overwrite")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)

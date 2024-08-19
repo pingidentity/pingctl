@@ -58,18 +58,18 @@ func (r *PingFederateAuthenticationApiApplicationResource) ExportAll() (*[]conne
 
 	for _, authnApiApplication := range authnApiApplicationsItems {
 		authnApiApplicationId, authnApiApplicationIdOk := authnApiApplication.GetIdOk()
-		authnApiApplicationIdName, authnApiApplicationIdNameOk := authnApiApplication.GetNameOk()
+		authnApiApplicationName, authnApiApplicationNameOk := authnApiApplication.GetNameOk()
 
-		if authnApiApplicationIdOk && authnApiApplicationIdNameOk {
+		if authnApiApplicationIdOk && authnApiApplicationNameOk {
 			commentData := map[string]string{
 				"Resource Type": r.ResourceType(),
 				"Authentication API Application Resource ID":   *authnApiApplicationId,
-				"Authentication API Application Resource Name": *authnApiApplicationIdName,
+				"Authentication API Application Resource Name": *authnApiApplicationName,
 			}
 
 			importBlocks = append(importBlocks, connector.ImportBlock{
 				ResourceType:       r.ResourceType(),
-				ResourceName:       *authnApiApplicationIdName,
+				ResourceName:       *authnApiApplicationName,
 				ResourceID:         *authnApiApplicationId,
 				CommentInformation: common.GenerateCommentInformation(commentData),
 			})

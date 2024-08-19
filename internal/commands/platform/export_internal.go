@@ -49,7 +49,7 @@ func RunInternalExport(ctx context.Context, commandVersion string, outputDir, ex
 	}
 
 	if multiService.ContainsPingFederateService() {
-		if err = initPingFederateServices(ctx, basicAuthFlagsUsed, AccessTokenAuthFlagsUsed); err != nil {
+		if err = initPingFederateServices(ctx, commandVersion, basicAuthFlagsUsed, AccessTokenAuthFlagsUsed); err != nil {
 			return err
 		}
 	}
@@ -76,7 +76,7 @@ func RunInternalExport(ctx context.Context, commandVersion string, outputDir, ex
 	return nil
 }
 
-func initPingFederateServices(ctx context.Context, basicAuthFlagsUsed, accessTokenAuthFlagsUsed bool) (err error) {
+func initPingFederateServices(ctx context.Context, pingctlVersion string, basicAuthFlagsUsed, accessTokenAuthFlagsUsed bool) (err error) {
 	// Get all the PingFederate configuration values
 	profileViper := profiles.GetProfileViper()
 	pfClientID := profileViper.GetString(profiles.PingFederateClientIDOption.ViperKey)
@@ -110,7 +110,7 @@ func initPingFederateServices(ctx context.Context, basicAuthFlagsUsed, accessTok
 		},
 	}
 
-	if err = initPingFederateApiClient(tr); err != nil {
+	if err = initPingFederateApiClient(tr, pingctlVersion); err != nil {
 		return err
 	}
 
@@ -162,7 +162,7 @@ func initPingOneServices(ctx context.Context, cmdVersion string) (err error) {
 	return nil
 }
 
-func initPingFederateApiClient(tr *http.Transport) (err error) {
+func initPingFederateApiClient(tr *http.Transport, pingctlVersion string) (err error) {
 	l := logger.Get()
 	l.Debug().Msgf("Initializing PingFederate API client.")
 
@@ -184,7 +184,14 @@ func initPingFederateApiClient(tr *http.Transport) (err error) {
 		return fmt.Errorf(`failed to initialize pingfederate API client. the pingfederate https host configuration value is not set: configure this property via parameter flags, environment variables, or the tool's configuration file (default: $HOME/.pingctl/config.yaml)`)
 	}
 
+	userAgent := fmt.Sprintf("pingctl/%s", pingctlVersion)
+
+	if v := strings.TrimSpace(os.Getenv("PINGCTL_PINGFEDERATE_APPEND_USER_AGENT")); v != "" {
+		userAgent += fmt.Sprintf(" %s", v)
+	}
+
 	pfClientConfig := pingfederateGoClient.NewConfiguration()
+	pfClientConfig.UserAgentSuffix = &userAgent
 	pfClientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
 	pfClientConfig.DefaultHeader["X-BypassExternalValidation"] = strconv.FormatBool(xBypassExternalValidationHeader)
 	pfClientConfig.Servers = pingfederateGoClient.ServerConfigurations{
@@ -200,7 +207,7 @@ func initPingFederateApiClient(tr *http.Transport) (err error) {
 	return nil
 }
 
-func initPingOneApiClient(ctx context.Context, version string) (err error) {
+func initPingOneApiClient(ctx context.Context, pingctlVersion string) (err error) {
 	l := logger.Get()
 	l.Debug().Msgf("Initializing PingOne API client.")
 
@@ -241,7 +248,7 @@ func initPingOneApiClient(ctx context.Context, version string) (err error) {
 		return fmt.Errorf(`failed to initialize pingone API client. one of worker client ID, worker client secret, and/or worker environment ID is empty. configure these properties via parameter flags, environment variables, or the tool's configuration file (default: $HOME/.pingctl/config.yaml)`)
 	}
 
-	userAgent := fmt.Sprintf("pingctl/%s", version)
+	userAgent := fmt.Sprintf("pingctl/%s", pingctlVersion)
 
 	if v := strings.TrimSpace(os.Getenv("PINGCTL_PINGONE_APPEND_USER_AGENT")); v != "" {
 		userAgent += fmt.Sprintf(" %s", v)

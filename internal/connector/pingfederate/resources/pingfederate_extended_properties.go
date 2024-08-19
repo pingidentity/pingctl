@@ -34,7 +34,7 @@ func (r *PingFederateExtendedPropertiesResource) ExportAll() (*[]connector.Impor
 
 	commentData := map[string]string{
 		"Resource Type": r.ResourceType(),
-		"Singleton ID":  common.SINGlETON_ID_COMMENT_DATA,
+		"Singleton ID":  common.SINGLETON_ID_COMMENT_DATA,
 	}
 
 	importBlocks = append(importBlocks, connector.ImportBlock{

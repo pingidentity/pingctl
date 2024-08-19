@@ -56,6 +56,42 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource:      resources.AuthenticationPolicyContract(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
+		{
+			name:     "PingFederateAuthenticationSelector",
+			resource: resources.AuthenticationSelector(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+			},
+		},
+		{
+			name:     "PingFederateCertificateCA",
+			resource: resources.CertificateCA(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Invalid Attribute Value Length",
+			},
+		},
+		{
+			name:     "PingFederateDataStore",
+			resource: resources.DataStore(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Missing Configuration for Required Attribute",
+			},
+		},
+		{
+			name:     "PingFederateExtendedProperties",
+			resource: resources.ExtendedProperties(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+			},
+		},
+		{
+			name:     "PingFederateIDPAdapter",
+			resource: resources.IDPAdapter(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Missing Configuration for Required Attribute",
+				"Error: Reference to undeclared resource",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

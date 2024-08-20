@@ -145,6 +145,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Request cancelled",
 			},
 		},
+		{
+			name:          "PingFederateOAuthCIBAServerPolicySettings",
+			resource:      resources.OAuthCIBAServerPolicySettings(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

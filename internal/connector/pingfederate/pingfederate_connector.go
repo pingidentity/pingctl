@@ -60,6 +60,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.OAuthAccessTokenManager(&c.clientInfo),
 		resources.OAuthAccessTokenMapping(&c.clientInfo),
 		resources.OAuthCIBAServerPolicySettings(&c.clientInfo),
+		resources.OAuthClient(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)

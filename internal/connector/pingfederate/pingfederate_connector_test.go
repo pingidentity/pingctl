@@ -182,6 +182,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			},
 		},
 		{
+			name:          "PingFederateRedirectValidation",
+			resource:      resources.RedirectValidation(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
 			name:          "PingFederateServerSettings",
 			resource:      resources.ServerSettings(PingFederateClientInfo),
 			ignoredErrors: nil,

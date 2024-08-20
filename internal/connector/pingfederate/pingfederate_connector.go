@@ -57,6 +57,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.KerberosRealm(&c.clientInfo),
 		resources.LocalIdentityIdentityProfile(&c.clientInfo),
 		resources.NotificationPublishersSettings(&c.clientInfo),
+		resources.OAuthAccessTokenManager(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)

@@ -132,6 +132,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Request cancelled",
 			},
 		},
+		{
+			name:          "PingFederateOAuthAccessTokenManager",
+			resource:      resources.OAuthAccessTokenManager(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

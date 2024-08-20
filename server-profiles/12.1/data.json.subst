@@ -1150,6 +1150,19 @@
       ]
     },
     {
+      "resourceType": "/oauth/issuers",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "id": "BmoJwEmyzs4RSNMzVUlCs8qTPC",
+          "name": "Test Issuer",
+          "description": "test issuer",
+          "host": "localhost",
+          "path": ""
+        }
+      ]
+    },
+    {
       "resourceType": "/oauth/outOfBandAuthPlugins",
       "operationType": "SAVE",
       "items": [

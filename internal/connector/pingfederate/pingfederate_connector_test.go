@@ -159,6 +159,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Invalid Attribute Value",
 			},
 		},
+		{
+			name:          "PingFederateOAuthIssuer",
+			resource:      resources.OAuthIssuer(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

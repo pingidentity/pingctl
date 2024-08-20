@@ -124,6 +124,41 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource:      resources.LocalIdentityIdentityProfile(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
+		{
+			name:     "PingFederateNotificationPublishersSettings",
+			resource: resources.NotificationPublishersSettings(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+				"Error: Request cancelled",
+			},
+		},
+		{
+			name:          "PingFederateOAuthAccessTokenManager",
+			resource:      resources.OAuthAccessTokenManager(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "PingFederateOAuthAccessTokenMapping",
+			resource: resources.OAuthAccessTokenMapping(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+				"Error: Request cancelled",
+			},
+		},
+		{
+			name:          "PingFederateOAuthCIBAServerPolicySettings",
+			resource:      resources.OAuthCIBAServerPolicySettings(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "PingFederateOAuthClient",
+			resource: resources.OAuthClient(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: persistent_grant_expiration_type must be configured to \"OVERRIDE_SERVER_DEFAULT\" to modify the other persistent_grant_expiration values.",
+				"Error: client_auth.secret cannot be empty when \"CLIENT_CREDENTIALS\" is included in grant_types.",
+				"Error: Invalid Attribute Value",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

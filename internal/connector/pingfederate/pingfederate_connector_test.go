@@ -173,6 +173,15 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			},
 		},
 		{
+			name:     "PingFederatePasswordCredentialValidator",
+			resource: resources.PasswordCredentialValidator(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator",
+				"Error: The \"Search Base\" field is required for the LDAP Username Password Credential Validator",
+				"Error: The \"Search Filter\" field is required for the LDAP Username Password Credential Validator",
+			},
+		},
+		{
 			name:          "PingFederateServerSettings",
 			resource:      resources.ServerSettings(PingFederateClientInfo),
 			ignoredErrors: nil,

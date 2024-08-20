@@ -63,6 +63,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.OAuthClient(&c.clientInfo),
 		resources.OAuthIssuer(&c.clientInfo),
 		resources.OpenIDConnectSettings(&c.clientInfo),
+		resources.PasswordCredentialValidator(&c.clientInfo),
 		resources.ServerSettings(&c.clientInfo),
 	}
 

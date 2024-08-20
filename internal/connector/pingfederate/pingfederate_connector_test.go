@@ -124,6 +124,14 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource:      resources.LocalIdentityIdentityProfile(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
+		{
+			name:     "PingFederateNotificationPublishersSettings",
+			resource: resources.NotificationPublishersSettings(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+				"Error: Request cancelled",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

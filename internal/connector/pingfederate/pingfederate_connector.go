@@ -62,6 +62,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.OAuthCIBAServerPolicySettings(&c.clientInfo),
 		resources.OAuthClient(&c.clientInfo),
 		resources.OAuthIssuer(&c.clientInfo),
+		resources.OpenIDConnectSettings(&c.clientInfo),
 		resources.ServerSettings(&c.clientInfo),
 	}
 

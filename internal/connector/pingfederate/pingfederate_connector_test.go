@@ -165,6 +165,14 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
+			name:     "PingFederateOpenIDConnectSettings",
+			resource: resources.OpenIDConnectSettings(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+				"Error: Request cancelled",
+			},
+		},
+		{
 			name:          "PingFederateServerSettings",
 			resource:      resources.ServerSettings(PingFederateClientInfo),
 			ignoredErrors: nil,

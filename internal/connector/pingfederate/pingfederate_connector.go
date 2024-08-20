@@ -58,6 +58,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.LocalIdentityIdentityProfile(&c.clientInfo),
 		resources.NotificationPublishersSettings(&c.clientInfo),
 		resources.OAuthAccessTokenManager(&c.clientInfo),
+		resources.OAuthAccessTokenMapping(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)

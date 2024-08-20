@@ -137,6 +137,14 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource:      resources.OAuthAccessTokenManager(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
+		{
+			name:     "PingFederateOAuthAccessTokenMapping",
+			resource: resources.OAuthAccessTokenMapping(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+				"Error: Request cancelled",
+			},
+		},
 	}
 
 	for _, tc := range testCases {

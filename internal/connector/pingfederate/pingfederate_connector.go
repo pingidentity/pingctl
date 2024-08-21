@@ -69,6 +69,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.ServerSettingsSystemKeys(&c.clientInfo),
 		resources.SessionSettings(&c.clientInfo),
 		resources.SPAuthenticationPolicyContractMapping(&c.clientInfo),
+		resources.VirtualHostNames(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)

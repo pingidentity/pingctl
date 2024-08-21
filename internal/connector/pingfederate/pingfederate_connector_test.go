@@ -159,6 +159,38 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Invalid Attribute Value",
 			},
 		},
+		{
+			name:          "PingFederateOAuthIssuer",
+			resource:      resources.OAuthIssuer(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:     "PingFederateOpenIDConnectSettings",
+			resource: resources.OpenIDConnectSettings(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Plugin did not respond",
+				"Error: Request cancelled",
+			},
+		},
+		{
+			name:     "PingFederatePasswordCredentialValidator",
+			resource: resources.PasswordCredentialValidator(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator",
+				"Error: The \"Search Base\" field is required for the LDAP Username Password Credential Validator",
+				"Error: The \"Search Filter\" field is required for the LDAP Username Password Credential Validator",
+			},
+		},
+		{
+			name:          "PingFederateRedirectValidation",
+			resource:      resources.RedirectValidation(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "PingFederateServerSettings",
+			resource:      resources.ServerSettings(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

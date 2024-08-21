@@ -61,6 +61,11 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.OAuthAccessTokenMapping(&c.clientInfo),
 		resources.OAuthCIBAServerPolicySettings(&c.clientInfo),
 		resources.OAuthClient(&c.clientInfo),
+		resources.OAuthIssuer(&c.clientInfo),
+		resources.OpenIDConnectSettings(&c.clientInfo),
+		resources.PasswordCredentialValidator(&c.clientInfo),
+		resources.RedirectValidation(&c.clientInfo),
+		resources.ServerSettings(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)

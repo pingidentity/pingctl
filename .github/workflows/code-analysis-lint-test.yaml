@@ -117,7 +117,7 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache: true
-      - run: make importfmtlint
+      - run: go install github.com/pavius/impi/cmd/impi && make importfmtlint
   test:
     name: go test
     needs: [build]

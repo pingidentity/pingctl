@@ -191,6 +191,28 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			resource:      resources.ServerSettings(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
+		{
+			name:     "PingFederateServerSettingsSystemKeys",
+			resource: resources.ServerSettingsSystemKeys(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Invalid Attribute Combination",
+			},
+		},
+		{
+			name:          "PingFederateSessionSettings",
+			resource:      resources.SessionSettings(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "PingFederateSPAuthenticationPolicyContractMapping",
+			resource:      resources.SPAuthenticationPolicyContractMapping(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
+			name:          "PingFederateVirtualHostNames",
+			resource:      resources.VirtualHostNames(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

@@ -820,6 +820,28 @@
       ]
     },
     {
+      "resourceType": "/sp/authenticationPolicyContractMappings",
+      "operationType": "SAVE",
+      "items": [
+        {
+          "attributeSources": [],
+          "attributeContractFulfillment": {
+            "subject": {
+              "source": {
+                "type": "NO_MAPPING"
+              }
+            }
+          },
+          "issuanceCriteria": {
+            "conditionalCriteria": []
+          },
+          "id": "wIdHhK789PmadmMS|spadapter",
+          "sourceId": "wIdHhK789PmadmMS",
+          "targetId": "spadapter"
+        }
+      ]
+    },
+    {
       "resourceType": "/notificationPublishers",
       "operationType": "SAVE",
       "items": [

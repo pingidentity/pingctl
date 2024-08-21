@@ -61,6 +61,11 @@ func TestResourceScopeOpenIdExport(t *testing.T) {
 			ResourceName: "openid_address",
 			ResourceID:   fmt.Sprintf("%s/fcd04665-fb97-4943-9c88-427331ebe930", testutils.GetEnvironmentID()),
 		},
+		{
+			ResourceType: "pingone_resource_scope_openid",
+			ResourceName: "openid_offline_access",
+			ResourceID:   fmt.Sprintf("%s/4ac3e5ac-7baf-4c05-80a5-01a40c813d1a", testutils.GetEnvironmentID()),
+		},
 	}
 
 	testutils.ValidateImportBlocks(t, resource, &expectedImportBlocks)

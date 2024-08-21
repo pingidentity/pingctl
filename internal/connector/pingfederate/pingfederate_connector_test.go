@@ -198,6 +198,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 				"Error: Invalid Attribute Combination",
 			},
 		},
+		{
+			name:          "PingFederateSessionSettings",
+			resource:      resources.SessionSettings(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
 	}
 
 	for _, tc := range testCases {

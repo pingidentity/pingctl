@@ -67,6 +67,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.RedirectValidation(&c.clientInfo),
 		resources.ServerSettings(&c.clientInfo),
 		resources.ServerSettingsSystemKeys(&c.clientInfo),
+		resources.SessionSettings(&c.clientInfo),
 	}
 
 	return common.WriteFiles(exportableResources, format, outputDir, overwriteExport)

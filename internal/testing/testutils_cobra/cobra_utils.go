@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/pingidentity/pingctl/cmd"
+	"github.com/pingidentity/pingctl/internal/configuration"
 	testutils_viper "github.com/pingidentity/pingctl/internal/testing/testutils_viper"
 )
 
@@ -12,6 +13,9 @@ import (
 // and returns the error if any
 func ExecutePingctl(t *testing.T, args ...string) (err error) {
 	t.Helper()
+
+	// Reset options for testing individual executions of pingctl
+	configuration.InitAllOptions()
 
 	root := cmd.NewRootCommand()
 

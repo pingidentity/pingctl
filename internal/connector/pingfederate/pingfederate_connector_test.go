@@ -32,12 +32,9 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
-			name:     "PingFederateAuthenticationPolicies",
-			resource: resources.AuthenticationPolicies(PingFederateClientInfo),
-			ignoredErrors: []string{
-				"Error: Plugin did not respond",
-				"Error: Request cancelled",
-			},
+			name:          "PingFederateAuthenticationPolicies",
+			resource:      resources.AuthenticationPolicies(PingFederateClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:     "PingFederateAuthenticationPoliciesFragment",
@@ -57,12 +54,9 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
-			name:     "PingFederateAuthenticationSelector",
-			resource: resources.AuthenticationSelector(PingFederateClientInfo),
-			ignoredErrors: []string{
-				"Error: Plugin did not respond",
-				"Error: Request cancelled",
-			},
+			name:          "PingFederateAuthenticationSelector",
+			resource:      resources.AuthenticationSelector(PingFederateClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:     "PingFederateCertificateCA",
@@ -79,12 +73,9 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			},
 		},
 		{
-			name:     "PingFederateExtendedProperties",
-			resource: resources.ExtendedProperties(PingFederateClientInfo),
-			ignoredErrors: []string{
-				"Error: Plugin did not respond",
-				"Error: Request cancelled",
-			},
+			name:          "PingFederateExtendedProperties",
+			resource:      resources.ExtendedProperties(PingFederateClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:     "PingFederateIDPAdapter",
@@ -105,12 +96,9 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
-			name:     "PingFederateIncomingProxySettings",
-			resource: resources.IncomingProxySettings(PingFederateClientInfo),
-			ignoredErrors: []string{
-				"Error: Plugin did not respond",
-				"Error: Request cancelled",
-			},
+			name:          "PingFederateIncomingProxySettings",
+			resource:      resources.IncomingProxySettings(PingFederateClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:     "PingFederateKerberosRealm",
@@ -125,12 +113,9 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
-			name:     "PingFederateNotificationPublishersSettings",
-			resource: resources.NotificationPublishersSettings(PingFederateClientInfo),
-			ignoredErrors: []string{
-				"Error: Plugin did not respond",
-				"Error: Request cancelled",
-			},
+			name:          "PingFederateNotificationPublishersSettings",
+			resource:      resources.NotificationPublishersSettings(PingFederateClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:          "PingFederateOAuthAccessTokenManager",
@@ -141,8 +126,8 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			name:     "PingFederateOAuthAccessTokenMapping",
 			resource: resources.OAuthAccessTokenMapping(PingFederateClientInfo),
 			ignoredErrors: []string{
-				"Error: Plugin did not respond",
-				"Error: Request cancelled",
+				"Error: Invalid attribute combination",
+				"Error: Invalid Attribute Value Length",
 			},
 		},
 		{
@@ -168,8 +153,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			name:     "PingFederateOpenIDConnectSettings",
 			resource: resources.OpenIDConnectSettings(PingFederateClientInfo),
 			ignoredErrors: []string{
-				"Error: Plugin did not respond",
-				"Error: Request cancelled",
+				"Error: Missing Configuration for Required Attribute",
 			},
 		},
 		{
@@ -187,9 +171,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
-			name:          "PingFederateServerSettings",
-			resource:      resources.ServerSettings(PingFederateClientInfo),
-			ignoredErrors: nil,
+			name:     "PingFederateServerSettings",
+			resource: resources.ServerSettings(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Invalid Attribute Value Length",
+			},
 		},
 		{
 			name:     "PingFederateServerSettingsSystemKeys",

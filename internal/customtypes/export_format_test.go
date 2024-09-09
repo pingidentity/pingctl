@@ -3,55 +3,52 @@ package customtypes_test
 import (
 	"testing"
 
+	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
-// Test the custom type ExportFormat Set method with a valid value
-func TestExportFormat_SetValid(t *testing.T) {
-	exportFormat := customtypes.ExportFormat("HCL")
-	err := exportFormat.Set("HCL")
-	testutils.CheckExpectedError(t, err, nil)
+// Test ExportFormat Set function
+func Test_ExportFormat_Set(t *testing.T) {
+	// Create a new ExportFormat
+	exportFormat := new(customtypes.ExportFormat)
+
+	err := exportFormat.Set(connector.ENUMEXPORTFORMAT_HCL)
+	if err != nil {
+		t.Errorf("Set returned error: %v", err)
+	}
 }
 
-// Test the custom type ExportFormat Set method with an invalid value
-func TestExportFormat_SetInvalid(t *testing.T) {
-	expectedErrorPattern := `unrecognized export format 'INVALID'. Must be one of: [A-Z]+`
-	exportFormat := customtypes.ExportFormat("HCL")
-	err := exportFormat.Set("INVALID")
+// Test Set function fails with invalid value
+func Test_ExportFormat_Set_InvalidValue(t *testing.T) {
+	// Create a new ExportFormat
+	exportFormat := new(customtypes.ExportFormat)
+
+	invalidValue := "invalid"
+
+	expectedErrorPattern := `^unrecognized export format '.*'. Must be one of: .*$`
+	err := exportFormat.Set(invalidValue)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
-// Test the custom type ExportFormat Type method
-func TestExportFormat_Type(t *testing.T) {
-	exportFormat := customtypes.ExportFormat("HCL")
-	typeValue := exportFormat.Type()
-	if typeValue != "string" {
-		t.Errorf("Expected 'string' but got '%s'", typeValue)
-	}
+// Test Set function fails with nil
+func Test_ExportFormat_Set_Nil(t *testing.T) {
+	var exportFormat *customtypes.ExportFormat
+
+	val := connector.ENUMEXPORTFORMAT_HCL
+
+	expectedErrorPattern := `^failed to set Export Format value: .* Export Format is nil$`
+	err := exportFormat.Set(val)
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
-// Test the custom type ExportFormat String method
-func TestExportFormat_String(t *testing.T) {
-	exportFormat := customtypes.ExportFormat("HCL")
-	stringValue := exportFormat.String()
-	if stringValue != "HCL" {
-		t.Errorf("Expected 'HCL' but got '%s'", stringValue)
-	}
-}
+// Test String function
+func Test_ExportFormat_String(t *testing.T) {
+	exportFormat := customtypes.ExportFormat(connector.ENUMEXPORTFORMAT_HCL)
 
-// Test the custom type ExportFormat ExportFormatValidValues method
-func TestExportFormat_ExportFormatValidValues(t *testing.T) {
-	expectedValues := []string{"HCL"}
-	validValues := customtypes.ExportFormatValidValues()
-
-	if len(validValues) != len(expectedValues) {
-		t.Errorf("Expected %d valid values but got %d", len(expectedValues), len(validValues))
-	}
-
-	for i, expectedValue := range expectedValues {
-		if validValues[i] != expectedValue {
-			t.Errorf("Expected '%s' but got '%s'", expectedValue, validValues[i])
-		}
+	expected := connector.ENUMEXPORTFORMAT_HCL
+	actual := exportFormat.String()
+	if actual != expected {
+		t.Errorf("String returned: %s, expected: %s", actual, expected)
 	}
 }

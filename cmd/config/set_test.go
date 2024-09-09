@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/pingidentity/pingctl/internal/configuration"
 	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_cobra"
@@ -11,7 +12,7 @@ import (
 
 // Test Config Set Command Executes without issue
 func TestConfigSetCmd_Execute(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", profiles.ColorOption.ViperKey))
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", configuration.RootColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -25,7 +26,7 @@ func TestConfigSetCmd_TooFewArgs(t *testing.T) {
 // Test Config Set Command Fails when provided too many arguments
 func TestConfigSetCmd_TooManyArgs(t *testing.T) {
 	expectedErrorPattern := `^failed to execute 'pingctl config set': command accepts 1 arg\(s\), received 2$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", profiles.ColorOption.ViperKey), fmt.Sprintf("%s=true", profiles.ColorOption.ViperKey))
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", configuration.RootColorOption.ViperKey), fmt.Sprintf("%s=true", configuration.RootColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -38,28 +39,47 @@ func TestConfigSetCmd_InvalidKey(t *testing.T) {
 
 // Test Config Set Command Fails when an invalid value type is provided
 func TestConfigSetCmd_InvalidValueType(t *testing.T) {
-	expectedErrorPattern := `^failed to set configuration: value for key 'pingctl\.color' must be a boolean\. Use 'true' or 'false'$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=invalid", profiles.ColorOption.ViperKey))
+	expectedErrorPattern := `^failed to set configuration: value for key '.*' must be a boolean\. Allowed .*: strconv\.ParseBool: parsing ".*": invalid syntax$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=invalid", configuration.RootColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Config Set Command Fails when no value is provided
 func TestConfigSetCmd_NoValueProvided(t *testing.T) {
 	expectedErrorPattern := `^failed to set configuration: value for key 'pingctl\.color' is empty\. Use 'pingctl config unset pingctl\.color' to unset the key$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=", profiles.ColorOption.ViperKey))
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=", configuration.RootColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Config Set Command for key 'pingone.worker.clientId' updates viper configuration
 func TestConfigSetCmd_CheckViperConfig(t *testing.T) {
-	viperKey := profiles.PingOneWorkerClientIDOption.ViperKey
+	viperKey := configuration.PlatformExportPingoneWorkerClientIDOption.ViperKey
 	viperNewUUID := "12345678-1234-1234-1234-123456789012"
 
 	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=%s", viperKey, viperNewUUID))
 	testutils.CheckExpectedError(t, err, nil)
 
-	viperNewValue := profiles.GetProfileViper().GetString(viperKey)
+	mainViper := profiles.GetMainConfig().ViperInstance()
+	profileViperKey := profiles.GetMainConfig().ActiveProfile().Name() + "." + viperKey
+
+	viperNewValue := mainViper.GetString(profileViperKey)
 	if viperNewValue != viperNewUUID {
 		t.Errorf("Expected viper configuration value to be updated")
 	}
+}
+
+// Test Config Set Command --help, -h flag
+func TestConfigSetCmd_HelpFlag(t *testing.T) {
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", "--help")
+	testutils.CheckExpectedError(t, err, nil)
+
+	err = testutils_cobra.ExecutePingctl(t, "config", "set", "-h")
+	testutils.CheckExpectedError(t, err, nil)
+}
+
+// Test Config Set Command Fails when provided an invalid flag
+func TestConfigSetCmd_InvalidFlag(t *testing.T) {
+	expectedErrorPattern := `^unknown flag: --invalid$`
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", "--invalid")
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }

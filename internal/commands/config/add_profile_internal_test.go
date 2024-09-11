@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
@@ -20,14 +20,14 @@ func Test_RunInternalConfigAddProfile(t *testing.T) {
 		setActive   = customtypes.Bool(false)
 	)
 
-	configuration.ConfigAddProfileNameOption.Flag.Changed = true
-	configuration.ConfigAddProfileNameOption.CobraParamValue = &profileName
+	options.ConfigAddProfileNameOption.Flag.Changed = true
+	options.ConfigAddProfileNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigAddProfileDescriptionOption.Flag.Changed = true
-	configuration.ConfigAddProfileDescriptionOption.CobraParamValue = &description
+	options.ConfigAddProfileDescriptionOption.Flag.Changed = true
+	options.ConfigAddProfileDescriptionOption.CobraParamValue = &description
 
-	configuration.ConfigAddProfileSetActiveOption.Flag.Changed = true
-	configuration.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
+	options.ConfigAddProfileSetActiveOption.Flag.Changed = true
+	options.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
 
 	err := RunInternalConfigAddProfile(os.Stdin)
 	if err != nil {
@@ -45,14 +45,14 @@ func Test_RunInternalConfigAddProfile_ExistingProfileName(t *testing.T) {
 		setActive   = customtypes.Bool(false)
 	)
 
-	configuration.ConfigAddProfileNameOption.Flag.Changed = true
-	configuration.ConfigAddProfileNameOption.CobraParamValue = &profileName
+	options.ConfigAddProfileNameOption.Flag.Changed = true
+	options.ConfigAddProfileNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigAddProfileDescriptionOption.Flag.Changed = true
-	configuration.ConfigAddProfileDescriptionOption.CobraParamValue = &description
+	options.ConfigAddProfileDescriptionOption.Flag.Changed = true
+	options.ConfigAddProfileDescriptionOption.CobraParamValue = &description
 
-	configuration.ConfigAddProfileSetActiveOption.Flag.Changed = true
-	configuration.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
+	options.ConfigAddProfileSetActiveOption.Flag.Changed = true
+	options.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
 
 	expectedErrorPattern := `^failed to add profile: invalid profile name: '.*'. profile already exists$`
 	err := RunInternalConfigAddProfile(os.Stdin)
@@ -69,14 +69,14 @@ func Test_RunInternalConfigAddProfile_NoProfileName(t *testing.T) {
 		setActive   = customtypes.Bool(false)
 	)
 
-	configuration.ConfigAddProfileNameOption.Flag.Changed = true
-	configuration.ConfigAddProfileNameOption.CobraParamValue = &profileName
+	options.ConfigAddProfileNameOption.Flag.Changed = true
+	options.ConfigAddProfileNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigAddProfileDescriptionOption.Flag.Changed = true
-	configuration.ConfigAddProfileDescriptionOption.CobraParamValue = &description
+	options.ConfigAddProfileDescriptionOption.Flag.Changed = true
+	options.ConfigAddProfileDescriptionOption.CobraParamValue = &description
 
-	configuration.ConfigAddProfileSetActiveOption.Flag.Changed = true
-	configuration.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
+	options.ConfigAddProfileSetActiveOption.Flag.Changed = true
+	options.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
 
 	expectedErrorPattern := `^failed to add profile: unable to determine profile name$`
 	err := RunInternalConfigAddProfile(os.Stdin)
@@ -93,14 +93,14 @@ func Test_RunInternalConfigAddProfile_SetActive(t *testing.T) {
 		setActive   = customtypes.Bool(true)
 	)
 
-	configuration.ConfigAddProfileNameOption.Flag.Changed = true
-	configuration.ConfigAddProfileNameOption.CobraParamValue = &profileName
+	options.ConfigAddProfileNameOption.Flag.Changed = true
+	options.ConfigAddProfileNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigAddProfileDescriptionOption.Flag.Changed = true
-	configuration.ConfigAddProfileDescriptionOption.CobraParamValue = &description
+	options.ConfigAddProfileDescriptionOption.Flag.Changed = true
+	options.ConfigAddProfileDescriptionOption.CobraParamValue = &description
 
-	configuration.ConfigAddProfileSetActiveOption.Flag.Changed = true
-	configuration.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
+	options.ConfigAddProfileSetActiveOption.Flag.Changed = true
+	options.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
 
 	err := RunInternalConfigAddProfile(os.Stdin)
 	if err != nil {
@@ -118,14 +118,14 @@ func Test_RunInternalConfigAddProfile_InvalidSetActive(t *testing.T) {
 		setActive   = customtypes.String("invalid")
 	)
 
-	configuration.ConfigAddProfileNameOption.Flag.Changed = true
-	configuration.ConfigAddProfileNameOption.CobraParamValue = &profileName
+	options.ConfigAddProfileNameOption.Flag.Changed = true
+	options.ConfigAddProfileNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigAddProfileDescriptionOption.Flag.Changed = true
-	configuration.ConfigAddProfileDescriptionOption.CobraParamValue = &description
+	options.ConfigAddProfileDescriptionOption.Flag.Changed = true
+	options.ConfigAddProfileDescriptionOption.CobraParamValue = &description
 
-	configuration.ConfigAddProfileSetActiveOption.Flag.Changed = true
-	configuration.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
+	options.ConfigAddProfileSetActiveOption.Flag.Changed = true
+	options.ConfigAddProfileSetActiveOption.CobraParamValue = &setActive
 
 	expectedErrorPattern := `^failed to add profile: strconv.ParseBool: parsing ".*": invalid syntax$`
 	err := RunInternalConfigAddProfile(os.Stdin)

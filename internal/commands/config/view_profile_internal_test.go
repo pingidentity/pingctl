@@ -3,7 +3,7 @@ package config_internal
 import (
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
@@ -27,8 +27,8 @@ func Test_RunInternalConfigViewProfile_InvalidProfileName(t *testing.T) {
 		profileName = customtypes.String("invalid")
 	)
 
-	configuration.ConfigViewProfileOption.Flag.Changed = true
-	configuration.ConfigViewProfileOption.CobraParamValue = &profileName
+	options.ConfigViewProfileOption.Flag.Changed = true
+	options.ConfigViewProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to view profile: invalid profile name: '.*' profile does not exist$`
 	err := RunInternalConfigViewProfile()
@@ -43,8 +43,8 @@ func Test_RunInternalConfigViewProfile_DifferentProfile(t *testing.T) {
 		profileName = customtypes.String("production")
 	)
 
-	configuration.ConfigViewProfileOption.Flag.Changed = true
-	configuration.ConfigViewProfileOption.CobraParamValue = &profileName
+	options.ConfigViewProfileOption.Flag.Changed = true
+	options.ConfigViewProfileOption.CobraParamValue = &profileName
 
 	err := RunInternalConfigViewProfile()
 	if err != nil {

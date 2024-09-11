@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/fatih/color"
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/profiles"
@@ -40,7 +40,7 @@ const (
 )
 
 func Print(output Opts) {
-	colorizeOutput, err := profiles.GetOptionValue(configuration.RootColorOption)
+	colorizeOutput, err := profiles.GetOptionValue(options.RootColorOption)
 	if err != nil {
 		color.NoColor = false
 	} else {
@@ -52,7 +52,7 @@ func Print(output Opts) {
 		}
 	}
 
-	outputFormat, err := profiles.GetOptionValue(configuration.RootOutputFormatOption)
+	outputFormat, err := profiles.GetOptionValue(options.RootOutputFormatOption)
 	if err != nil {
 		outputFormat = customtypes.ENUM_OUTPUT_FORMAT_TEXT
 	}

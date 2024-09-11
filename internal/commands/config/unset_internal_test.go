@@ -3,7 +3,7 @@ package config_internal
 import (
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
@@ -36,8 +36,8 @@ func Test_RunInternalConfigUnset_DifferentProfile(t *testing.T) {
 		profileName = customtypes.String("production")
 	)
 
-	configuration.ConfigUnsetProfileOption.Flag.Changed = true
-	configuration.ConfigUnsetProfileOption.CobraParamValue = &profileName
+	options.ConfigUnsetProfileOption.Flag.Changed = true
+	options.ConfigUnsetProfileOption.CobraParamValue = &profileName
 
 	err := RunInternalConfigUnset("pingctl.color")
 	if err != nil {
@@ -53,8 +53,8 @@ func Test_RunInternalConfigUnset_InvalidProfileName(t *testing.T) {
 		profileName = customtypes.String("invalid")
 	)
 
-	configuration.ConfigUnsetProfileOption.Flag.Changed = true
-	configuration.ConfigUnsetProfileOption.CobraParamValue = &profileName
+	options.ConfigUnsetProfileOption.Flag.Changed = true
+	options.ConfigUnsetProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to unset configuration: invalid profile name: '.*' profile does not exist$`
 	err := RunInternalConfigUnset("pingctl.color")

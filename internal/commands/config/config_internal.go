@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/input"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
@@ -54,10 +54,10 @@ func readConfigOptions(rc io.ReadCloser) (profileName, newName, description stri
 }
 
 func readConfigProfileNameOption() (pName string, err error) {
-	if !configuration.ConfigProfileOption.Flag.Changed {
-		pName, err = profiles.GetOptionValue(configuration.RootActiveProfileOption)
+	if !options.ConfigProfileOption.Flag.Changed {
+		pName, err = profiles.GetOptionValue(options.RootActiveProfileOption)
 	} else {
-		pName, err = profiles.GetOptionValue(configuration.ConfigProfileOption)
+		pName, err = profiles.GetOptionValue(options.ConfigProfileOption)
 	}
 
 	if err != nil {
@@ -72,10 +72,10 @@ func readConfigProfileNameOption() (pName string, err error) {
 }
 
 func readConfigNameOption(rc io.ReadCloser) (newName string, err error) {
-	if !configuration.ConfigNameOption.Flag.Changed {
+	if !options.ConfigNameOption.Flag.Changed {
 		newName, err = input.RunPrompt("New profile name: ", validateChangeProfileName, rc)
 	} else {
-		newName, err = profiles.GetOptionValue(configuration.ConfigNameOption)
+		newName, err = profiles.GetOptionValue(options.ConfigNameOption)
 	}
 
 	if err != nil {
@@ -90,10 +90,10 @@ func readConfigNameOption(rc io.ReadCloser) (newName string, err error) {
 }
 
 func readConfigDescriptionOption(rc io.ReadCloser) (description string, err error) {
-	if !configuration.ConfigDescriptionOption.Flag.Changed {
+	if !options.ConfigDescriptionOption.Flag.Changed {
 		return input.RunPrompt("New profile description: ", nil, rc)
 	} else {
-		return profiles.GetOptionValue(configuration.ConfigDescriptionOption)
+		return profiles.GetOptionValue(options.ConfigDescriptionOption)
 	}
 }
 

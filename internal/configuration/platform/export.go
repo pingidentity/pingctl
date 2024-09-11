@@ -1,44 +1,18 @@
-package configuration
+package configuration_platform
 
 import (
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/pflag"
 )
 
-// Options
-var (
-	PlatformExportExportFormatOption    Option
-	PlatformExportServiceOption         Option
-	PlatformExportOutputDirectoryOption Option
-	PlatformExportOverwriteOption       Option
-
-	PlatformExportPingoneWorkerEnvironmentIDOption Option
-	PlatformExportPingoneExportEnvironmentIDOption Option
-	PlatformExportPingoneWorkerClientIDOption      Option
-	PlatformExportPingoneWorkerClientSecretOption  Option
-	PlatformExportPingoneRegionOption              Option
-
-	PlatformExportPingfederateHTTPSHostOption                       Option
-	PlatformExportPingfederateAdminAPIPathOption                    Option
-	PlatformExportPingfederateXBypassExternalValidationHeaderOption Option
-	PlatformExportPingfederateCACertificatePemFilesOption           Option
-	PlatformExportPingfederateInsecureTrustAllTLSOption             Option
-	PlatformExportPingfederateUsernameOption                        Option
-	PlatformExportPingfederatePasswordOption                        Option
-	PlatformExportPingfederateAccessTokenOption                     Option
-	PlatformExportPingfederateClientIDOption                        Option
-	PlatformExportPingfederateClientSecretOption                    Option
-	PlatformExportPingfederateTokenURLOption                        Option
-	PlatformExportPingfederateScopesOption                          Option
-)
-
-func initPlatformExportOptions() {
+func InitPlatformExportOptions() {
 	initExportFormatOption()
 	initServicesOption()
 	initOutputDirectoryOption()
@@ -70,7 +44,7 @@ func initExportFormatOption() {
 	defaultValue := customtypes.ExportFormat(connector.ENUMEXPORTFORMAT_HCL)
 	envVar := "PINGCTL_EXPORT_FORMAT"
 
-	PlatformExportExportFormatOption = Option{
+	options.PlatformExportExportFormatOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -82,7 +56,7 @@ func initExportFormatOption() {
 			Value:     cobraValue,
 			DefValue:  connector.ENUMEXPORTFORMAT_HCL,
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.exportFormat",
 	}
 }
@@ -93,7 +67,7 @@ func initServicesOption() {
 	defaultValue := customtypes.NewMultiService()
 	envVar := "PINGCTL_EXPORT_SERVICES"
 
-	PlatformExportServiceOption = Option{
+	options.PlatformExportServiceOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    defaultValue,
@@ -105,7 +79,7 @@ func initServicesOption() {
 			Value:     cobraValue,
 			DefValue:  strings.Join(customtypes.MultiServiceValidValues(), ", "),
 		},
-		Type:     ENUM_MULTI_SERVICE,
+		Type:     options.ENUM_MULTI_SERVICE,
 		ViperKey: "export.services",
 	}
 }
@@ -116,7 +90,7 @@ func initOutputDirectoryOption() {
 	defaultValue := getDefaultExportDir()
 	envVar := "PINGCTL_EXPORT_OUTPUT_DIRECTORY"
 
-	PlatformExportOutputDirectoryOption = Option{
+	options.PlatformExportOutputDirectoryOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    defaultValue,
@@ -128,7 +102,7 @@ func initOutputDirectoryOption() {
 			Value:     cobraValue,
 			DefValue:  "$(pwd)/export",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.outputDirectory",
 	}
 }
@@ -138,7 +112,7 @@ func initOverwriteOption() {
 	cobraValue := new(customtypes.Bool)
 	defaultValue := customtypes.Bool(false)
 
-	PlatformExportOverwriteOption = Option{
+	options.PlatformExportOverwriteOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -150,7 +124,7 @@ func initOverwriteOption() {
 			Value:     cobraValue,
 			DefValue:  "false",
 		},
-		Type:     ENUM_BOOL,
+		Type:     options.ENUM_BOOL,
 		ViperKey: "export.overwrite",
 	}
 }
@@ -161,7 +135,7 @@ func initPingOneWorkerEnvironmentIDOption() {
 	defaultValue := customtypes.UUID("")
 	envVar := "PINGCTL_PINGONE_WORKER_ENVIRONMENT_ID"
 
-	PlatformExportPingoneWorkerEnvironmentIDOption = Option{
+	options.PlatformExportPingoneWorkerEnvironmentIDOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -172,7 +146,7 @@ func initPingOneWorkerEnvironmentIDOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_UUID,
+		Type:     options.ENUM_UUID,
 		ViperKey: "export.pingone.worker.environmentID",
 	}
 }
@@ -183,7 +157,7 @@ func initPingOneExportEnvironmentIDOption() {
 	defaultValue := customtypes.UUID("")
 	envVar := "PING_CTL_PINGONE_EXPORT_ENVIRONMENT_ID"
 
-	PlatformExportPingoneExportEnvironmentIDOption = Option{
+	options.PlatformExportPingoneExportEnvironmentIDOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -194,7 +168,7 @@ func initPingOneExportEnvironmentIDOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_UUID,
+		Type:     options.ENUM_UUID,
 		ViperKey: "export.pingone.export.environmentID",
 	}
 }
@@ -205,7 +179,7 @@ func initPingOneWorkerClientIDOption() {
 	defaultValue := customtypes.UUID("")
 	envVar := "PINGCTL_PINGONE_WORKER_CLIENT_ID"
 
-	PlatformExportPingoneWorkerClientIDOption = Option{
+	options.PlatformExportPingoneWorkerClientIDOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -216,7 +190,7 @@ func initPingOneWorkerClientIDOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_UUID,
+		Type:     options.ENUM_UUID,
 		ViperKey: "export.pingone.worker.clientID",
 	}
 }
@@ -227,7 +201,7 @@ func initPingOneWorkerClientSecretOption() {
 	defaultValue := customtypes.String("")
 	envVar := "PINGCTL_PINGONE_WORKER_CLIENT_SECRET"
 
-	PlatformExportPingoneWorkerClientSecretOption = Option{
+	options.PlatformExportPingoneWorkerClientSecretOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -238,7 +212,7 @@ func initPingOneWorkerClientSecretOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingone.worker.clientSecret",
 	}
 }
@@ -249,7 +223,7 @@ func initPingOneRegionOption() {
 	defaultValue := customtypes.PingOneRegion("")
 	envVar := "PINGCTL_PINGONE_REGION"
 
-	PlatformExportPingoneRegionOption = Option{
+	options.PlatformExportPingoneRegionOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -260,7 +234,7 @@ func initPingOneRegionOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingone.region",
 	}
 }
@@ -271,7 +245,7 @@ func initPingFederateHTTPSHostOption() {
 	defaultValue := customtypes.String("")
 	envVar := "PINGCTL_PINGFEDERATE_HTTPS_HOST"
 
-	PlatformExportPingfederateHTTPSHostOption = Option{
+	options.PlatformExportPingfederateHTTPSHostOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -282,7 +256,7 @@ func initPingFederateHTTPSHostOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingfederate.httpsHost",
 	}
 }
@@ -293,7 +267,7 @@ func initPingFederateAdminAPIPathOption() {
 	defaultValue := customtypes.String("/pf-admin-api/v1")
 	envVar := "PINGCTL_PINGFEDERATE_ADMIN_API_PATH"
 
-	PlatformExportPingfederateAdminAPIPathOption = Option{
+	options.PlatformExportPingfederateAdminAPIPathOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -304,7 +278,7 @@ func initPingFederateAdminAPIPathOption() {
 			Value:    cobraValue,
 			DefValue: "/pf-admin-api/v1",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingfederate.adminAPIPath",
 	}
 }
@@ -315,7 +289,7 @@ func initPingFederateXBypassExternalValidationHeaderOption() {
 	defaultValue := customtypes.Bool(false)
 	envVar := "PINGCTL_PINGFEDERATE_X_BYPASS_EXTERNAL_VALIDATION_HEADER"
 
-	PlatformExportPingfederateXBypassExternalValidationHeaderOption = Option{
+	options.PlatformExportPingfederateXBypassExternalValidationHeaderOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -326,7 +300,7 @@ func initPingFederateXBypassExternalValidationHeaderOption() {
 			Value:    cobraValue,
 			DefValue: "false",
 		},
-		Type:     ENUM_BOOL,
+		Type:     options.ENUM_BOOL,
 		ViperKey: "export.pingfederate.xBypassExternalValidationHeader",
 	}
 }
@@ -337,7 +311,7 @@ func initPingFederateCACertificatePemFilesOption() {
 	defaultValue := customtypes.StringSlice{}
 	envVar := "PINGCTL_PINGFEDERATE_CA_CERTIFICATE_PEM_FILES"
 
-	PlatformExportPingfederateCACertificatePemFilesOption = Option{
+	options.PlatformExportPingfederateCACertificatePemFilesOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -348,7 +322,7 @@ func initPingFederateCACertificatePemFilesOption() {
 			Value:    cobraValue,
 			DefValue: "[]",
 		},
-		Type:     ENUM_STRING_SLICE,
+		Type:     options.ENUM_STRING_SLICE,
 		ViperKey: "export.pingfederate.caCertificatePemFiles",
 	}
 }
@@ -359,7 +333,7 @@ func initPingFederateInsecureTrustAllTLSOption() {
 	defaultValue := customtypes.Bool(false)
 	envVar := "PINGCTL_PINGFEDERATE_INSECURE_TRUST_ALL_TLS"
 
-	PlatformExportPingfederateInsecureTrustAllTLSOption = Option{
+	options.PlatformExportPingfederateInsecureTrustAllTLSOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -370,7 +344,7 @@ func initPingFederateInsecureTrustAllTLSOption() {
 			Value:    cobraValue,
 			DefValue: "false",
 		},
-		Type:     ENUM_BOOL,
+		Type:     options.ENUM_BOOL,
 		ViperKey: "export.pingfederate.insecureTrustAllTLS",
 	}
 }
@@ -381,7 +355,7 @@ func initPingFederateUsernameOption() {
 	defaultValue := customtypes.String("")
 	envVar := "PINGCTL_PINGFEDERATE_USERNAME"
 
-	PlatformExportPingfederateUsernameOption = Option{
+	options.PlatformExportPingfederateUsernameOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -392,7 +366,7 @@ func initPingFederateUsernameOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingfederate.basicAuth.username",
 	}
 }
@@ -403,7 +377,7 @@ func initPingFederatePasswordOption() {
 	defaultValue := customtypes.String("")
 	envVar := "PINGCTL_PINGFEDERATE_PASSWORD"
 
-	PlatformExportPingfederatePasswordOption = Option{
+	options.PlatformExportPingfederatePasswordOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -414,7 +388,7 @@ func initPingFederatePasswordOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingfederate.basicAuth.password",
 	}
 }
@@ -425,7 +399,7 @@ func initPingFederateAccessTokenOption() {
 	defaultValue := customtypes.String("")
 	envVar := "PINGCTL_PINGFEDERATE_ACCESS_TOKEN"
 
-	PlatformExportPingfederateAccessTokenOption = Option{
+	options.PlatformExportPingfederateAccessTokenOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -436,7 +410,7 @@ func initPingFederateAccessTokenOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingfederate.accessTokenAuth.accessToken",
 	}
 }
@@ -447,7 +421,7 @@ func initPingFederateClientIDOption() {
 	defaultValue := customtypes.String("")
 	envVar := "PINGCTL_PINGFEDERATE_CLIENT_ID"
 
-	PlatformExportPingfederateClientIDOption = Option{
+	options.PlatformExportPingfederateClientIDOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -458,7 +432,7 @@ func initPingFederateClientIDOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingfederate.clientCredentialsAuth.clientID",
 	}
 }
@@ -469,7 +443,7 @@ func initPingFederateClientSecretOption() {
 	defaultValue := customtypes.String("")
 	envVar := "PINGCTL_PINGFEDERATE_CLIENT_SECRET"
 
-	PlatformExportPingfederateClientSecretOption = Option{
+	options.PlatformExportPingfederateClientSecretOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -480,7 +454,7 @@ func initPingFederateClientSecretOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingfederate.clientCredentialsAuth.clientSecret",
 	}
 }
@@ -491,7 +465,7 @@ func initPingFederateTokenURLOption() {
 	defaultValue := customtypes.String("")
 	envVar := "PINGCTL_PINGFEDERATE_TOKEN_URL"
 
-	PlatformExportPingfederateTokenURLOption = Option{
+	options.PlatformExportPingfederateTokenURLOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -502,7 +476,7 @@ func initPingFederateTokenURLOption() {
 			Value:    cobraValue,
 			DefValue: "",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "export.pingfederate.clientCredentialsAuth.tokenURL",
 	}
 }
@@ -513,7 +487,7 @@ func initPingFederateScopesOption() {
 	defaultValue := customtypes.StringSlice{}
 	envVar := "PINGCTL_PINGFEDERATE_SCOPES"
 
-	PlatformExportPingfederateScopesOption = Option{
+	options.PlatformExportPingfederateScopesOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -524,7 +498,7 @@ func initPingFederateScopesOption() {
 			Value:    cobraValue,
 			DefValue: "[]",
 		},
-		Type:     ENUM_STRING_SLICE,
+		Type:     options.ENUM_STRING_SLICE,
 		ViperKey: "export.pingfederate.clientCredentialsAuth.scopes",
 	}
 }

@@ -3,7 +3,7 @@ package config_internal
 import (
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
@@ -45,8 +45,8 @@ func Test_RunInternalConfigSet_NonExistentProfileName(t *testing.T) {
 		profileName = customtypes.String("non-existent")
 	)
 
-	configuration.ConfigSetProfileOption.Flag.Changed = true
-	configuration.ConfigSetProfileOption.CobraParamValue = &profileName
+	options.ConfigSetProfileOption.Flag.Changed = true
+	options.ConfigSetProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to set configuration: invalid profile name: '.*' profile does not exist$`
 	err := RunInternalConfigSet("pingctl.color=true")
@@ -61,8 +61,8 @@ func Test_RunInternalConfigSet_DifferentProfile(t *testing.T) {
 		profileName = customtypes.String("production")
 	)
 
-	configuration.ConfigSetProfileOption.Flag.Changed = true
-	configuration.ConfigSetProfileOption.CobraParamValue = &profileName
+	options.ConfigSetProfileOption.Flag.Changed = true
+	options.ConfigSetProfileOption.CobraParamValue = &profileName
 
 	err := RunInternalConfigSet("pingctl.color=true")
 	if err != nil {
@@ -78,8 +78,8 @@ func Test_RunInternalConfigSet_InvalidProfileName(t *testing.T) {
 		profileName = customtypes.String("*&%*&")
 	)
 
-	configuration.ConfigSetProfileOption.Flag.Changed = true
-	configuration.ConfigSetProfileOption.CobraParamValue = &profileName
+	options.ConfigSetProfileOption.Flag.Changed = true
+	options.ConfigSetProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to set configuration: invalid profile name: '.*'\. name must contain only alphanumeric characters, underscores, and dashes$`
 	err := RunInternalConfigSet("pingctl.color=true")

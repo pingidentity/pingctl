@@ -3,7 +3,7 @@ package config_internal
 import (
 	"fmt"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
 )
@@ -30,10 +30,10 @@ func RunInternalConfigViewProfile() (err error) {
 }
 
 func readConfigViewProfileOptions() (pName string, err error) {
-	if !configuration.ConfigViewProfileOption.Flag.Changed {
-		pName, err = profiles.GetOptionValue(configuration.RootActiveProfileOption)
+	if !options.ConfigViewProfileOption.Flag.Changed {
+		pName, err = profiles.GetOptionValue(options.RootActiveProfileOption)
 	} else {
-		pName, err = profiles.GetOptionValue(configuration.ConfigViewProfileOption)
+		pName, err = profiles.GetOptionValue(options.ConfigViewProfileOption)
 	}
 
 	if err != nil {

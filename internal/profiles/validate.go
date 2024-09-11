@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/spf13/viper"
 )
@@ -83,7 +84,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 		vValue := profileViper.Get(key)
 
 		switch opt.Type {
-		case configuration.ENUM_BOOL:
+		case options.ENUM_BOOL:
 			switch typedValue := vValue.(type) {
 			case *customtypes.Bool:
 				continue
@@ -97,7 +98,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a boolean value", pName, typedValue, key)
 			}
-		case configuration.ENUM_UUID:
+		case options.ENUM_UUID:
 			switch typedValue := vValue.(type) {
 			case *customtypes.UUID:
 				continue
@@ -109,7 +110,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a UUID value", pName, typedValue, key)
 			}
-		case configuration.ENUM_OUTPUT_FORMAT:
+		case options.ENUM_OUTPUT_FORMAT:
 			switch typedValue := vValue.(type) {
 			case *customtypes.OutputFormat:
 				continue
@@ -121,7 +122,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not an output format value", pName, typedValue, key)
 			}
-		case configuration.ENUM_PINGONE_REGION:
+		case options.ENUM_PINGONE_REGION:
 			switch typedValue := vValue.(type) {
 			case *customtypes.PingOneRegion:
 				continue
@@ -133,7 +134,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a PingOne region value", pName, typedValue, key)
 			}
-		case configuration.ENUM_STRING:
+		case options.ENUM_STRING:
 			switch typedValue := vValue.(type) {
 			case *customtypes.String:
 				continue
@@ -145,7 +146,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a string value", pName, typedValue, key)
 			}
-		case configuration.ENUM_STRING_SLICE:
+		case options.ENUM_STRING_SLICE:
 			switch typedValue := vValue.(type) {
 			case *customtypes.StringSlice:
 				continue
@@ -157,7 +158,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a string slice value", pName, typedValue, key)
 			}
-		case configuration.ENUM_MULTI_SERVICE:
+		case options.ENUM_MULTI_SERVICE:
 			switch typedValue := vValue.(type) {
 			case *customtypes.MultiService:
 				continue
@@ -169,7 +170,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a multi-service value", pName, typedValue, key)
 			}
-		case configuration.ENUM_EXPORT_FORMAT:
+		case options.ENUM_EXPORT_FORMAT:
 			switch typedValue := vValue.(type) {
 			case *customtypes.ExportFormat:
 				continue

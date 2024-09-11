@@ -17,7 +17,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
@@ -70,7 +70,7 @@ func (m *MainConfig) ChangeActiveProfile(pName string) (err error) {
 		return err
 	}
 
-	tempViper.Set(configuration.RootActiveProfileOption.ViperKey, pName)
+	tempViper.Set(options.RootActiveProfileOption.ViperKey, pName)
 
 	if err = tempViper.WriteConfig(); err != nil {
 		return err
@@ -122,7 +122,7 @@ func (m MainConfig) ChangeProfileDescription(pName, description string) (err err
 	}
 
 	subViper := m.ViperInstance().Sub(pName)
-	subViper.Set(configuration.ProfileDescriptionOption.ViperKey, description)
+	subViper.Set(options.ProfileDescriptionOption.ViperKey, description)
 
 	if err = m.SaveProfile(pName, subViper); err != nil {
 		return err
@@ -169,7 +169,7 @@ func (m MainConfig) ProfileNames() (profileNames []string) {
 	mainViperKeys := m.ViperInstance().AllKeys()
 	for _, key := range mainViperKeys {
 		//Do not add Active profile viper key to profileNames
-		if strings.EqualFold(key, configuration.RootActiveProfileOption.ViperKey) {
+		if strings.EqualFold(key, options.RootActiveProfileOption.ViperKey) {
 			continue
 		}
 
@@ -312,7 +312,7 @@ func (a ActiveProfile) Name() string {
 	return a.name
 }
 
-func GetOptionValue(opt configuration.Option) (pFlagValue string, err error) {
+func GetOptionValue(opt options.Option) (pFlagValue string, err error) {
 	if opt.CobraParamValue != nil && opt.Flag.Changed {
 		pFlagValue = opt.CobraParamValue.String()
 		return pFlagValue, nil
@@ -327,7 +327,7 @@ func GetOptionValue(opt configuration.Option) (pFlagValue string, err error) {
 	if opt.ViperKey != "" && mainConfig != nil {
 		var vValue any
 
-		if opt.ViperKey == configuration.RootActiveProfileOption.ViperKey {
+		if opt.ViperKey == options.RootActiveProfileOption.ViperKey {
 			mainViperInstance := mainConfig.ViperInstance()
 			if mainViperInstance != nil {
 				vValue = mainViperInstance.Get(opt.ViperKey)

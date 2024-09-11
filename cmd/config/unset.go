@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/pingidentity/pingctl/cmd/common"
 	config_internal "github.com/pingidentity/pingctl/internal/commands/config"
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
 )
@@ -20,7 +20,7 @@ pingctl config unset --profile myProfile pingone.region`,
 		Use:   "unset [flags] key",
 	}
 
-	cmd.Flags().AddFlag(configuration.ConfigUnsetProfileOption.Flag)
+	cmd.Flags().AddFlag(options.ConfigUnsetProfileOption.Flag)
 
 	return cmd
 }

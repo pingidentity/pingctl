@@ -4,7 +4,7 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
@@ -22,7 +22,7 @@ func Test_ChangeActiveProfile(t *testing.T) {
 		t.Errorf("ChangeActiveProfile returned error: %v", err)
 	}
 
-	activeProfile, err := profiles.GetOptionValue(configuration.RootActiveProfileOption)
+	activeProfile, err := profiles.GetOptionValue(options.RootActiveProfileOption)
 	if err != nil {
 		t.Errorf("GetOptionValue returned error: %v", err)
 	}

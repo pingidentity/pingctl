@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/patrickcping/pingone-go-sdk-v2/pingone"
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/connector"
 	pingfederateGoClient "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 )
@@ -24,7 +24,7 @@ var (
 
 func GetEnvironmentID() string {
 	envIdOnce.Do(func() {
-		environmentId = os.Getenv(configuration.PlatformExportPingoneWorkerEnvironmentIDOption.EnvVar)
+		environmentId = os.Getenv(options.PlatformExportPingoneWorkerEnvironmentIDOption.EnvVar)
 	})
 
 	return environmentId
@@ -37,10 +37,10 @@ func GetPingOneClientInfo(t *testing.T) *connector.PingOneClientInfo {
 	apiClientOnce.Do(func() {
 		// Grab environment vars for initializing the API client.
 		// These are set in GitHub Actions.
-		clientID := os.Getenv(configuration.PlatformExportPingoneWorkerClientIDOption.EnvVar)
-		clientSecret := os.Getenv(configuration.PlatformExportPingoneWorkerClientSecretOption.EnvVar)
+		clientID := os.Getenv(options.PlatformExportPingoneWorkerClientIDOption.EnvVar)
+		clientSecret := os.Getenv(options.PlatformExportPingoneWorkerClientSecretOption.EnvVar)
 		environmentId := GetEnvironmentID()
-		region := os.Getenv(configuration.PlatformExportPingoneRegionOption.EnvVar)
+		region := os.Getenv(options.PlatformExportPingoneRegionOption.EnvVar)
 
 		if clientID == "" || clientSecret == "" || environmentId == "" || region == "" {
 			t.Fatalf("Unable to retrieve env var value for one or more of clientID, clientSecret, environmentID, region.")
@@ -76,10 +76,10 @@ func GetPingOneClientInfo(t *testing.T) *connector.PingOneClientInfo {
 func GetPingFederateClientInfo(t *testing.T) *connector.PingFederateClientInfo {
 	t.Helper()
 
-	httpsHost := os.Getenv(configuration.PlatformExportPingfederateHTTPSHostOption.EnvVar)
-	adminApiPath := os.Getenv(configuration.PlatformExportPingfederateAdminAPIPathOption.EnvVar)
-	pfUsername := os.Getenv(configuration.PlatformExportPingfederateUsernameOption.EnvVar)
-	pfPassword := os.Getenv(configuration.PlatformExportPingfederatePasswordOption.EnvVar)
+	httpsHost := os.Getenv(options.PlatformExportPingfederateHTTPSHostOption.EnvVar)
+	adminApiPath := os.Getenv(options.PlatformExportPingfederateAdminAPIPathOption.EnvVar)
+	pfUsername := os.Getenv(options.PlatformExportPingfederateUsernameOption.EnvVar)
+	pfPassword := os.Getenv(options.PlatformExportPingfederatePasswordOption.EnvVar)
 
 	if httpsHost == "" || adminApiPath == "" || pfUsername == "" || pfPassword == "" {
 		t.Fatalf("Unable to retrieve env var value for one or more of httpsHost, adminApiPath, pfUsername, pfPassword.")

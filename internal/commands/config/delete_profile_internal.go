@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/input"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
@@ -34,10 +34,10 @@ func RunInternalConfigDeleteProfile(rc io.ReadCloser) (err error) {
 }
 
 func readConfigDeleteProfileOptions(rc io.ReadCloser) (pName string, err error) {
-	if !configuration.ConfigDeleteProfileOption.Flag.Changed {
+	if !options.ConfigDeleteProfileOption.Flag.Changed {
 		pName, err = input.RunPromptSelect("Select profile to delete: ", profiles.GetMainConfig().ProfileNames(), rc)
 	} else {
-		pName, err = profiles.GetOptionValue(configuration.ConfigDeleteProfileOption)
+		pName, err = profiles.GetOptionValue(options.ConfigDeleteProfileOption)
 	}
 
 	if err != nil {

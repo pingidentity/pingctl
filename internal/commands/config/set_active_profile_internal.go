@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/input"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
@@ -34,10 +34,10 @@ func RunInternalConfigSetActiveProfile(rc io.ReadCloser) (err error) {
 }
 
 func readConfigSetActiveProfileOptions(rc io.ReadCloser) (pName string, err error) {
-	if !configuration.ConfigSetActiveProfileOption.Flag.Changed {
+	if !options.ConfigSetActiveProfileOption.Flag.Changed {
 		pName, err = input.RunPromptSelect("Select profile to set as active: ", profiles.GetMainConfig().ProfileNames(), rc)
 	} else {
-		pName, err = profiles.GetOptionValue(configuration.ConfigSetActiveProfileOption)
+		pName, err = profiles.GetOptionValue(options.ConfigSetActiveProfileOption)
 	}
 
 	if err != nil {

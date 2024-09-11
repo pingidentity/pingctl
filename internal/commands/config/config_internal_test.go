@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
@@ -20,14 +20,14 @@ func Test_RunInternalConfig(t *testing.T) {
 		description = customtypes.String("test-description")
 	)
 
-	configuration.ConfigProfileOption.Flag.Changed = true
-	configuration.ConfigProfileOption.CobraParamValue = &oldProfile
+	options.ConfigProfileOption.Flag.Changed = true
+	options.ConfigProfileOption.CobraParamValue = &oldProfile
 
-	configuration.ConfigNameOption.Flag.Changed = true
-	configuration.ConfigNameOption.CobraParamValue = &profileName
+	options.ConfigNameOption.Flag.Changed = true
+	options.ConfigNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigDescriptionOption.Flag.Changed = true
-	configuration.ConfigDescriptionOption.CobraParamValue = &description
+	options.ConfigDescriptionOption.Flag.Changed = true
+	options.ConfigDescriptionOption.CobraParamValue = &description
 
 	err := RunInternalConfig(os.Stdin)
 	if err != nil {
@@ -45,14 +45,14 @@ func Test_RunInternalConfig_ExistingProfileName(t *testing.T) {
 		description = customtypes.String("test-description")
 	)
 
-	configuration.ConfigProfileOption.Flag.Changed = true
-	configuration.ConfigProfileOption.CobraParamValue = &oldProfile
+	options.ConfigProfileOption.Flag.Changed = true
+	options.ConfigProfileOption.CobraParamValue = &oldProfile
 
-	configuration.ConfigNameOption.Flag.Changed = true
-	configuration.ConfigNameOption.CobraParamValue = &profileName
+	options.ConfigNameOption.Flag.Changed = true
+	options.ConfigNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigDescriptionOption.Flag.Changed = true
-	configuration.ConfigDescriptionOption.CobraParamValue = &description
+	options.ConfigDescriptionOption.Flag.Changed = true
+	options.ConfigDescriptionOption.CobraParamValue = &description
 
 	expectedErrorPattern := `^failed to update profile '.*' name to: .*\. invalid profile name: '.*'\. profile already exists$`
 	err := RunInternalConfig(os.Stdin)
@@ -69,14 +69,14 @@ func Test_RunInternalConfig_InvalidProfileName(t *testing.T) {
 		description = customtypes.String("test-description")
 	)
 
-	configuration.ConfigProfileOption.Flag.Changed = true
-	configuration.ConfigProfileOption.CobraParamValue = &oldProfile
+	options.ConfigProfileOption.Flag.Changed = true
+	options.ConfigProfileOption.CobraParamValue = &oldProfile
 
-	configuration.ConfigNameOption.Flag.Changed = true
-	configuration.ConfigNameOption.CobraParamValue = &profileName
+	options.ConfigNameOption.Flag.Changed = true
+	options.ConfigNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigDescriptionOption.Flag.Changed = true
-	configuration.ConfigDescriptionOption.CobraParamValue = &description
+	options.ConfigDescriptionOption.Flag.Changed = true
+	options.ConfigDescriptionOption.CobraParamValue = &description
 
 	expectedErrorPattern := `^failed to update profile '.*' name to: .*\. invalid profile name: '.*'\. name must contain only alphanumeric characters, underscores, and dashes$`
 	err := RunInternalConfig(os.Stdin)
@@ -93,14 +93,14 @@ func Test_RunInternalConfig_NoProfileName(t *testing.T) {
 		description = customtypes.String("test-description")
 	)
 
-	configuration.ConfigProfileOption.Flag.Changed = true
-	configuration.ConfigProfileOption.CobraParamValue = &oldProfile
+	options.ConfigProfileOption.Flag.Changed = true
+	options.ConfigProfileOption.CobraParamValue = &oldProfile
 
-	configuration.ConfigNameOption.Flag.Changed = true
-	configuration.ConfigNameOption.CobraParamValue = &profileName
+	options.ConfigNameOption.Flag.Changed = true
+	options.ConfigNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigDescriptionOption.Flag.Changed = true
-	configuration.ConfigDescriptionOption.CobraParamValue = &description
+	options.ConfigDescriptionOption.Flag.Changed = true
+	options.ConfigDescriptionOption.CobraParamValue = &description
 
 	expectedErrorPattern := `^failed to update profile\. unable to determine new profile name$`
 	err := RunInternalConfig(os.Stdin)
@@ -117,14 +117,14 @@ func Test_RunInternalConfig_ActiveProfileName(t *testing.T) {
 		description = customtypes.String("test-description")
 	)
 
-	configuration.ConfigProfileOption.Flag.Changed = true
-	configuration.ConfigProfileOption.CobraParamValue = &oldProfile
+	options.ConfigProfileOption.Flag.Changed = true
+	options.ConfigProfileOption.CobraParamValue = &oldProfile
 
-	configuration.ConfigNameOption.Flag.Changed = true
-	configuration.ConfigNameOption.CobraParamValue = &profileName
+	options.ConfigNameOption.Flag.Changed = true
+	options.ConfigNameOption.CobraParamValue = &profileName
 
-	configuration.ConfigDescriptionOption.Flag.Changed = true
-	configuration.ConfigDescriptionOption.CobraParamValue = &description
+	options.ConfigDescriptionOption.Flag.Changed = true
+	options.ConfigDescriptionOption.CobraParamValue = &description
 
 	expectedErrorPattern := `^failed to update profile '.*' name to: .*\. '.*' is the active profile and cannot be deleted$`
 	err := RunInternalConfig(os.Stdin)

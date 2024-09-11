@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	pingoneGoClient "github.com/patrickcping/pingone-go-sdk-v2/pingone"
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
 	"github.com/pingidentity/pingctl/internal/connector/pingfederate"
@@ -43,19 +43,19 @@ func RunInternalExport(ctx context.Context, commandVersion string) (err error) {
 		return fmt.Errorf("failed to run 'platform export' command. context is nil")
 	}
 
-	exportFormat, err := profiles.GetOptionValue(configuration.PlatformExportExportFormatOption)
+	exportFormat, err := profiles.GetOptionValue(options.PlatformExportExportFormatOption)
 	if err != nil {
 		return err
 	}
-	multiService, err := profiles.GetOptionValue(configuration.PlatformExportServiceOption)
+	multiService, err := profiles.GetOptionValue(options.PlatformExportServiceOption)
 	if err != nil {
 		return err
 	}
-	outputDir, err := profiles.GetOptionValue(configuration.PlatformExportOutputDirectoryOption)
+	outputDir, err := profiles.GetOptionValue(options.PlatformExportOutputDirectoryOption)
 	if err != nil {
 		return err
 	}
-	overwriteExport, err := profiles.GetOptionValue(configuration.PlatformExportOverwriteOption)
+	overwriteExport, err := profiles.GetOptionValue(options.PlatformExportOverwriteOption)
 	if err != nil {
 		return err
 	}
@@ -105,39 +105,39 @@ func initPingFederateServices(ctx context.Context, pingctlVersion string) (err e
 	}
 
 	// Get all the PingFederate configuration values
-	pfClientID, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateClientIDOption)
+	pfClientID, err := profiles.GetOptionValue(options.PlatformExportPingfederateClientIDOption)
 	if err != nil {
 		return err
 	}
-	pfClientSecret, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateClientSecretOption)
+	pfClientSecret, err := profiles.GetOptionValue(options.PlatformExportPingfederateClientSecretOption)
 	if err != nil {
 		return err
 	}
-	pfTokenUrl, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateTokenURLOption)
+	pfTokenUrl, err := profiles.GetOptionValue(options.PlatformExportPingfederateTokenURLOption)
 	if err != nil {
 		return err
 	}
-	pfScopes, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateScopesOption)
+	pfScopes, err := profiles.GetOptionValue(options.PlatformExportPingfederateScopesOption)
 	if err != nil {
 		return err
 	}
-	pfAccessToken, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateAccessTokenOption)
+	pfAccessToken, err := profiles.GetOptionValue(options.PlatformExportPingfederateAccessTokenOption)
 	if err != nil {
 		return err
 	}
-	pfUsername, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateUsernameOption)
+	pfUsername, err := profiles.GetOptionValue(options.PlatformExportPingfederateUsernameOption)
 	if err != nil {
 		return err
 	}
-	pfPassword, err := profiles.GetOptionValue(configuration.PlatformExportPingfederatePasswordOption)
+	pfPassword, err := profiles.GetOptionValue(options.PlatformExportPingfederatePasswordOption)
 	if err != nil {
 		return err
 	}
-	pfInsecureTrustAllTLS, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateInsecureTrustAllTLSOption)
+	pfInsecureTrustAllTLS, err := profiles.GetOptionValue(options.PlatformExportPingfederateInsecureTrustAllTLSOption)
 	if err != nil {
 		return err
 	}
-	caCertPemFiles, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateCACertificatePemFilesOption)
+	caCertPemFiles, err := profiles.GetOptionValue(options.PlatformExportPingfederateCACertificatePemFilesOption)
 	if err != nil {
 		return err
 	}
@@ -176,12 +176,12 @@ func initPingFederateServices(ctx context.Context, pingctlVersion string) (err e
 	}
 
 	switch {
-	case configuration.PlatformExportPingfederateUsernameOption.Flag.Changed && configuration.PlatformExportPingfederatePasswordOption.Flag.Changed:
+	case options.PlatformExportPingfederateUsernameOption.Flag.Changed && options.PlatformExportPingfederatePasswordOption.Flag.Changed:
 		pingfederateContext = context.WithValue(ctx, pingfederateGoClient.ContextBasicAuth, pingfederateGoClient.BasicAuth{
 			UserName: pfUsername,
 			Password: pfPassword,
 		})
-	case configuration.PlatformExportPingfederateAccessTokenOption.Flag.Changed:
+	case options.PlatformExportPingfederateAccessTokenOption.Flag.Changed:
 		pingfederateContext = context.WithValue(ctx, pingfederateGoClient.ContextAccessToken, pfAccessToken)
 	case pfClientID != "" && pfClientSecret != "" && pfTokenUrl != "":
 		pingfederateContext = context.WithValue(ctx, pingfederateGoClient.ContextOAuth2, pingfederateGoClient.OAuthValues{
@@ -231,15 +231,15 @@ func initPingFederateApiClient(tr *http.Transport, pingctlVersion string) (err e
 		return fmt.Errorf("failed to initialize pingfederate API client. http transport is nil")
 	}
 
-	httpsHost, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateHTTPSHostOption)
+	httpsHost, err := profiles.GetOptionValue(options.PlatformExportPingfederateHTTPSHostOption)
 	if err != nil {
 		return err
 	}
-	adminApiPath, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateAdminAPIPathOption)
+	adminApiPath, err := profiles.GetOptionValue(options.PlatformExportPingfederateAdminAPIPathOption)
 	if err != nil {
 		return err
 	}
-	xBypassExternalValidationHeader, err := profiles.GetOptionValue(configuration.PlatformExportPingfederateXBypassExternalValidationHeaderOption)
+	xBypassExternalValidationHeader, err := profiles.GetOptionValue(options.PlatformExportPingfederateXBypassExternalValidationHeaderOption)
 	if err != nil {
 		return err
 	}
@@ -284,19 +284,19 @@ func initPingOneApiClient(ctx context.Context, pingctlVersion string) (err error
 		return fmt.Errorf("failed to initialize pingone API client. context is nil")
 	}
 
-	pingoneApiClientId, err = profiles.GetOptionValue(configuration.PlatformExportPingoneWorkerClientIDOption)
+	pingoneApiClientId, err = profiles.GetOptionValue(options.PlatformExportPingoneWorkerClientIDOption)
 	if err != nil {
 		return err
 	}
-	clientSecret, err := profiles.GetOptionValue(configuration.PlatformExportPingoneWorkerClientSecretOption)
+	clientSecret, err := profiles.GetOptionValue(options.PlatformExportPingoneWorkerClientSecretOption)
 	if err != nil {
 		return err
 	}
-	environmentID, err := profiles.GetOptionValue(configuration.PlatformExportPingoneWorkerEnvironmentIDOption)
+	environmentID, err := profiles.GetOptionValue(options.PlatformExportPingoneWorkerEnvironmentIDOption)
 	if err != nil {
 		return err
 	}
-	region, err := profiles.GetOptionValue(configuration.PlatformExportPingoneRegionOption)
+	region, err := profiles.GetOptionValue(options.PlatformExportPingoneRegionOption)
 	if err != nil {
 		return err
 	}
@@ -384,13 +384,13 @@ func createOrValidateOutputDir(outputDir string, overwriteExport bool) (err erro
 }
 
 func getPingOneExportEnvID() (err error) {
-	pingoneExportEnvID, err = profiles.GetOptionValue(configuration.PlatformExportPingoneExportEnvironmentIDOption)
+	pingoneExportEnvID, err = profiles.GetOptionValue(options.PlatformExportPingoneExportEnvironmentIDOption)
 	if err != nil {
 		return err
 	}
 
 	if pingoneExportEnvID == "" {
-		pingoneExportEnvID, err = profiles.GetOptionValue(configuration.PlatformExportPingoneWorkerEnvironmentIDOption)
+		pingoneExportEnvID, err = profiles.GetOptionValue(options.PlatformExportPingoneWorkerEnvironmentIDOption)
 		if err != nil {
 			return err
 		}

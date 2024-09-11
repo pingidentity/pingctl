@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/profiles"
@@ -25,7 +25,7 @@ func TestRunInternalExport(t *testing.T) {
 	testutils.CheckExpectedError(t, err, nil)
 
 	// Check if there are terraform files in the export directory
-	outputDir, err := profiles.GetOptionValue(configuration.PlatformExportOutputDirectoryOption)
+	outputDir, err := profiles.GetOptionValue(options.PlatformExportOutputDirectoryOption)
 	if err != nil {
 		t.Fatalf("profiles.GetOptionValue() error = %v", err)
 	}

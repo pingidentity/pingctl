@@ -3,7 +3,7 @@ package platform
 import (
 	"github.com/pingidentity/pingctl/cmd/common"
 	platform_internal "github.com/pingidentity/pingctl/internal/commands/platform"
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
 )
@@ -47,85 +47,85 @@ func exportRunE(cmd *cobra.Command, args []string) error {
 }
 
 func initGeneralExportFlags(cmd *cobra.Command) {
-	cmd.Flags().AddFlag(configuration.PlatformExportExportFormatOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportServiceOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportOutputDirectoryOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportOverwriteOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportExportFormatOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportServiceOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportOutputDirectoryOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportOverwriteOption.Flag)
 }
 
 func initPingOneExportFlags(cmd *cobra.Command) {
-	cmd.Flags().AddFlag(configuration.PlatformExportPingoneWorkerEnvironmentIDOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingoneExportEnvironmentIDOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingoneWorkerClientIDOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingoneWorkerClientSecretOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingoneRegionOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneWorkerEnvironmentIDOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneExportEnvironmentIDOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneWorkerClientIDOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneWorkerClientSecretOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneRegionOption.Flag)
 
 	cmd.MarkFlagsRequiredTogether(
-		configuration.PlatformExportPingoneWorkerEnvironmentIDOption.CobraParamName,
-		configuration.PlatformExportPingoneWorkerClientIDOption.CobraParamName,
-		configuration.PlatformExportPingoneWorkerClientSecretOption.CobraParamName,
-		configuration.PlatformExportPingoneRegionOption.CobraParamName)
+		options.PlatformExportPingoneWorkerEnvironmentIDOption.CobraParamName,
+		options.PlatformExportPingoneWorkerClientIDOption.CobraParamName,
+		options.PlatformExportPingoneWorkerClientSecretOption.CobraParamName,
+		options.PlatformExportPingoneRegionOption.CobraParamName)
 }
 
 func initPingFederateGeneralFlags(cmd *cobra.Command) {
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateHTTPSHostOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateAdminAPIPathOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateHTTPSHostOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateAdminAPIPathOption.Flag)
 
 	cmd.MarkFlagsRequiredTogether(
-		configuration.PlatformExportPingfederateHTTPSHostOption.CobraParamName,
-		configuration.PlatformExportPingfederateAdminAPIPathOption.CobraParamName)
+		options.PlatformExportPingfederateHTTPSHostOption.CobraParamName,
+		options.PlatformExportPingfederateAdminAPIPathOption.CobraParamName)
 
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateXBypassExternalValidationHeaderOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateCACertificatePemFilesOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateInsecureTrustAllTLSOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateXBypassExternalValidationHeaderOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateCACertificatePemFilesOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateInsecureTrustAllTLSOption.Flag)
 }
 
 func initPingFederateBasicAuthFlags(cmd *cobra.Command) {
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateUsernameOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederatePasswordOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateUsernameOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederatePasswordOption.Flag)
 
 	cmd.MarkFlagsRequiredTogether(
-		configuration.PlatformExportPingfederateUsernameOption.CobraParamName,
-		configuration.PlatformExportPingfederatePasswordOption.CobraParamName)
+		options.PlatformExportPingfederateUsernameOption.CobraParamName,
+		options.PlatformExportPingfederatePasswordOption.CobraParamName)
 }
 
 func initPingFederateAccessTokenFlags(cmd *cobra.Command) {
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateAccessTokenOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateAccessTokenOption.Flag)
 }
 
 func initPingFederateClientCredentialsFlags(cmd *cobra.Command) {
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateClientIDOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateClientSecretOption.Flag)
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateTokenURLOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateClientIDOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateClientSecretOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateTokenURLOption.Flag)
 
 	cmd.MarkFlagsRequiredTogether(
-		configuration.PlatformExportPingfederateClientIDOption.CobraParamName,
-		configuration.PlatformExportPingfederateClientSecretOption.CobraParamName,
-		configuration.PlatformExportPingfederateTokenURLOption.CobraParamName)
+		options.PlatformExportPingfederateClientIDOption.CobraParamName,
+		options.PlatformExportPingfederateClientSecretOption.CobraParamName,
+		options.PlatformExportPingfederateTokenURLOption.CobraParamName)
 
-	cmd.Flags().AddFlag(configuration.PlatformExportPingfederateScopesOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateScopesOption.Flag)
 }
 
 func markPingFederateFlagsExclusive(cmd *cobra.Command) {
 	// The username flag cannot be used with the access token or client credentials authentication methods
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederateUsernameOption.CobraParamName, configuration.PlatformExportPingfederateAccessTokenOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederateUsernameOption.CobraParamName, configuration.PlatformExportPingfederateClientIDOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederateUsernameOption.CobraParamName, configuration.PlatformExportPingfederateClientSecretOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederateUsernameOption.CobraParamName, configuration.PlatformExportPingfederateTokenURLOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederateUsernameOption.CobraParamName, configuration.PlatformExportPingfederateScopesOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateAccessTokenOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateClientIDOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateClientSecretOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateTokenURLOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateScopesOption.CobraParamName)
 
 	// The password flag cannot be used with the access token or client credentials authentication methods
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederatePasswordOption.CobraParamName, configuration.PlatformExportPingfederateAccessTokenOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederatePasswordOption.CobraParamName, configuration.PlatformExportPingfederateClientIDOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederatePasswordOption.CobraParamName, configuration.PlatformExportPingfederateClientSecretOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederatePasswordOption.CobraParamName, configuration.PlatformExportPingfederateTokenURLOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederatePasswordOption.CobraParamName, configuration.PlatformExportPingfederateScopesOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateAccessTokenOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateClientIDOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateClientSecretOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateTokenURLOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateScopesOption.CobraParamName)
 
 	// The access token flag cannot be used with the client credentials authentication method
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederateAccessTokenOption.CobraParamName, configuration.PlatformExportPingfederateClientIDOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederateAccessTokenOption.CobraParamName, configuration.PlatformExportPingfederateClientSecretOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederateAccessTokenOption.CobraParamName, configuration.PlatformExportPingfederateTokenURLOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(configuration.PlatformExportPingfederateAccessTokenOption.CobraParamName, configuration.PlatformExportPingfederateScopesOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateAccessTokenOption.CobraParamName, options.PlatformExportPingfederateClientIDOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateAccessTokenOption.CobraParamName, options.PlatformExportPingfederateClientSecretOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateAccessTokenOption.CobraParamName, options.PlatformExportPingfederateTokenURLOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateAccessTokenOption.CobraParamName, options.PlatformExportPingfederateScopesOption.CobraParamName)
 
 	// Client credential flag exclusivity is already defined above.
 }

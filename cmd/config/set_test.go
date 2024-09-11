@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_cobra"
@@ -12,7 +12,7 @@ import (
 
 // Test Config Set Command Executes without issue
 func TestConfigSetCmd_Execute(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", configuration.RootColorOption.ViperKey))
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", options.RootColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -26,7 +26,7 @@ func TestConfigSetCmd_TooFewArgs(t *testing.T) {
 // Test Config Set Command Fails when provided too many arguments
 func TestConfigSetCmd_TooManyArgs(t *testing.T) {
 	expectedErrorPattern := `^failed to execute 'pingctl config set': command accepts 1 arg\(s\), received 2$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", configuration.RootColorOption.ViperKey), fmt.Sprintf("%s=true", configuration.RootColorOption.ViperKey))
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=false", options.RootColorOption.ViperKey), fmt.Sprintf("%s=true", options.RootColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -40,20 +40,20 @@ func TestConfigSetCmd_InvalidKey(t *testing.T) {
 // Test Config Set Command Fails when an invalid value type is provided
 func TestConfigSetCmd_InvalidValueType(t *testing.T) {
 	expectedErrorPattern := `^failed to set configuration: value for key '.*' must be a boolean\. Allowed .*: strconv\.ParseBool: parsing ".*": invalid syntax$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=invalid", configuration.RootColorOption.ViperKey))
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=invalid", options.RootColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Config Set Command Fails when no value is provided
 func TestConfigSetCmd_NoValueProvided(t *testing.T) {
 	expectedErrorPattern := `^failed to set configuration: value for key 'pingctl\.color' is empty\. Use 'pingctl config unset pingctl\.color' to unset the key$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=", configuration.RootColorOption.ViperKey))
+	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=", options.RootColorOption.ViperKey))
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Config Set Command for key 'pingone.worker.clientId' updates viper configuration
 func TestConfigSetCmd_CheckViperConfig(t *testing.T) {
-	viperKey := configuration.PlatformExportPingoneWorkerClientIDOption.ViperKey
+	viperKey := options.PlatformExportPingoneWorkerClientIDOption.ViperKey
 	viperNewUUID := "12345678-1234-1234-1234-123456789012"
 
 	err := testutils_cobra.ExecutePingctl(t, "config", "set", fmt.Sprintf("%s=%s", viperKey, viperNewUUID))

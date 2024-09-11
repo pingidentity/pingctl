@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
@@ -76,10 +77,10 @@ func readConfigSetOptions(kvPair string) (pName string, vKey string, vValue stri
 }
 
 func readConfigSetProfileName() (pName string, err error) {
-	if !configuration.ConfigSetProfileOption.Flag.Changed {
-		pName, err = profiles.GetOptionValue(configuration.RootActiveProfileOption)
+	if !options.ConfigSetProfileOption.Flag.Changed {
+		pName, err = profiles.GetOptionValue(options.RootActiveProfileOption)
 	} else {
-		pName, err = profiles.GetOptionValue(configuration.ConfigSetProfileOption)
+		pName, err = profiles.GetOptionValue(options.ConfigSetProfileOption)
 	}
 
 	if err != nil {
@@ -102,51 +103,51 @@ func parseKeyValuePair(kvPair string) (string, string, error) {
 	return parsedInput[0], parsedInput[1], nil
 }
 
-func setValue(profileViper *viper.Viper, vKey, vValue string, valueType configuration.OptionType) (err error) {
+func setValue(profileViper *viper.Viper, vKey, vValue string, valueType options.OptionType) (err error) {
 	switch valueType {
-	case configuration.ENUM_BOOL:
+	case options.ENUM_BOOL:
 		var bool customtypes.Bool
 		if err = bool.Set(vValue); err != nil {
 			return fmt.Errorf("value for key '%s' must be a boolean. Allowed [true, false]: %v", vKey, err)
 		}
 		profileViper.Set(vKey, bool)
-	case configuration.ENUM_EXPORT_FORMAT:
+	case options.ENUM_EXPORT_FORMAT:
 		var exportFormat customtypes.ExportFormat
 		if err = exportFormat.Set(vValue); err != nil {
 			return fmt.Errorf("value for key '%s' must be a valid export format. Allowed [%s]: %v", vKey, strings.Join(customtypes.ExportFormatValidValues(), ", "), err)
 		}
 		profileViper.Set(vKey, exportFormat)
-	case configuration.ENUM_MULTI_SERVICE:
+	case options.ENUM_MULTI_SERVICE:
 		var multiService customtypes.MultiService
 		if err = multiService.Set(vValue); err != nil {
 			return fmt.Errorf("value for key '%s' must be a valid multi-service. Allowed [%s]: %v", vKey, strings.Join(customtypes.MultiServiceValidValues(), ", "), err)
 		}
 		profileViper.Set(vKey, multiService)
-	case configuration.ENUM_OUTPUT_FORMAT:
+	case options.ENUM_OUTPUT_FORMAT:
 		var outputFormat customtypes.OutputFormat
 		if err = outputFormat.Set(vValue); err != nil {
 			return fmt.Errorf("value for key '%s' must be a valid output format. Allowed [%s]: %v", vKey, strings.Join(customtypes.OutputFormatValidValues(), ", "), err)
 		}
 		profileViper.Set(vKey, outputFormat)
-	case configuration.ENUM_PINGONE_REGION:
+	case options.ENUM_PINGONE_REGION:
 		var region customtypes.PingOneRegion
 		if err = region.Set(vValue); err != nil {
 			return fmt.Errorf("value for key '%s' must be a valid PingOne region. Allowed [%s]: %v", vKey, strings.Join(customtypes.PingOneRegionValidValues(), ", "), err)
 		}
 		profileViper.Set(vKey, region)
-	case configuration.ENUM_STRING:
+	case options.ENUM_STRING:
 		var str customtypes.String
 		if err = str.Set(vValue); err != nil {
 			return fmt.Errorf("value for key '%s' must be a string: %v", vKey, err)
 		}
 		profileViper.Set(vKey, str)
-	case configuration.ENUM_STRING_SLICE:
+	case options.ENUM_STRING_SLICE:
 		var strSlice customtypes.StringSlice
 		if err = strSlice.Set(vValue); err != nil {
 			return fmt.Errorf("value for key '%s' must be a string slice: %v", vKey, err)
 		}
 		profileViper.Set(vKey, strSlice)
-	case configuration.ENUM_UUID:
+	case options.ENUM_UUID:
 		var uuid customtypes.UUID
 		if err = uuid.Set(vValue); err != nil {
 			return fmt.Errorf("value for key '%s' must be a valid UUID: %v", vKey, err)

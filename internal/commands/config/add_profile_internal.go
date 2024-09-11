@@ -5,7 +5,7 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/input"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
@@ -29,7 +29,7 @@ func RunInternalConfigAddProfile(rc io.ReadCloser) (err error) {
 	})
 
 	subViper := viper.New()
-	subViper.Set(configuration.ProfileDescriptionOption.ViperKey, newDescription)
+	subViper.Set(options.ProfileDescriptionOption.ViperKey, newDescription)
 
 	if err = profiles.GetMainConfig().SaveProfile(newProfileName, subViper); err != nil {
 		return fmt.Errorf("failed to add profile: %v", err)
@@ -71,7 +71,7 @@ func readConfigAddProfileOptions(rc io.ReadCloser) (newProfileName, newDescripti
 }
 
 func readConfigAddProfileNameOption(rc io.ReadCloser) (newProfileName string, err error) {
-	if !configuration.ConfigAddProfileNameOption.Flag.Changed {
+	if !options.ConfigAddProfileNameOption.Flag.Changed {
 		newProfileName, err = input.RunPrompt("New profile name: ", profiles.GetMainConfig().ValidateNewProfileName, rc)
 		if err != nil {
 			return newProfileName, err
@@ -81,7 +81,7 @@ func readConfigAddProfileNameOption(rc io.ReadCloser) (newProfileName string, er
 			return newProfileName, fmt.Errorf("unable to determine profile name")
 		}
 	} else {
-		newProfileName, err = profiles.GetOptionValue(configuration.ConfigAddProfileNameOption)
+		newProfileName, err = profiles.GetOptionValue(options.ConfigAddProfileNameOption)
 		if err != nil {
 			return newProfileName, err
 		}
@@ -95,18 +95,18 @@ func readConfigAddProfileNameOption(rc io.ReadCloser) (newProfileName string, er
 }
 
 func readConfigAddProfileDescriptionOption(rc io.ReadCloser) (newDescription string, err error) {
-	if !configuration.ConfigAddProfileDescriptionOption.Flag.Changed {
+	if !options.ConfigAddProfileDescriptionOption.Flag.Changed {
 		return input.RunPrompt("New profile description: ", nil, rc)
 	} else {
-		return profiles.GetOptionValue(configuration.ConfigAddProfileDescriptionOption)
+		return profiles.GetOptionValue(options.ConfigAddProfileDescriptionOption)
 	}
 }
 
 func readConfigAddProfileSetActiveOption(rc io.ReadCloser) (setActive bool, err error) {
-	if !configuration.ConfigAddProfileSetActiveOption.Flag.Changed {
+	if !options.ConfigAddProfileSetActiveOption.Flag.Changed {
 		return input.RunPromptConfirm("Set new profile as active: ", rc)
 	} else {
-		boolStr, err := profiles.GetOptionValue(configuration.ConfigAddProfileSetActiveOption)
+		boolStr, err := profiles.GetOptionValue(options.ConfigAddProfileSetActiveOption)
 		if err != nil {
 			return setActive, err
 		}

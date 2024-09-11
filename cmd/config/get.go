@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/pingidentity/pingctl/cmd/common"
 	config_internal "github.com/pingidentity/pingctl/internal/commands/config"
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
 )
@@ -21,7 +21,7 @@ pingctl config get pingone.export.environmentID`,
 		Use:   "get [flags] key",
 	}
 
-	cmd.Flags().AddFlag(configuration.ConfigGetProfileOption.Flag)
+	cmd.Flags().AddFlag(options.ConfigGetProfileOption.Flag)
 
 	return cmd
 }

@@ -1,24 +1,17 @@
-package configuration
+package configuration_root
 
 import (
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/pflag"
 )
 
-// Options
-var (
-	RootActiveProfileOption Option
-	RootColorOption         Option
-	RootConfigOption        Option
-	RootOutputFormatOption  Option
-)
-
-func initRootOptions() {
+func InitRootOptions() {
 	initActiveProfileOption()
 	initColorOption()
 	initConfigOption()
@@ -30,7 +23,7 @@ func initActiveProfileOption() {
 	cobraValue := new(customtypes.String)
 	defaultValue := customtypes.String("default")
 
-	RootActiveProfileOption = Option{
+	options.RootActiveProfileOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -42,7 +35,7 @@ func initActiveProfileOption() {
 			Value:     cobraValue,
 			DefValue:  "default",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "activeProfile",
 	}
 }
@@ -52,7 +45,7 @@ func initColorOption() {
 	cobraValue := new(customtypes.Bool)
 	defaultValue := customtypes.Bool(true)
 
-	RootColorOption = Option{
+	options.RootColorOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -63,7 +56,7 @@ func initColorOption() {
 			Value:    cobraValue,
 			DefValue: "true",
 		},
-		Type:     ENUM_BOOL,
+		Type:     options.ENUM_BOOL,
 		ViperKey: "pingctl.color",
 	}
 }
@@ -73,7 +66,7 @@ func initConfigOption() {
 	cobraValue := new(customtypes.String)
 	defaultValue := getDefaultConfigFilepath()
 
-	RootConfigOption = Option{
+	options.RootConfigOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    defaultValue,
@@ -85,7 +78,7 @@ func initConfigOption() {
 			Value:     cobraValue,
 			DefValue:  "\"$HOME/.pingctl/config.yaml\"",
 		},
-		Type:     ENUM_STRING,
+		Type:     options.ENUM_STRING,
 		ViperKey: "", // No viper key
 	}
 }
@@ -95,7 +88,7 @@ func initOutputFormatOption() {
 	cobraValue := new(customtypes.OutputFormat)
 	defaultValue := customtypes.OutputFormat(customtypes.ENUM_OUTPUT_FORMAT_TEXT)
 
-	RootOutputFormatOption = Option{
+	options.RootOutputFormatOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
@@ -107,7 +100,7 @@ func initOutputFormatOption() {
 			Value:     cobraValue,
 			DefValue:  customtypes.ENUM_OUTPUT_FORMAT_TEXT,
 		},
-		Type:     ENUM_OUTPUT_FORMAT,
+		Type:     options.ENUM_OUTPUT_FORMAT,
 		ViperKey: "pingctl.outputFormat",
 	}
 }

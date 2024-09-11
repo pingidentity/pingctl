@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
@@ -17,8 +17,8 @@ func Test_RunInternalConfigSetActiveProfile(t *testing.T) {
 	var (
 		profileName = customtypes.String("production")
 	)
-	configuration.ConfigSetActiveProfileOption.Flag.Changed = true
-	configuration.ConfigSetActiveProfileOption.CobraParamValue = &profileName
+	options.ConfigSetActiveProfileOption.Flag.Changed = true
+	options.ConfigSetActiveProfileOption.CobraParamValue = &profileName
 
 	err := RunInternalConfigSetActiveProfile(os.Stdin)
 	if err != nil {
@@ -33,8 +33,8 @@ func Test_RunInternalConfigSetActiveProfile_InvalidProfileName(t *testing.T) {
 	var (
 		profileName = customtypes.String("(*#&)")
 	)
-	configuration.ConfigSetActiveProfileOption.Flag.Changed = true
-	configuration.ConfigSetActiveProfileOption.CobraParamValue = &profileName
+	options.ConfigSetActiveProfileOption.Flag.Changed = true
+	options.ConfigSetActiveProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to set active profile: invalid profile name: '.*'\. name must contain only alphanumeric characters, underscores, and dashes$`
 	err := RunInternalConfigSetActiveProfile(os.Stdin)
@@ -48,8 +48,8 @@ func Test_RunInternalConfigSetActiveProfile_NonExistentProfile(t *testing.T) {
 	var (
 		profileName = customtypes.String("non-existent")
 	)
-	configuration.ConfigSetActiveProfileOption.Flag.Changed = true
-	configuration.ConfigSetActiveProfileOption.CobraParamValue = &profileName
+	options.ConfigSetActiveProfileOption.Flag.Changed = true
+	options.ConfigSetActiveProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to set active profile: invalid profile name: '.*' profile does not exist$`
 	err := RunInternalConfigSetActiveProfile(os.Stdin)

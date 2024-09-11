@@ -9,6 +9,7 @@ import (
 	"github.com/pingidentity/pingctl/cmd/feedback"
 	"github.com/pingidentity/pingctl/cmd/platform"
 	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
@@ -43,10 +44,10 @@ func NewRootCommand() *cobra.Command {
 		platform.NewPlatformCommand(),
 	)
 
-	cmd.PersistentFlags().AddFlag(configuration.RootConfigOption.Flag)
-	cmd.PersistentFlags().AddFlag(configuration.RootActiveProfileOption.Flag)
-	cmd.PersistentFlags().AddFlag(configuration.RootOutputFormatOption.Flag)
-	cmd.PersistentFlags().AddFlag(configuration.RootColorOption.Flag)
+	cmd.PersistentFlags().AddFlag(options.RootConfigOption.Flag)
+	cmd.PersistentFlags().AddFlag(options.RootActiveProfileOption.Flag)
+	cmd.PersistentFlags().AddFlag(options.RootOutputFormatOption.Flag)
+	cmd.PersistentFlags().AddFlag(options.RootColorOption.Flag)
 
 	// Make sure cobra is outputting to stdout and stderr
 	cmd.SetOut(os.Stdout)
@@ -58,7 +59,7 @@ func NewRootCommand() *cobra.Command {
 func initViperProfile() {
 	l := logger.Get()
 
-	cfgFile, err := profiles.GetOptionValue(configuration.RootConfigOption)
+	cfgFile, err := profiles.GetOptionValue(options.RootConfigOption)
 	if err != nil {
 		output.Print(output.Opts{
 			Message:      "Failed to get configuration file location",
@@ -77,7 +78,7 @@ func initViperProfile() {
 	//Configure the main viper instance
 	initMainViper(cfgFile)
 
-	profileName, err := profiles.GetOptionValue(configuration.RootActiveProfileOption)
+	profileName, err := profiles.GetOptionValue(options.RootActiveProfileOption)
 	if err != nil {
 		output.Print(output.Opts{
 			Message:      "Failed to get active profile",
@@ -112,13 +113,13 @@ func checkCfgFileLocation(cfgFile string) {
 	_, err := os.Stat(cfgFile)
 	if os.IsNotExist(err) {
 		// Only create a new configuration file if it is the default configuration file location
-		if cfgFile == configuration.RootConfigOption.DefaultValue.String() {
+		if cfgFile == options.RootConfigOption.DefaultValue.String() {
 			output.Print(output.Opts{
 				Message: fmt.Sprintf("Pingctl configuration file '%s' does not exist.", cfgFile),
 				Result:  output.ENUM_RESULT_NOACTION_WARN,
 			})
 
-			createConfigFile(configuration.RootConfigOption.DefaultValue.String())
+			createConfigFile(options.RootConfigOption.DefaultValue.String())
 		} else {
 			output.Print(output.Opts{
 				Message:      fmt.Sprintf("Configuration file '%s' does not exist.", cfgFile),
@@ -151,8 +152,8 @@ func createConfigFile(cfgFile string) {
 	}
 
 	tempViper := viper.New()
-	tempViper.Set(configuration.RootActiveProfileOption.ViperKey, configuration.RootActiveProfileOption.DefaultValue)
-	tempViper.Set(fmt.Sprintf("%s.%v", configuration.RootActiveProfileOption.DefaultValue.String(), configuration.ProfileDescriptionOption.ViperKey), "Default profile created by pingctl")
+	tempViper.Set(options.RootActiveProfileOption.ViperKey, options.RootActiveProfileOption.DefaultValue)
+	tempViper.Set(fmt.Sprintf("%s.%v", options.RootActiveProfileOption.DefaultValue.String(), options.ProfileDescriptionOption.ViperKey), "Default profile created by pingctl")
 
 	err = tempViper.WriteConfigAs(cfgFile)
 	if err != nil {

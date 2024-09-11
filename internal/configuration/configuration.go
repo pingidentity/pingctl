@@ -5,85 +5,15 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/spf13/pflag"
+	configuration_config "github.com/pingidentity/pingctl/internal/configuration/config"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
+	configuration_platform "github.com/pingidentity/pingctl/internal/configuration/platform"
+	configuration_profiles "github.com/pingidentity/pingctl/internal/configuration/profiles"
+	configuration_root "github.com/pingidentity/pingctl/internal/configuration/root"
 )
-
-type OptionType string
-
-// OptionType enums
-const (
-	ENUM_BOOL           OptionType = "ENUM_BOOL"
-	ENUM_EXPORT_FORMAT  OptionType = "ENUM_EXPORT_FORMAT"
-	ENUM_UUID           OptionType = "ENUM_UUID"
-	ENUM_MULTI_SERVICE  OptionType = "ENUM_MULTI_SERVICE"
-	ENUM_OUTPUT_FORMAT  OptionType = "ENUM_OUTPUT_FORMAT"
-	ENUM_PINGONE_REGION OptionType = "ENUM_PINGONE_REGION"
-	ENUM_STRING         OptionType = "ENUM_STRING"
-	ENUM_STRING_SLICE   OptionType = "ENUM_STRING_SLICE"
-)
-
-type Option struct {
-	CobraParamName  string
-	CobraParamValue pflag.Value
-	DefaultValue    pflag.Value
-	EnvVar          string
-	Flag            *pflag.Flag
-	Type            OptionType
-	ViperKey        string
-}
-
-func Options() []Option {
-	return []Option{
-		PlatformExportExportFormatOption,
-		PlatformExportServiceOption,
-		PlatformExportOutputDirectoryOption,
-		PlatformExportOverwriteOption,
-		PlatformExportPingoneWorkerEnvironmentIDOption,
-		PlatformExportPingoneExportEnvironmentIDOption,
-		PlatformExportPingoneWorkerClientIDOption,
-		PlatformExportPingoneWorkerClientSecretOption,
-		PlatformExportPingoneRegionOption,
-		PlatformExportPingfederateHTTPSHostOption,
-		PlatformExportPingfederateAdminAPIPathOption,
-		PlatformExportPingfederateXBypassExternalValidationHeaderOption,
-		PlatformExportPingfederateCACertificatePemFilesOption,
-		PlatformExportPingfederateInsecureTrustAllTLSOption,
-		PlatformExportPingfederateUsernameOption,
-		PlatformExportPingfederatePasswordOption,
-		PlatformExportPingfederateAccessTokenOption,
-		PlatformExportPingfederateClientIDOption,
-		PlatformExportPingfederateClientSecretOption,
-		PlatformExportPingfederateTokenURLOption,
-		PlatformExportPingfederateScopesOption,
-
-		RootActiveProfileOption,
-		RootColorOption,
-		RootConfigOption,
-		RootOutputFormatOption,
-
-		ProfileDescriptionOption,
-
-		ConfigProfileOption,
-		ConfigNameOption,
-		ConfigDescriptionOption,
-		ConfigAddProfileDescriptionOption,
-		ConfigAddProfileNameOption,
-		ConfigAddProfileSetActiveOption,
-		ConfigDeleteProfileOption,
-		ConfigViewProfileOption,
-		ConfigSetActiveProfileOption,
-		ConfigGetProfileOption,
-		ConfigSetProfileOption,
-		ConfigUnsetProfileOption,
-	}
-}
-
-func init() {
-	InitAllOptions()
-}
 
 func ViperKeys() (keys []string) {
-	for _, opt := range Options() {
+	for _, opt := range options.Options() {
 		if opt.ViperKey != "" {
 			keys = append(keys, opt.ViperKey)
 		}
@@ -139,8 +69,8 @@ func ValidateParentViperKey(viperKey string) error {
 	return fmt.Errorf("key '%s' is not recognized as a valid configuration key. Valid keys: %s", viperKey, validKeysStr)
 }
 
-func OptionFromViperKey(viperKey string) (opt Option, err error) {
-	for _, opt := range Options() {
+func OptionFromViperKey(viperKey string) (opt options.Option, err error) {
+	for _, opt := range options.Options() {
 		if strings.EqualFold(opt.ViperKey, viperKey) {
 			return opt, nil
 		}
@@ -149,8 +79,18 @@ func OptionFromViperKey(viperKey string) (opt Option, err error) {
 }
 
 func InitAllOptions() {
-	initConfigOptions()
-	initPlatformExportOptions()
-	initProfilesOptions()
-	initRootOptions()
+	configuration_config.InitConfigOptions()
+	configuration_config.InitConfigAddProfileOptions()
+	configuration_config.InitConfigDeleteProfileOptions()
+	configuration_config.InitConfigViewProfileOptions()
+	configuration_config.InitConfigSetActiveProfileOptions()
+	configuration_config.InitConfigSetOptions()
+	configuration_config.InitConfigGetOptions()
+	configuration_config.InitConfigUnsetOptions()
+
+	configuration_platform.InitPlatformExportOptions()
+
+	configuration_profiles.InitProfilesOptions()
+
+	configuration_root.InitRootOptions()
 }

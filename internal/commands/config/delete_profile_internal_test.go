@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_viper"
@@ -18,8 +18,8 @@ func Test_RunInternalConfigDeleteProfile(t *testing.T) {
 		profileName = customtypes.String("production")
 	)
 
-	configuration.ConfigDeleteProfileOption.Flag.Changed = true
-	configuration.ConfigDeleteProfileOption.CobraParamValue = &profileName
+	options.ConfigDeleteProfileOption.Flag.Changed = true
+	options.ConfigDeleteProfileOption.CobraParamValue = &profileName
 
 	err := RunInternalConfigDeleteProfile(os.Stdin)
 	if err != nil {
@@ -35,8 +35,8 @@ func Test_RunInternalConfigDeleteProfile_ActiveProfile(t *testing.T) {
 		profileName = customtypes.String("default")
 	)
 
-	configuration.ConfigDeleteProfileOption.Flag.Changed = true
-	configuration.ConfigDeleteProfileOption.CobraParamValue = &profileName
+	options.ConfigDeleteProfileOption.Flag.Changed = true
+	options.ConfigDeleteProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to delete profile: '.*' is the active profile and cannot be deleted$`
 	err := RunInternalConfigDeleteProfile(os.Stdin)
@@ -51,8 +51,8 @@ func Test_RunInternalConfigDeleteProfile_InvalidProfileName(t *testing.T) {
 		profileName = customtypes.String("(*#&)")
 	)
 
-	configuration.ConfigDeleteProfileOption.Flag.Changed = true
-	configuration.ConfigDeleteProfileOption.CobraParamValue = &profileName
+	options.ConfigDeleteProfileOption.Flag.Changed = true
+	options.ConfigDeleteProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to delete profile: invalid profile name: '.*'\. name must contain only alphanumeric characters, underscores, and dashes$`
 	err := RunInternalConfigDeleteProfile(os.Stdin)
@@ -67,8 +67,8 @@ func Test_RunInternalConfigDeleteProfile_EmptyProfileName(t *testing.T) {
 		profileName = customtypes.String("")
 	)
 
-	configuration.ConfigDeleteProfileOption.Flag.Changed = true
-	configuration.ConfigDeleteProfileOption.CobraParamValue = &profileName
+	options.ConfigDeleteProfileOption.Flag.Changed = true
+	options.ConfigDeleteProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to delete profile: unable to determine profile name to delete$`
 	err := RunInternalConfigDeleteProfile(os.Stdin)
@@ -83,8 +83,8 @@ func Test_RunInternalConfigDeleteProfile_NonExistentProfileName(t *testing.T) {
 		profileName = customtypes.String("non-existent")
 	)
 
-	configuration.ConfigDeleteProfileOption.Flag.Changed = true
-	configuration.ConfigDeleteProfileOption.CobraParamValue = &profileName
+	options.ConfigDeleteProfileOption.Flag.Changed = true
+	options.ConfigDeleteProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to delete profile: invalid profile name: '.*' profile does not exist$`
 	err := RunInternalConfigDeleteProfile(os.Stdin)

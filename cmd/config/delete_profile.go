@@ -5,7 +5,7 @@ import (
 
 	"github.com/pingidentity/pingctl/cmd/common"
 	config_internal "github.com/pingidentity/pingctl/internal/commands/config"
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +22,7 @@ pingctl config delete-profile --profile myprofile`,
 		Use:   "delete-profile [flags]",
 	}
 
-	cmd.Flags().AddFlag(configuration.ConfigDeleteProfileOption.Flag)
+	cmd.Flags().AddFlag(options.ConfigDeleteProfileOption.Flag)
 
 	return cmd
 }

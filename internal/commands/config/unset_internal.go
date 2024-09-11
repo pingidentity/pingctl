@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
 )
@@ -54,10 +55,10 @@ func RunInternalConfigUnset(viperKey string) (err error) {
 }
 
 func readConfigUnsetOptions() (pName string, err error) {
-	if !configuration.ConfigUnsetProfileOption.Flag.Changed {
-		pName, err = profiles.GetOptionValue(configuration.RootActiveProfileOption)
+	if !options.ConfigUnsetProfileOption.Flag.Changed {
+		pName, err = profiles.GetOptionValue(options.RootActiveProfileOption)
 	} else {
-		pName, err = profiles.GetOptionValue(configuration.ConfigUnsetProfileOption)
+		pName, err = profiles.GetOptionValue(options.ConfigUnsetProfileOption)
 	}
 
 	if err != nil {

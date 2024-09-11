@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_cobra"
 )
@@ -17,13 +17,13 @@ func TestConfigGetCmd_Execute(t *testing.T) {
 // Test Config Get Command fails when provided too many arguments
 func TestConfigGetCmd_TooManyArgs(t *testing.T) {
 	expectedErrorPattern := `^failed to execute 'pingctl config get': command accepts 1 arg\(s\), received 2$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "get", configuration.RootColorOption.ViperKey, configuration.RootOutputFormatOption.ViperKey)
+	err := testutils_cobra.ExecutePingctl(t, "config", "get", options.RootColorOption.ViperKey, options.RootOutputFormatOption.ViperKey)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
 // Test Config Get Command Executes when provided a full key
 func TestConfigGetCmd_FullKey(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "get", configuration.PlatformExportPingoneWorkerClientIDOption.ViperKey)
+	err := testutils_cobra.ExecutePingctl(t, "config", "get", options.PlatformExportPingoneWorkerClientIDOption.ViperKey)
 	testutils.CheckExpectedError(t, err, nil)
 }
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/profiles"
 )
 
@@ -50,16 +50,16 @@ production:
             insecureTrustAllTLS: false
             xBypassExternalValidationHeader: false`,
 		outputDirectoryReplacement,
-		os.Getenv(configuration.PlatformExportPingoneRegionOption.EnvVar),
-		os.Getenv(configuration.PlatformExportPingoneWorkerClientIDOption.EnvVar),
-		os.Getenv(configuration.PlatformExportPingoneWorkerClientSecretOption.EnvVar),
-		os.Getenv(configuration.PlatformExportPingoneWorkerEnvironmentIDOption.EnvVar),
-		os.Getenv(configuration.PlatformExportPingfederateAdminAPIPathOption.EnvVar),
-		os.Getenv(configuration.PlatformExportPingfederateClientIDOption.EnvVar),
-		os.Getenv(configuration.PlatformExportPingfederateClientSecretOption.EnvVar),
-		os.Getenv(configuration.PlatformExportPingfederateScopesOption.EnvVar),
-		os.Getenv(configuration.PlatformExportPingfederateTokenURLOption.EnvVar),
-		os.Getenv(configuration.PlatformExportPingfederateHTTPSHostOption.EnvVar))
+		os.Getenv(options.PlatformExportPingoneRegionOption.EnvVar),
+		os.Getenv(options.PlatformExportPingoneWorkerClientIDOption.EnvVar),
+		os.Getenv(options.PlatformExportPingoneWorkerClientSecretOption.EnvVar),
+		os.Getenv(options.PlatformExportPingoneWorkerEnvironmentIDOption.EnvVar),
+		os.Getenv(options.PlatformExportPingfederateAdminAPIPathOption.EnvVar),
+		os.Getenv(options.PlatformExportPingfederateClientIDOption.EnvVar),
+		os.Getenv(options.PlatformExportPingfederateClientSecretOption.EnvVar),
+		os.Getenv(options.PlatformExportPingfederateScopesOption.EnvVar),
+		os.Getenv(options.PlatformExportPingfederateTokenURLOption.EnvVar),
+		os.Getenv(options.PlatformExportPingfederateHTTPSHostOption.EnvVar))
 )
 
 func CreateConfigFile(t *testing.T) string {
@@ -89,7 +89,7 @@ func configureMainViper(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	activePName := profiles.GetMainConfig().ViperInstance().GetString(configuration.RootActiveProfileOption.ViperKey)
+	activePName := profiles.GetMainConfig().ViperInstance().GetString(options.RootActiveProfileOption.ViperKey)
 
 	if err := profiles.GetMainConfig().ChangeActiveProfile(activePName); err != nil {
 		t.Fatal(err)

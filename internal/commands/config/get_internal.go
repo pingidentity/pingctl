@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
 )
@@ -32,10 +33,10 @@ func RunInternalConfigGet(viperKey string) (err error) {
 }
 
 func readConfigGetOptions() (pName string, err error) {
-	if !configuration.ConfigGetProfileOption.Flag.Changed {
-		pName, err = profiles.GetOptionValue(configuration.RootActiveProfileOption)
+	if !options.ConfigGetProfileOption.Flag.Changed {
+		pName, err = profiles.GetOptionValue(options.RootActiveProfileOption)
 	} else {
-		pName, err = profiles.GetOptionValue(configuration.ConfigGetProfileOption)
+		pName, err = profiles.GetOptionValue(options.ConfigGetProfileOption)
 	}
 
 	if err != nil {

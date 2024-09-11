@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 	"github.com/pingidentity/pingctl/internal/testing/testutils_cobra"
@@ -12,7 +12,7 @@ import (
 
 // Test Config Unset Command Executes without issue
 func TestConfigUnsetCmd_Execute(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "unset", configuration.RootColorOption.ViperKey)
+	err := testutils_cobra.ExecutePingctl(t, "config", "unset", options.RootColorOption.ViperKey)
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -26,7 +26,7 @@ func TestConfigUnsetCmd_TooFewArgs(t *testing.T) {
 // Test Config Set Command Fails when provided too many arguments
 func TestConfigUnsetCmd_TooManyArgs(t *testing.T) {
 	expectedErrorPattern := `^failed to execute 'pingctl config unset': command accepts 1 arg\(s\), received 2$`
-	err := testutils_cobra.ExecutePingctl(t, "config", "unset", configuration.RootColorOption.ViperKey, configuration.RootOutputFormatOption.ViperKey)
+	err := testutils_cobra.ExecutePingctl(t, "config", "unset", options.RootColorOption.ViperKey, options.RootOutputFormatOption.ViperKey)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -39,8 +39,8 @@ func TestConfigUnsetCmd_InvalidKey(t *testing.T) {
 
 // Test Config Unset Command for key 'pingone.worker.clientId' updates viper configuration
 func TestConfigUnsetCmd_CheckViperConfig(t *testing.T) {
-	viperKey := configuration.PlatformExportPingoneWorkerClientIDOption.ViperKey
-	viperOldValue := os.Getenv(configuration.PlatformExportPingoneWorkerClientIDOption.EnvVar)
+	viperKey := options.PlatformExportPingoneWorkerClientIDOption.ViperKey
+	viperOldValue := os.Getenv(options.PlatformExportPingoneWorkerClientIDOption.EnvVar)
 
 	err := testutils_cobra.ExecutePingctl(t, "config", "unset", viperKey)
 	testutils.CheckExpectedError(t, err, nil)

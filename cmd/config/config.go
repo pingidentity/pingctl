@@ -5,7 +5,7 @@ import (
 
 	"github.com/pingidentity/pingctl/cmd/common"
 	config_internal "github.com/pingidentity/pingctl/internal/commands/config"
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
 )
@@ -35,9 +35,9 @@ pingctl config --name myprofile --description "My Profile"`,
 		NewConfigUnsetCommand(),
 	)
 
-	cmd.Flags().AddFlag(configuration.ConfigProfileOption.Flag)
-	cmd.Flags().AddFlag(configuration.ConfigNameOption.Flag)
-	cmd.Flags().AddFlag(configuration.ConfigDescriptionOption.Flag)
+	cmd.Flags().AddFlag(options.ConfigProfileOption.Flag)
+	cmd.Flags().AddFlag(options.ConfigNameOption.Flag)
+	cmd.Flags().AddFlag(options.ConfigDescriptionOption.Flag)
 
 	return cmd
 }

@@ -5,7 +5,7 @@ import (
 
 	"github.com/pingidentity/pingctl/cmd/common"
 	config_internal "github.com/pingidentity/pingctl/internal/commands/config"
-	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/logger"
 	"github.com/spf13/cobra"
 )
@@ -23,9 +23,9 @@ pingctl config add-profile --set-active=true`,
 		Use:   "add-profile [flags]",
 	}
 
-	cmd.Flags().AddFlag(configuration.ConfigAddProfileNameOption.Flag)
-	cmd.Flags().AddFlag(configuration.ConfigAddProfileDescriptionOption.Flag)
-	cmd.Flags().AddFlag(configuration.ConfigAddProfileSetActiveOption.Flag)
+	cmd.Flags().AddFlag(options.ConfigAddProfileNameOption.Flag)
+	cmd.Flags().AddFlag(options.ConfigAddProfileDescriptionOption.Flag)
+	cmd.Flags().AddFlag(options.ConfigAddProfileSetActiveOption.Flag)
 
 	return cmd
 }

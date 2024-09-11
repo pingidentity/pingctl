@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pingidentity/pingctl/internal/configuration"
 	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/profiles"
 )
@@ -98,6 +99,8 @@ func configureMainViper(t *testing.T) {
 
 func InitVipers(t *testing.T) {
 	t.Helper()
+
+	configuration.InitAllOptions()
 
 	configFileContents = strings.Replace(defaultConfigFileContents, outputDirectoryReplacement, t.TempDir(), 1)
 

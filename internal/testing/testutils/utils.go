@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/patrickcping/pingone-go-sdk-v2/pingone"
+	"github.com/pingidentity/pingctl/internal/configuration"
 	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/connector"
 	pingfederateGoClient "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
@@ -35,6 +36,7 @@ func GetPingOneClientInfo(t *testing.T) *connector.PingOneClientInfo {
 	t.Helper()
 
 	apiClientOnce.Do(func() {
+		configuration.InitAllOptions()
 		// Grab environment vars for initializing the API client.
 		// These are set in GitHub Actions.
 		clientID := os.Getenv(options.PlatformExportPingoneWorkerClientIDOption.EnvVar)
@@ -75,6 +77,8 @@ func GetPingOneClientInfo(t *testing.T) *connector.PingOneClientInfo {
 
 func GetPingFederateClientInfo(t *testing.T) *connector.PingFederateClientInfo {
 	t.Helper()
+
+	configuration.InitAllOptions()
 
 	httpsHost := os.Getenv(options.PlatformExportPingfederateHTTPSHostOption.EnvVar)
 	adminApiPath := os.Getenv(options.PlatformExportPingfederateAdminAPIPathOption.EnvVar)

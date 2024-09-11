@@ -2,41 +2,72 @@ package config_internal
 
 import (
 	"fmt"
-	"slices"
-	"strings"
 
+	"github.com/pingidentity/pingctl/internal/configuration"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
+	"github.com/pingidentity/pingctl/internal/output"
 	"github.com/pingidentity/pingctl/internal/profiles"
 )
 
-func RunInternalConfigUnset(viperKey string) error {
-	// Check if the key is a valid viper configuration key
-	validKeys := profiles.ProfileKeys()
-	if !slices.ContainsFunc(validKeys, func(v string) bool {
-		return strings.EqualFold(v, viperKey)
-	}) {
-		slices.Sort(validKeys)
-		validKeysStr := strings.Join(validKeys, ", ")
-		return fmt.Errorf("unable to unset configuration: key '%s' is not recognized as a valid configuration key. Valid keys: %s", viperKey, validKeysStr)
+func RunInternalConfigUnset(viperKey string) (err error) {
+	if err = configuration.ValidateViperKey(viperKey); err != nil {
+		return fmt.Errorf("failed to unset configuration: %v", err)
 	}
 
-	valueType, ok := profiles.OptionTypeFromViperKey(viperKey)
-	if !ok {
-		return fmt.Errorf("failed to unset configuration: value type for key %s unrecognized", viperKey)
-	}
-
-	defVal, err := profiles.GetDefaultValue(valueType)
+	pName, err := readConfigUnsetOptions()
 	if err != nil {
 		return fmt.Errorf("failed to unset configuration: %v", err)
 	}
-	profiles.GetProfileViper().Set(viperKey, defVal)
 
-	if err := profiles.SaveProfileViperToFile(); err != nil {
-		return err
+	if err = profiles.GetMainConfig().ValidateExistingProfileName(pName); err != nil {
+		return fmt.Errorf("failed to unset configuration: %v", err)
 	}
 
-	if err := PrintConfig(); err != nil {
-		return err
+	subViper := profiles.GetMainConfig().ViperInstance().Sub(pName)
+
+	opt, err := configuration.OptionFromViperKey(viperKey)
+	if err != nil {
+		return fmt.Errorf("failed to unset configuration: %v", err)
 	}
+
+	subViper.Set(viperKey, opt.DefaultValue)
+
+	if err = profiles.GetMainConfig().SaveProfile(pName, subViper); err != nil {
+		return fmt.Errorf("failed to unset configuration: %v", err)
+	}
+
+	yamlStr, err := profiles.GetMainConfig().ProfileToString(pName)
+	if err != nil {
+		return fmt.Errorf("failed to unset configuration: %v", err)
+	}
+
+	output.Print(output.Opts{
+		Message: "Configuration unset successfully",
+		Result:  output.ENUM_RESULT_SUCCESS,
+	})
+
+	output.Print(output.Opts{
+		Message: yamlStr,
+		Result:  output.ENUM_RESULT_NIL,
+	})
 
 	return nil
+}
+
+func readConfigUnsetOptions() (pName string, err error) {
+	if !options.ConfigUnsetProfileOption.Flag.Changed {
+		pName, err = profiles.GetOptionValue(options.RootActiveProfileOption)
+	} else {
+		pName, err = profiles.GetOptionValue(options.ConfigUnsetProfileOption)
+	}
+
+	if err != nil {
+		return pName, err
+	}
+
+	if pName == "" {
+		return pName, fmt.Errorf("unable to determine profile to unset configuration from")
+	}
+
+	return pName, nil
 }

@@ -16,10 +16,7 @@ const (
 	ENUM_SERVICE_PINGFEDERATE     string = "pingfederate"
 )
 
-type MultiService struct {
-	services          *map[string]bool
-	isDefaultServices bool
-}
+type MultiService map[string]bool
 
 // Verify that the custom type satisfies the pflag.Value interface
 var _ pflag.Value = (*MultiService)(nil)
@@ -27,26 +24,25 @@ var _ pflag.Value = (*MultiService)(nil)
 // Implement pflag.Value interface for custom type in cobra MultiService parameter
 
 func NewMultiService() *MultiService {
-	return &MultiService{
-		services: &map[string]bool{
-			ENUM_SERVICE_PINGFEDERATE:     true,
-			ENUM_SERVICE_PINGONE_PLATFORM: true,
-			ENUM_SERVICE_PINGONE_SSO:      true,
-			ENUM_SERVICE_PINGONE_MFA:      true,
-			ENUM_SERVICE_PINGONE_PROTECT:  true,
-		},
-		isDefaultServices: true,
+	ms := map[string]bool{
+		ENUM_SERVICE_PINGFEDERATE:     true,
+		ENUM_SERVICE_PINGONE_PLATFORM: true,
+		ENUM_SERVICE_PINGONE_SSO:      true,
+		ENUM_SERVICE_PINGONE_MFA:      true,
+		ENUM_SERVICE_PINGONE_PROTECT:  true,
 	}
+
+	return (*MultiService)(&ms)
 }
 
-func (s *MultiService) GetServices() *[]string {
+func (ms MultiService) GetServices() []string {
 	enabledExportServices := []string{}
 
-	if s == nil {
-		return &enabledExportServices
+	if ms == nil {
+		return enabledExportServices
 	}
 
-	for k, v := range *s.services {
+	for k, v := range ms {
 		if v {
 			enabledExportServices = append(enabledExportServices, k)
 		}
@@ -54,74 +50,72 @@ func (s *MultiService) GetServices() *[]string {
 
 	slices.Sort(enabledExportServices)
 
-	return &enabledExportServices
+	return enabledExportServices
 }
 
-func (s *MultiService) Set(service string) error {
-	if s == nil {
-		return fmt.Errorf("MultiService is nil")
+func (ms *MultiService) Set(services string) error {
+	if ms == nil {
+		return fmt.Errorf("failed to set MultiService value: %s. MultiService is nil", services)
 	}
 
-	// If the user is defining services to export, remove default services from map
-	if s.isDefaultServices {
-		s.services = &map[string]bool{}
-		s.isDefaultServices = false
-	}
+	*ms = map[string]bool{}
 
-	switch service {
-	case ENUM_SERVICE_PINGFEDERATE:
-		(*s.services)[ENUM_SERVICE_PINGFEDERATE] = true
-	case ENUM_SERVICE_PINGONE_PLATFORM:
-		(*s.services)[ENUM_SERVICE_PINGONE_PLATFORM] = true
-	case ENUM_SERVICE_PINGONE_SSO:
-		(*s.services)[ENUM_SERVICE_PINGONE_SSO] = true
-	case ENUM_SERVICE_PINGONE_MFA:
-		(*s.services)[ENUM_SERVICE_PINGONE_MFA] = true
-	case ENUM_SERVICE_PINGONE_PROTECT:
-		(*s.services)[ENUM_SERVICE_PINGONE_PROTECT] = true
-	default:
-		return fmt.Errorf("unrecognized service '%s'. Must be one of: %s", service, strings.Join(MultiServiceValidValues(), ", "))
+	serviceList := strings.Split(services, ",")
+
+	for _, service := range serviceList {
+		switch service {
+		case ENUM_SERVICE_PINGFEDERATE:
+			(*ms)[ENUM_SERVICE_PINGFEDERATE] = true
+		case ENUM_SERVICE_PINGONE_PLATFORM:
+			(*ms)[ENUM_SERVICE_PINGONE_PLATFORM] = true
+		case ENUM_SERVICE_PINGONE_SSO:
+			(*ms)[ENUM_SERVICE_PINGONE_SSO] = true
+		case ENUM_SERVICE_PINGONE_MFA:
+			(*ms)[ENUM_SERVICE_PINGONE_MFA] = true
+		case ENUM_SERVICE_PINGONE_PROTECT:
+			(*ms)[ENUM_SERVICE_PINGONE_PROTECT] = true
+		default:
+			return fmt.Errorf("unrecognized service '%s'. Must be one of: %s", service, strings.Join(MultiServiceValidValues(), ", "))
+		}
 	}
 	return nil
 }
 
-func (s *MultiService) ContainsPingOneService() bool {
-	if s == nil {
+func (ms MultiService) ContainsPingOneService() bool {
+	if ms == nil {
 		return false
 	}
 
-	return (*s.services)[ENUM_SERVICE_PINGONE_PLATFORM] ||
-		(*s.services)[ENUM_SERVICE_PINGONE_SSO] ||
-		(*s.services)[ENUM_SERVICE_PINGONE_MFA] ||
-		(*s.services)[ENUM_SERVICE_PINGONE_PROTECT]
+	return ms[ENUM_SERVICE_PINGONE_PLATFORM] ||
+		ms[ENUM_SERVICE_PINGONE_SSO] ||
+		ms[ENUM_SERVICE_PINGONE_MFA] ||
+		ms[ENUM_SERVICE_PINGONE_PROTECT]
 }
 
-func (s *MultiService) ContainsPingFederateService() bool {
-	if s == nil {
+func (ms MultiService) ContainsPingFederateService() bool {
+	if ms == nil {
 		return false
 	}
 
-	return (*s.services)[ENUM_SERVICE_PINGFEDERATE]
+	return ms[ENUM_SERVICE_PINGFEDERATE]
 }
 
-func (s *MultiService) Type() string {
+func (ms MultiService) Type() string {
 	return "string"
 }
 
-func (s *MultiService) String() string {
-	if s == nil {
-		return "[]"
+func (ms MultiService) String() string {
+	if ms == nil {
+		return ""
 	}
 
-	enabledExportServices := *s.GetServices()
+	enabledExportServices := ms.GetServices()
 
 	if len(enabledExportServices) == 0 {
-		return "[]"
+		return ""
 	}
 
-	slices.Sort(enabledExportServices)
-
-	return strings.Join(enabledExportServices, ", ")
+	return strings.Join(enabledExportServices, ",")
 }
 
 func MultiServiceValidValues() []string {

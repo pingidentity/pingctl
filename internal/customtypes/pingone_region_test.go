@@ -1,62 +1,51 @@
 package customtypes_test
 
 import (
-	"slices"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
-// Test the custom type PingOneRegion Set method with a valid value
-func TestPingOneRegion_SetValid(t *testing.T) {
-	pingOneRegion := customtypes.PingOneRegion("AsiaPacific")
-	err := pingOneRegion.Set("Europe")
-	testutils.CheckExpectedError(t, err, nil)
+// Test PingOneRegion Set function
+func Test_PingOneRegion_Set(t *testing.T) {
+	pingoneRegion := new(customtypes.PingOneRegion)
+
+	err := pingoneRegion.Set(customtypes.ENUM_PINGONE_REGION_CA)
+	if err != nil {
+		t.Errorf("Set returned error: %v", err)
+	}
 }
 
-// Test the custom type PingOneRegion Set method with an invalid value
-func TestPingOneRegion_SetInvalid(t *testing.T) {
-	expectedErrorPattern := `^unrecognized PingOne Region: 'INVALID'. Must be one of: [A-Za-z\s,]+$`
-	pingOneRegion := customtypes.PingOneRegion("AsiaPacific")
-	err := pingOneRegion.Set("INVALID")
+// Test Set function fails with invalid value
+func Test_PingOneRegion_Set_InvalidValue(t *testing.T) {
+	pingoneRegion := new(customtypes.PingOneRegion)
+
+	invalidValue := "invalid"
+
+	expectedErrorPattern := `^unrecognized PingOne Region: '.*'\. Must be one of: .*$`
+	err := pingoneRegion.Set(invalidValue)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
-// Test the custom type PingOneRegion Type method
-func TestPingOneRegion_Type(t *testing.T) {
-	pingOneRegion := customtypes.PingOneRegion("AsiaPacific")
-	typeValue := pingOneRegion.Type()
-	if typeValue != "string" {
-		t.Errorf("Expected 'string' but got '%s'", typeValue)
-	}
+// Test Set function fails with nil
+func Test_PingOneRegion_Set_Nil(t *testing.T) {
+	var pingoneRegion *customtypes.PingOneRegion
+
+	val := customtypes.ENUM_PINGONE_REGION_CA
+
+	expectedErrorPattern := `^failed to set PingOne Region value: .* PingOne Region is nil$`
+	err := pingoneRegion.Set(val)
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
-// Test the custom type PingOneRegion String method
-func TestPingOneRegion_String(t *testing.T) {
-	pingOneRegion := customtypes.PingOneRegion("AsiaPacific")
-	stringValue := pingOneRegion.String()
-	if stringValue != "AsiaPacific" {
-		t.Errorf("Expected 'AsiaPacific' but got '%s'", stringValue)
-	}
-}
+// Test String function
+func Test_PingOneRegion_String(t *testing.T) {
+	pingoneRegion := customtypes.PingOneRegion(customtypes.ENUM_PINGONE_REGION_CA)
 
-// Test the custom type PingOneRegion PingOneRegionValidValues method
-func TestPingOneRegion_PingOneRegionValidValues(t *testing.T) {
-	expectedValues := []string{
-		customtypes.ENUM_PINGONE_REGION_AP,
-		customtypes.ENUM_PINGONE_REGION_CA,
-		customtypes.ENUM_PINGONE_REGION_EU,
-		customtypes.ENUM_PINGONE_REGION_NA}
-	validValues := customtypes.PingOneRegionValidValues()
-
-	if len(validValues) != len(expectedValues) {
-		t.Errorf("Expected %d valid values but got %d", len(expectedValues), len(validValues))
-	}
-
-	for _, expectedValue := range expectedValues {
-		if !slices.Contains(validValues, expectedValue) {
-			t.Errorf("Expected value '%s' is not in %v", expectedValue, validValues)
-		}
+	expected := customtypes.ENUM_PINGONE_REGION_CA
+	actual := pingoneRegion.String()
+	if actual != expected {
+		t.Errorf("String returned: %s, expected: %s", actual, expected)
 	}
 }

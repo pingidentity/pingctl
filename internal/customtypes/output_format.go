@@ -20,23 +20,26 @@ var _ pflag.Value = (*OutputFormat)(nil)
 
 // Implement pflag.Value interface for custom type in cobra pingctl-output parameter
 
-func (s *OutputFormat) Set(outputFormat string) error {
-	switch outputFormat {
+func (o *OutputFormat) Set(outputFormat string) error {
+	if o == nil {
+		return fmt.Errorf("failed to set Output Format value: %s. Output Format is nil", outputFormat)
+	}
 
+	switch outputFormat {
 	case ENUM_OUTPUT_FORMAT_TEXT, ENUM_OUTPUT_FORMAT_JSON:
-		*s = OutputFormat(outputFormat)
+		*o = OutputFormat(outputFormat)
 	default:
 		return fmt.Errorf("unrecognized Output Format: '%s'. Must be one of: %s", outputFormat, strings.Join(OutputFormatValidValues(), ", "))
 	}
 	return nil
 }
 
-func (s *OutputFormat) Type() string {
+func (o OutputFormat) Type() string {
 	return "string"
 }
 
-func (s *OutputFormat) String() string {
-	return string(*s)
+func (o OutputFormat) String() string {
+	return string(o)
 }
 
 func OutputFormatValidValues() []string {

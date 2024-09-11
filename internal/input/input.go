@@ -36,3 +36,15 @@ func RunPromptConfirm(message string, rc io.ReadCloser) (bool, error) {
 
 	return true, nil
 }
+
+func RunPromptSelect(message string, items []string, rc io.ReadCloser) (selection string, err error) {
+	p := promptui.Select{
+		Label: message,
+		Items: items,
+		Size:  len(items),
+		Stdin: rc,
+	}
+
+	_, selection, err = p.Run()
+	return selection, err
+}

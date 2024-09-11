@@ -22,22 +22,25 @@ var _ pflag.Value = (*PingOneRegion)(nil)
 
 // Implement pflag.Value interface for custom type in cobra pingone-region parameter
 
-func (s *PingOneRegion) Set(region string) error {
+func (p *PingOneRegion) Set(region string) error {
+	if p == nil {
+		return fmt.Errorf("failed to set PingOne Region value: %s. PingOne Region is nil", region)
+	}
 	switch region {
 	case ENUM_PINGONE_REGION_AP, ENUM_PINGONE_REGION_CA, ENUM_PINGONE_REGION_EU, ENUM_PINGONE_REGION_NA:
-		*s = PingOneRegion(region)
+		*p = PingOneRegion(region)
 	default:
 		return fmt.Errorf("unrecognized PingOne Region: '%s'. Must be one of: %s", region, strings.Join(PingOneRegionValidValues(), ", "))
 	}
 	return nil
 }
 
-func (s *PingOneRegion) Type() string {
+func (p PingOneRegion) Type() string {
 	return "string"
 }
 
-func (s *PingOneRegion) String() string {
-	return string(*s)
+func (p PingOneRegion) String() string {
+	return string(p)
 }
 
 func PingOneRegionValidValues() []string {

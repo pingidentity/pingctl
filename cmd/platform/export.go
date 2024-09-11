@@ -1,25 +1,11 @@
 package platform
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/pingidentity/pingctl/cmd/common"
 	platform_internal "github.com/pingidentity/pingctl/internal/commands/platform"
-	"github.com/pingidentity/pingctl/internal/connector"
-	"github.com/pingidentity/pingctl/internal/customtypes"
+	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/logger"
-	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/spf13/cobra"
-)
-
-var (
-	multiService customtypes.MultiService = *customtypes.NewMultiService()
-
-	exportFormat    customtypes.ExportFormat = connector.ENUMEXPORTFORMAT_HCL
-	pingoneRegion   customtypes.PingOneRegion
-	outputDir       string
-	overwriteExport bool
 )
 
 func NewExportCommand() *cobra.Command {
@@ -57,195 +43,89 @@ func exportRunE(cmd *cobra.Command, args []string) error {
 
 	l.Debug().Msgf("Platform Export Subcommand Called.")
 
-	pfBasicAuthFlagsUsed := false
-	pfAccessTokenAuthFlagsUsed := false
-
-	//Check if basic auth flags are used
-	if cmd.Flags().Lookup(profiles.PingFederateUsernameOption.CobraParamName).Changed {
-		pfBasicAuthFlagsUsed = true
-	}
-
-	//Check if access token auth flags are used
-	if cmd.Flags().Lookup(profiles.PingFederateAccessTokenOption.CobraParamName).Changed {
-		pfAccessTokenAuthFlagsUsed = true
-	}
-
-	return platform_internal.RunInternalExport(cmd.Context(), cmd.Root().Version, outputDir, string(exportFormat), overwriteExport, &multiService, pfBasicAuthFlagsUsed, pfAccessTokenAuthFlagsUsed)
+	return platform_internal.RunInternalExport(cmd.Context(), cmd.Root().Version)
 }
 
 func initGeneralExportFlags(cmd *cobra.Command) {
-	// Add flags that are not tracked in the viper configuration file
-	cmd.Flags().VarP(&exportFormat, "export-format", "e", fmt.Sprintf("Specifies export format\nAllowed: %q", connector.ENUMEXPORTFORMAT_HCL))
-	cmd.Flags().VarP(&multiService, "service", "s", fmt.Sprintf("Specifies service(s) to export. Allowed services: %s", multiService.String()))
-	cmd.Flags().StringVarP(&outputDir, "output-directory", "d", "", "Specifies output directory for export (Default: Present working directory)")
-	cmd.Flags().BoolVarP(&overwriteExport, "overwrite", "o", false, "Overwrite existing generated exports if set.")
+	cmd.Flags().AddFlag(options.PlatformExportExportFormatOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportServiceOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportOutputDirectoryOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportOverwriteOption.Flag)
 }
 
 func initPingOneExportFlags(cmd *cobra.Command) {
-	cmd.Flags().String(profiles.PingOneWorkerEnvironmentIDOption.CobraParamName, "", fmt.Sprintf("The ID of the PingOne environment that contains the worker client used to authenticate.  Also configurable via environment variable %s", profiles.PingOneWorkerEnvironmentIDOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingOneWorkerEnvironmentIDOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingOneWorkerEnvironmentIDOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingOneWorkerEnvironmentIDOption)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneWorkerEnvironmentIDOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneExportEnvironmentIDOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneWorkerClientIDOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneWorkerClientSecretOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingoneRegionOption.Flag)
 
-	cmd.Flags().String(profiles.PingOneExportEnvironmentIDOption.CobraParamName, "", fmt.Sprintf("The ID of the PingOne environment to export. Also configurable via environment variable %s (Default: The PingOne worker environment ID)", profiles.PingOneExportEnvironmentIDOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingOneExportEnvironmentIDOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingOneExportEnvironmentIDOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingOneExportEnvironmentIDOption)
-
-	cmd.Flags().String(profiles.PingOneWorkerClientIDOption.CobraParamName, "", fmt.Sprintf("The ID of the PingOne worker client used to authenticate.  Also configurable via environment variable %s", profiles.PingOneWorkerClientIDOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingOneWorkerClientIDOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingOneWorkerClientIDOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingOneWorkerClientIDOption)
-
-	cmd.Flags().String(profiles.PingOneWorkerClientSecretOption.CobraParamName, "", fmt.Sprintf("The PingOne worker client secret used to authenticate.  Also configurable via environment variable %s", profiles.PingOneWorkerClientSecretOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingOneWorkerClientSecretOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingOneWorkerClientSecretOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingOneWorkerClientSecretOption)
-
-	cmd.Flags().Var(&pingoneRegion, profiles.PingOneRegionOption.CobraParamName, fmt.Sprintf("The region of the PingOne service(s). Allowed: %s.  Also configurable via environment variable %s", strings.Join(customtypes.PingOneRegionValidValues(), ", "), profiles.PingOneRegionOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingOneRegionOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingOneRegionOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingOneRegionOption)
-
-	cmd.MarkFlagsRequiredTogether(profiles.PingOneWorkerEnvironmentIDOption.CobraParamName, profiles.PingOneWorkerClientIDOption.CobraParamName, profiles.PingOneWorkerClientSecretOption.CobraParamName, profiles.PingOneRegionOption.CobraParamName)
+	cmd.MarkFlagsRequiredTogether(
+		options.PlatformExportPingoneWorkerEnvironmentIDOption.CobraParamName,
+		options.PlatformExportPingoneWorkerClientIDOption.CobraParamName,
+		options.PlatformExportPingoneWorkerClientSecretOption.CobraParamName,
+		options.PlatformExportPingoneRegionOption.CobraParamName)
 }
 
 func initPingFederateGeneralFlags(cmd *cobra.Command) {
-	// HTTPS host flag
-	cmd.Flags().String(profiles.PingFederateHttpsHostOption.CobraParamName, "", fmt.Sprintf("The PingFederate HTTPS host used to communicate with PingFederate's API.  Also configurable via environment variable %s", profiles.PingFederateHttpsHostOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateHttpsHostOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateHttpsHostOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateHttpsHostOption)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateHTTPSHostOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateAdminAPIPathOption.Flag)
 
-	// Admin API path flag
-	cmd.Flags().String(profiles.PingFederateAdminApiPathOption.CobraParamName, "/pf-admin-api/v1", fmt.Sprintf("The PingFederate API URL path used to communicate with PingFederate's API.  Also configurable via environment variable %s", profiles.PingFederateAdminApiPathOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateAdminApiPathOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateAdminApiPathOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateAdminApiPathOption)
+	cmd.MarkFlagsRequiredTogether(
+		options.PlatformExportPingfederateHTTPSHostOption.CobraParamName,
+		options.PlatformExportPingfederateAdminAPIPathOption.CobraParamName)
 
-	// Require both HTTPS host and admin API path flags to be used together
-	cmd.MarkFlagsRequiredTogether(profiles.PingFederateHttpsHostOption.CobraParamName, profiles.PingFederateAdminApiPathOption.CobraParamName)
-
-	// X-Bypass-External-Validation header flag
-	cmd.Flags().Bool(profiles.PingFederateXBypassExternalValidationHeaderOption.CobraParamName, false, fmt.Sprintf("Header value in request for PingFederate. PingFederate's connection tests will be bypassed when set to true.  Also configurable via environment variable %s", profiles.PingFederateXBypassExternalValidationHeaderOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateXBypassExternalValidationHeaderOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateXBypassExternalValidationHeaderOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateXBypassExternalValidationHeaderOption)
-
-	// CA certificate pem files flag
-	cmd.Flags().StringSlice(profiles.PingFederateCACertificatePemFilesOption.CobraParamName, []string{}, fmt.Sprintf("Paths to files containing PEM-encoded certificates to be trusted as root CAs when connecting to the PingFederate server over HTTPS. Accepts comma-separated string to delimit multiple PEM files if necessary.  Also configurable via environment variable %s", profiles.PingFederateCACertificatePemFilesOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateCACertificatePemFilesOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateCACertificatePemFilesOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateCACertificatePemFilesOption)
-
-	// Insecure Trust All TLS flag
-	cmd.Flags().Bool(profiles.PingFederateInsecureTrustAllTLSOption.CobraParamName, false, fmt.Sprintf("Set to true to trust any certificate when connecting to the PingFederate server. This is insecure and should not be enabled outside of testing.  Also configurable via environment variable %s", profiles.PingFederateInsecureTrustAllTLSOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateInsecureTrustAllTLSOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateInsecureTrustAllTLSOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateInsecureTrustAllTLSOption)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateXBypassExternalValidationHeaderOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateCACertificatePemFilesOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateInsecureTrustAllTLSOption.Flag)
 }
 
 func initPingFederateBasicAuthFlags(cmd *cobra.Command) {
-	cmd.Flags().String(profiles.PingFederateUsernameOption.CobraParamName, "", fmt.Sprintf("The PingFederate username used to authenticate.  Also configurable via environment variable %s", profiles.PingFederateUsernameOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateUsernameOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateUsernameOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateUsernameOption)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateUsernameOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederatePasswordOption.Flag)
 
-	cmd.Flags().String(profiles.PingFederatePasswordOption.CobraParamName, "", fmt.Sprintf("The PingFederate password used to authenticate.  Also configurable via environment variable %s", profiles.PingFederatePasswordOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederatePasswordOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederatePasswordOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederatePasswordOption)
-
-	// When either the username or password flag is used, both must be used
-	cmd.MarkFlagsRequiredTogether(profiles.PingFederateUsernameOption.CobraParamName, profiles.PingFederatePasswordOption.CobraParamName)
+	cmd.MarkFlagsRequiredTogether(
+		options.PlatformExportPingfederateUsernameOption.CobraParamName,
+		options.PlatformExportPingfederatePasswordOption.CobraParamName)
 }
 
 func initPingFederateAccessTokenFlags(cmd *cobra.Command) {
-	cmd.Flags().String(profiles.PingFederateAccessTokenOption.CobraParamName, "", fmt.Sprintf("The PingFederate access token used to authenticate.  Also configurable via environment variable %s", profiles.PingFederateAccessTokenOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateAccessTokenOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateAccessTokenOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateAccessTokenOption)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateAccessTokenOption.Flag)
 }
 
 func initPingFederateClientCredentialsFlags(cmd *cobra.Command) {
-	cmd.Flags().String(profiles.PingFederateClientIDOption.CobraParamName, "", fmt.Sprintf("The PingFederate OAuth client ID used to authenticate.  Also configurable via environment variable %s", profiles.PingFederateClientIDOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateClientIDOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateClientIDOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateClientIDOption)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateClientIDOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateClientSecretOption.Flag)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateTokenURLOption.Flag)
 
-	cmd.Flags().String(profiles.PingFederateClientSecretOption.CobraParamName, "", fmt.Sprintf("The PingFederate OAuth client secret used to authenticate.  Also configurable via environment variable %s", profiles.PingFederateClientSecretOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateClientSecretOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateClientSecretOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateClientSecretOption)
+	cmd.MarkFlagsRequiredTogether(
+		options.PlatformExportPingfederateClientIDOption.CobraParamName,
+		options.PlatformExportPingfederateClientSecretOption.CobraParamName,
+		options.PlatformExportPingfederateTokenURLOption.CobraParamName)
 
-	cmd.Flags().String(profiles.PingFederateTokenURLOption.CobraParamName, "", fmt.Sprintf("The PingFederate OAuth token URL used to authenticate.  Also configurable via environment variable %s", profiles.PingFederateTokenURLOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateTokenURLOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateTokenURLOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateTokenURLOption)
-
-	// When any of the above flags are used, all must be used
-	cmd.MarkFlagsRequiredTogether(profiles.PingFederateClientIDOption.CobraParamName, profiles.PingFederateClientSecretOption.CobraParamName, profiles.PingFederateTokenURLOption.CobraParamName)
-
-	cmd.Flags().StringSlice(profiles.PingFederateScopesOption.CobraParamName, []string{}, fmt.Sprintf("The PingFederate OAuth scopes used to authenticate. Accepts comma-separated string to delimit multiple scopes if necessary.  Also configurable via environment variable %s", profiles.PingFederateScopesOption.EnvVar))
-	profiles.AddFlagBinding(profiles.Binding{
-		Option: profiles.PingFederateScopesOption,
-		Flag:   cmd.Flags().Lookup(profiles.PingFederateScopesOption.CobraParamName),
-	})
-	profiles.AddEnvVarBinding(profiles.PingFederateScopesOption)
+	cmd.Flags().AddFlag(options.PlatformExportPingfederateScopesOption.Flag)
 }
 
 func markPingFederateFlagsExclusive(cmd *cobra.Command) {
 	// The username flag cannot be used with the access token or client credentials authentication methods
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederateUsernameOption.CobraParamName, profiles.PingFederateAccessTokenOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederateUsernameOption.CobraParamName, profiles.PingFederateClientIDOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederateUsernameOption.CobraParamName, profiles.PingFederateClientSecretOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederateUsernameOption.CobraParamName, profiles.PingFederateTokenURLOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederateUsernameOption.CobraParamName, profiles.PingFederateScopesOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateAccessTokenOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateClientIDOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateClientSecretOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateTokenURLOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateUsernameOption.CobraParamName, options.PlatformExportPingfederateScopesOption.CobraParamName)
 
 	// The password flag cannot be used with the access token or client credentials authentication methods
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederatePasswordOption.CobraParamName, profiles.PingFederateAccessTokenOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederatePasswordOption.CobraParamName, profiles.PingFederateClientIDOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederatePasswordOption.CobraParamName, profiles.PingFederateClientSecretOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederatePasswordOption.CobraParamName, profiles.PingFederateTokenURLOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederatePasswordOption.CobraParamName, profiles.PingFederateScopesOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateAccessTokenOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateClientIDOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateClientSecretOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateTokenURLOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederatePasswordOption.CobraParamName, options.PlatformExportPingfederateScopesOption.CobraParamName)
 
 	// The access token flag cannot be used with the client credentials authentication method
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederateAccessTokenOption.CobraParamName, profiles.PingFederateClientIDOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederateAccessTokenOption.CobraParamName, profiles.PingFederateClientSecretOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederateAccessTokenOption.CobraParamName, profiles.PingFederateTokenURLOption.CobraParamName)
-	cmd.MarkFlagsMutuallyExclusive(profiles.PingFederateAccessTokenOption.CobraParamName, profiles.PingFederateScopesOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateAccessTokenOption.CobraParamName, options.PlatformExportPingfederateClientIDOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateAccessTokenOption.CobraParamName, options.PlatformExportPingfederateClientSecretOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateAccessTokenOption.CobraParamName, options.PlatformExportPingfederateTokenURLOption.CobraParamName)
+	cmd.MarkFlagsMutuallyExclusive(options.PlatformExportPingfederateAccessTokenOption.CobraParamName, options.PlatformExportPingfederateScopesOption.CobraParamName)
 
 	// Client credential flag exclusivity is already defined above.
 }

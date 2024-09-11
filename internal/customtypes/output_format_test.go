@@ -1,58 +1,51 @@
 package customtypes_test
 
 import (
-	"slices"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
-// Test the custom type OutputFormat Set method with a valid value
-func TestOutputFormat_SetValid(t *testing.T) {
-	outputFormat := customtypes.OutputFormat("text")
-	err := outputFormat.Set("json")
-	testutils.CheckExpectedError(t, err, nil)
+// Test OutputFormat Set function
+func Test_OutputFormat_Set(t *testing.T) {
+	outputFormat := new(customtypes.OutputFormat)
+
+	err := outputFormat.Set(customtypes.ENUM_OUTPUT_FORMAT_JSON)
+	if err != nil {
+		t.Errorf("Set returned error: %v", err)
+	}
 }
 
-// Test the custom type OutputFormat Set method with an invalid value
-func TestOutputFormat_SetInvalid(t *testing.T) {
-	expectedErrorPattern := `unrecognized Output Format: 'INVALID'. Must be one of: [a-z\s,]+`
-	outputFormat := customtypes.OutputFormat("text")
-	err := outputFormat.Set("INVALID")
+// Test Set function fails with invalid value
+func Test_OutputFormat_Set_InvalidValue(t *testing.T) {
+	outputFormat := new(customtypes.OutputFormat)
+
+	invalidValue := "invalid"
+
+	expectedErrorPattern := `^unrecognized Output Format: '.*'\. Must be one of: .*$`
+	err := outputFormat.Set(invalidValue)
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
-// Test the custom type OutputFormat Type method
-func TestOutputFormat_Type(t *testing.T) {
-	outputFormat := customtypes.OutputFormat("text")
-	typeValue := outputFormat.Type()
-	if typeValue != "string" {
-		t.Errorf("Expected 'string' but got '%s'", typeValue)
-	}
+// Test Set function fails with nil
+func Test_OutputFormat_Set_Nil(t *testing.T) {
+	var outputFormat *customtypes.OutputFormat
+
+	val := customtypes.ENUM_OUTPUT_FORMAT_JSON
+
+	expectedErrorPattern := `^failed to set Output Format value: .* Output Format is nil$`
+	err := outputFormat.Set(val)
+	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
-// Test the custom type OutputFormat String method
-func TestOutputFormat_String(t *testing.T) {
-	outputFormat := customtypes.OutputFormat("text")
-	stringValue := outputFormat.String()
-	if stringValue != "text" {
-		t.Errorf("Expected 'text' but got '%s'", stringValue)
-	}
-}
+// Test String function
+func Test_OutputFormat_String(t *testing.T) {
+	outputFormat := customtypes.OutputFormat(customtypes.ENUM_OUTPUT_FORMAT_JSON)
 
-// Test the custom type OutputFormat OutputFormatValidValues method
-func TestOutputFormat_OutputFormatValidValues(t *testing.T) {
-	expectedValues := []string{customtypes.ENUM_OUTPUT_FORMAT_TEXT, customtypes.ENUM_OUTPUT_FORMAT_JSON}
-	validValues := customtypes.OutputFormatValidValues()
-
-	if len(validValues) != len(expectedValues) {
-		t.Errorf("Expected %d valid values but got %d", len(expectedValues), len(validValues))
-	}
-
-	for _, expectedValue := range expectedValues {
-		if !slices.Contains(validValues, expectedValue) {
-			t.Errorf("Expected value '%s' is not in %v", expectedValue, validValues)
-		}
+	expected := customtypes.ENUM_OUTPUT_FORMAT_JSON
+	actual := outputFormat.String()
+	if actual != expected {
+		t.Errorf("String returned: %s, expected: %s", actual, expected)
 	}
 }

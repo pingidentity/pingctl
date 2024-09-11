@@ -29,8 +29,8 @@ func (r *PingFederateOpenIDConnectSettingsResource) ExportAll() (*[]connector.Im
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	openIDConnectSettingsId := "open_id_connect_settings_singleton_id"
-	openIDConnectSettingsName := "Open ID Connect Settings"
+	openIDConnectSettingsId := "openid_connect_settings_singleton_id"
+	openIDConnectSettingsName := "OpenID Connect Settings"
 
 	commentData := map[string]string{
 		"Resource Type": r.ResourceType(),
@@ -48,5 +48,5 @@ func (r *PingFederateOpenIDConnectSettingsResource) ExportAll() (*[]connector.Im
 }
 
 func (r *PingFederateOpenIDConnectSettingsResource) ResourceType() string {
-	return "pingfederate_open_id_connect_settings"
+	return "pingfederate_openid_connect_settings"
 }

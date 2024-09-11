@@ -103,3 +103,17 @@ func TestRunPromptConfirmJunkInput(t *testing.T) {
 		t.Errorf("Expected false, but got true")
 	}
 }
+
+// Test RunPromptSelect function
+func TestRunPromptSelect(t *testing.T) {
+	testInput := "test-input"
+	reader := testutils.WriteStringToPipe(fmt.Sprintf("%s\n", testInput), t)
+	parsedInput, err := RunPromptSelect("test", []string{testInput}, reader)
+	if err != nil {
+		t.Errorf("Error running RunPromptSelect: %v", err)
+	}
+
+	if parsedInput != testInput {
+		t.Errorf("Expected '%s', but got '%s'", testInput, parsedInput)
+	}
+}

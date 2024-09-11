@@ -16,9 +16,9 @@ func TestPingFederateOpenIDConnectSettingsExport(t *testing.T) {
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{
 		{
-			ResourceType: "pingfederate_open_id_connect_settings",
-			ResourceName: "Open ID Connect Settings",
-			ResourceID:   "open_id_connect_settings_singleton_id",
+			ResourceType: "pingfederate_openid_connect_settings",
+			ResourceName: "OpenID Connect Settings",
+			ResourceID:   "openid_connect_settings_singleton_id",
 		},
 	}
 

@@ -17,9 +17,9 @@ func NewConfigCommand() *cobra.Command {
 		Example: `pingctl config
 pingctl config --profile myprofile
 pingctl config --name myprofile --description "My Profile"`,
-		Long:  `Update a configuration profile's name and description. See subcommands for more profile configuration management.`,
+		Long:  `Update an existing configuration profile's name and description. See subcommands for more profile configuration management options.`,
 		RunE:  configRunE,
-		Short: "Update a configuration profile's name and description. See subcommands for more profile configuration management.",
+		Short: "Update an existing configuration profile's name and description. See subcommands for more profile configuration management options.",
 		Use:   "config [flags]",
 	}
 

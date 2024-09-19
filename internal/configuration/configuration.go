@@ -9,7 +9,9 @@ import (
 	"github.com/pingidentity/pingctl/internal/configuration/options"
 	configuration_platform "github.com/pingidentity/pingctl/internal/configuration/platform"
 	configuration_profiles "github.com/pingidentity/pingctl/internal/configuration/profiles"
+	configuration_request "github.com/pingidentity/pingctl/internal/configuration/request"
 	configuration_root "github.com/pingidentity/pingctl/internal/configuration/root"
+	configuration_services "github.com/pingidentity/pingctl/internal/configuration/services"
 )
 
 func ViperKeys() (keys []string) {
@@ -93,4 +95,9 @@ func InitAllOptions() {
 	configuration_profiles.InitProfilesOptions()
 
 	configuration_root.InitRootOptions()
+
+	configuration_request.InitRequestOptions()
+
+	configuration_services.InitPingfederateServiceOptions()
+	configuration_services.InitPingoneServiceOptions()
 }

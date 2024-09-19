@@ -8,16 +8,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	configSetCommandExamples = `Command Usage Examples:
+pingctl config set color=true
+pingctl config set --profile myProfile service.pingone.regionCode=AP`
+)
+
 func NewConfigSetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.ExactArgs(1),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
-		Example: `pingctl config set pingctl.color=true
-pingctl config set --profile myProfile pingone.region=AsiaPacific`,
-		Long:  `Set pingctl configuration settings.`,
-		RunE:  configSetRunE,
-		Short: "Set pingctl configuration settings.",
-		Use:   "set [flags] key=value",
+		Example:               configSetCommandExamples,
+		Long:                  `Set pingctl configuration settings.`,
+		RunE:                  configSetRunE,
+		Short:                 "Set pingctl configuration settings.",
+		Use:                   "set [flags] key=value",
 	}
 
 	cmd.Flags().AddFlag(options.ConfigSetProfileOption.Flag)

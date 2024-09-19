@@ -8,16 +8,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	configUnsetCommandExamples = `Command Usage Examples:
+pingctl config unset color
+pingctl config unset --profile myProfile service.pingone.regionCode`
+)
+
 func NewConfigUnsetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.ExactArgs(1),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
-		Example: `pingctl config unset pingctl.color
-pingctl config unset --profile myProfile pingone.region`,
-		Long:  `Unset pingctl configuration settings.`,
-		RunE:  configUnsetRunE,
-		Short: "Unset pingctl configuration settings.",
-		Use:   "unset [flags] key",
+		Example:               configUnsetCommandExamples,
+		Long:                  `Unset pingctl configuration settings.`,
+		RunE:                  configUnsetRunE,
+		Short:                 "Unset pingctl configuration settings.",
+		Use:                   "unset [flags] key",
 	}
 
 	cmd.Flags().AddFlag(options.ConfigUnsetProfileOption.Flag)

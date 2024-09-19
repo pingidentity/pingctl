@@ -12,7 +12,7 @@ import (
 func Test_ValidateViperKey(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := configuration.ValidateViperKey("pingctl.color")
+	err := configuration.ValidateViperKey("color")
 	if err != nil {
 		t.Errorf("ValidateViperKey returned error: %v", err)
 	}
@@ -40,7 +40,7 @@ func Test_ValidateViperKey_EmptyKey(t *testing.T) {
 func Test_ValidateParentViperKey(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := configuration.ValidateParentViperKey("pingctl")
+	err := configuration.ValidateParentViperKey("service")
 	if err != nil {
 		t.Errorf("ValidateParentViperKey returned error: %v", err)
 	}
@@ -68,12 +68,12 @@ func Test_ValidateParentViperKey_EmptyKey(t *testing.T) {
 func Test_OptionFromViperKey(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	opt, err := configuration.OptionFromViperKey("pingctl.color")
+	opt, err := configuration.OptionFromViperKey("color")
 	if err != nil {
 		t.Errorf("OptionFromViperKey returned error: %v", err)
 	}
 
-	if opt.ViperKey != "pingctl.color" {
+	if opt.ViperKey != "color" {
 		t.Errorf("OptionFromViperKey returned invalid option: %v", opt)
 	}
 }

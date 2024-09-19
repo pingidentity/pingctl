@@ -240,11 +240,15 @@ func TestValidatePingOneExportEnvIDNilContext(t *testing.T) {
 func TestGetExportableConnectors(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	ms := customtypes.NewMultiService()
+	es := new(customtypes.ExportServices)
+	err := es.Set(customtypes.ENUM_EXPORT_SERVICE_PINGONE_PROTECT)
+	if err != nil {
+		t.Fatalf("ms.Set() error = %v", err)
+	}
 
-	expectedConnectors := len(ms.GetServices())
+	expectedConnectors := len(es.GetServices())
 
-	exportableConnectors := getExportableConnectors(ms)
+	exportableConnectors := getExportableConnectors(es)
 	if len(*exportableConnectors) == 0 {
 		t.Errorf("getExportableConnectors() exportableConnectors = %v, want non-empty", exportableConnectors)
 	}
@@ -273,21 +277,21 @@ func TestExportConnectors(t *testing.T) {
 		t.Fatalf("initPingOneServices() error = %v", err)
 	}
 
-	ms := customtypes.NewMultiService()
-	err = ms.Set(customtypes.ENUM_SERVICE_PINGONE_PROTECT)
+	es := new(customtypes.ExportServices)
+	err = es.Set(customtypes.ENUM_EXPORT_SERVICE_PINGONE_PROTECT)
 	if err != nil {
 		t.Fatalf("ms.Set() error = %v", err)
 	}
 
-	exportableConnectors := getExportableConnectors(ms)
+	exportableConnectors := getExportableConnectors(es)
 
-	err = exportConnectors(exportableConnectors, connector.ENUMEXPORTFORMAT_HCL, t.TempDir(), true)
+	err = exportConnectors(exportableConnectors, customtypes.ENUM_EXPORT_FORMAT_HCL, t.TempDir(), true)
 	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test exportConnectors function with nil exportable connectors
 func TestExportConnectorsNilExportableConnectors(t *testing.T) {
-	err := exportConnectors(nil, connector.ENUMEXPORTFORMAT_HCL, t.TempDir(), true)
+	err := exportConnectors(nil, customtypes.ENUM_EXPORT_FORMAT_HCL, t.TempDir(), true)
 
 	expectedErrorPattern := `^failed to export services\. exportable connectors list is nil$`
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
@@ -297,7 +301,7 @@ func TestExportConnectorsNilExportableConnectors(t *testing.T) {
 func TestExportConnectorsEmptyExportableConnectors(t *testing.T) {
 	exportableConnectors := &[]connector.Exportable{}
 
-	err := exportConnectors(exportableConnectors, connector.ENUMEXPORTFORMAT_HCL, t.TempDir(), true)
+	err := exportConnectors(exportableConnectors, customtypes.ENUM_EXPORT_FORMAT_HCL, t.TempDir(), true)
 	testutils.CheckExpectedError(t, err, nil)
 }
 
@@ -310,13 +314,13 @@ func TestExportConnectorsInvalidExportFormat(t *testing.T) {
 		t.Fatalf("initPingOneServices() error = %v", err)
 	}
 
-	ms := customtypes.NewMultiService()
-	err = ms.Set(customtypes.ENUM_SERVICE_PINGONE_PROTECT)
+	es := new(customtypes.ExportServices)
+	err = es.Set(customtypes.ENUM_EXPORT_SERVICE_PINGONE_PROTECT)
 	if err != nil {
 		t.Fatalf("ms.Set() error = %v", err)
 	}
 
-	exportableConnectors := getExportableConnectors(ms)
+	exportableConnectors := getExportableConnectors(es)
 
 	err = exportConnectors(exportableConnectors, "invalid", t.TempDir(), true)
 
@@ -333,15 +337,15 @@ func TestExportConnectorsInvalidOutputDir(t *testing.T) {
 		t.Fatalf("initPingOneServices() error = %v", err)
 	}
 
-	ms := customtypes.NewMultiService()
-	err = ms.Set(customtypes.ENUM_SERVICE_PINGONE_PROTECT)
+	es := new(customtypes.ExportServices)
+	err = es.Set(customtypes.ENUM_EXPORT_SERVICE_PINGONE_PROTECT)
 	if err != nil {
 		t.Fatalf("ms.Set() error = %v", err)
 	}
 
-	exportableConnectors := getExportableConnectors(ms)
+	exportableConnectors := getExportableConnectors(es)
 
-	err = exportConnectors(exportableConnectors, connector.ENUMEXPORTFORMAT_HCL, "/invalid", true)
+	err = exportConnectors(exportableConnectors, customtypes.ENUM_EXPORT_FORMAT_HCL, "/invalid", true)
 
 	expectedErrorPattern := `^failed to export '.*' service: failed to create export file ".*". err: open .*: no such file or directory$`
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)

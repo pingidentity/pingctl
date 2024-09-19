@@ -5,8 +5,11 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/spf13/pflag"
+)
+
+const (
+	ENUM_EXPORT_FORMAT_HCL string = "HCL"
 )
 
 type ExportFormat string
@@ -21,9 +24,9 @@ func (ef *ExportFormat) Set(format string) error {
 		return fmt.Errorf("failed to set Export Format value: %s. Export Format is nil", format)
 	}
 
-	switch format {
-	case connector.ENUMEXPORTFORMAT_HCL:
-		*ef = ExportFormat(format)
+	switch {
+	case strings.EqualFold(format, ENUM_EXPORT_FORMAT_HCL):
+		*ef = ExportFormat(ENUM_EXPORT_FORMAT_HCL)
 	default:
 		return fmt.Errorf("unrecognized export format '%s'. Must be one of: %s", format, strings.Join(ExportFormatValidValues(), ", "))
 	}
@@ -40,7 +43,7 @@ func (ef ExportFormat) String() string {
 
 func ExportFormatValidValues() []string {
 	exportFormats := []string{
-		connector.ENUMEXPORTFORMAT_HCL,
+		ENUM_EXPORT_FORMAT_HCL,
 	}
 
 	slices.Sort(exportFormats)

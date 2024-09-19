@@ -23,13 +23,13 @@ func TestConfigGetCmd_TooManyArgs(t *testing.T) {
 
 // Test Config Get Command Executes when provided a full key
 func TestConfigGetCmd_FullKey(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "get", options.PlatformExportPingoneWorkerClientIDOption.ViperKey)
+	err := testutils_cobra.ExecutePingctl(t, "config", "get", options.PingoneAuthenticationWorkerClientIDOption.ViperKey)
 	testutils.CheckExpectedError(t, err, nil)
 }
 
 // Test Config Get Command Executes when provided a partial key
 func TestConfigGetCmd_PartialKey(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "config", "get", "export.pingone")
+	err := testutils_cobra.ExecutePingctl(t, "config", "get", "service.pingone")
 	testutils.CheckExpectedError(t, err, nil)
 }
 

@@ -10,18 +10,6 @@ func InitConfigOptions() {
 	initConfigProfileOption()
 	initConfigNameOption()
 	initConfigDescriptionOption()
-
-	// initDeleteProfileOption()
-
-	// initViewProfileOption()
-
-	// initSetActiveProfileOption()
-
-	// initGetProfileOption()
-
-	// initSetProfileOption()
-
-	// initUnsetProfileOption()
 }
 
 func initConfigProfileOption() {

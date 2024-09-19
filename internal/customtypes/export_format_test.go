@@ -3,7 +3,6 @@ package customtypes_test
 import (
 	"testing"
 
-	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/customtypes"
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
@@ -13,7 +12,7 @@ func Test_ExportFormat_Set(t *testing.T) {
 	// Create a new ExportFormat
 	exportFormat := new(customtypes.ExportFormat)
 
-	err := exportFormat.Set(connector.ENUMEXPORTFORMAT_HCL)
+	err := exportFormat.Set(customtypes.ENUM_EXPORT_FORMAT_HCL)
 	if err != nil {
 		t.Errorf("Set returned error: %v", err)
 	}
@@ -35,7 +34,7 @@ func Test_ExportFormat_Set_InvalidValue(t *testing.T) {
 func Test_ExportFormat_Set_Nil(t *testing.T) {
 	var exportFormat *customtypes.ExportFormat
 
-	val := connector.ENUMEXPORTFORMAT_HCL
+	val := customtypes.ENUM_EXPORT_FORMAT_HCL
 
 	expectedErrorPattern := `^failed to set Export Format value: .* Export Format is nil$`
 	err := exportFormat.Set(val)
@@ -44,9 +43,9 @@ func Test_ExportFormat_Set_Nil(t *testing.T) {
 
 // Test String function
 func Test_ExportFormat_String(t *testing.T) {
-	exportFormat := customtypes.ExportFormat(connector.ENUMEXPORTFORMAT_HCL)
+	exportFormat := customtypes.ExportFormat(customtypes.ENUM_EXPORT_FORMAT_HCL)
 
-	expected := connector.ENUMEXPORTFORMAT_HCL
+	expected := customtypes.ENUM_EXPORT_FORMAT_HCL
 	actual := exportFormat.String()
 	if actual != expected {
 		t.Errorf("String returned: %s, expected: %s", actual, expected)

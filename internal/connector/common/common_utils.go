@@ -56,7 +56,7 @@ func WriteFiles(exportableResources []connector.ExportableResource, format, outp
 			importBlock.Sanitize()
 
 			switch format {
-			case connector.ENUMEXPORTFORMAT_HCL:
+			case customtypes.ENUM_EXPORT_FORMAT_HCL:
 				err := hclImportBlockTemplate.Execute(outputFile, importBlock)
 				if err != nil {
 					return fmt.Errorf("failed to write import block template to file %q. err: %s", outputFilePath, err.Error())

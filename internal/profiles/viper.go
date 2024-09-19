@@ -342,11 +342,21 @@ func GetOptionValue(opt options.Option) (pFlagValue string, err error) {
 			}
 		}
 
-		if vValue != nil {
-			pFlagValue = fmt.Sprintf("%v", vValue)
-			if pFlagValue != "" {
-				return pFlagValue, nil
+		switch typedValue := vValue.(type) {
+		case nil:
+			// Do nothing
+		case string:
+			return typedValue, nil
+		case []string:
+			return strings.Join(typedValue, ","), nil
+		case []any:
+			strSlice := []string{}
+			for _, v := range typedValue {
+				strSlice = append(strSlice, fmt.Sprintf("%v", v))
 			}
+			return strings.Join(strSlice, ","), nil
+		default:
+			return fmt.Sprintf("%v", typedValue), nil
 		}
 	}
 
@@ -355,5 +365,5 @@ func GetOptionValue(opt options.Option) (pFlagValue string, err error) {
 		return pFlagValue, nil
 	}
 
-	return pFlagValue, fmt.Errorf("failed to initialize %s option: %s. no value found", opt.Type, opt.CobraParamName)
+	return pFlagValue, fmt.Errorf("failed to get option value: no value found: %v", opt)
 }

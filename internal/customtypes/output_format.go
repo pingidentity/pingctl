@@ -25,9 +25,11 @@ func (o *OutputFormat) Set(outputFormat string) error {
 		return fmt.Errorf("failed to set Output Format value: %s. Output Format is nil", outputFormat)
 	}
 
-	switch outputFormat {
-	case ENUM_OUTPUT_FORMAT_TEXT, ENUM_OUTPUT_FORMAT_JSON:
-		*o = OutputFormat(outputFormat)
+	switch {
+	case strings.EqualFold(outputFormat, ENUM_OUTPUT_FORMAT_TEXT):
+		*o = OutputFormat(ENUM_OUTPUT_FORMAT_TEXT)
+	case strings.EqualFold(outputFormat, ENUM_OUTPUT_FORMAT_JSON):
+		*o = OutputFormat(ENUM_OUTPUT_FORMAT_JSON)
 	default:
 		return fmt.Errorf("unrecognized Output Format: '%s'. Must be one of: %s", outputFormat, strings.Join(OutputFormatValidValues(), ", "))
 	}

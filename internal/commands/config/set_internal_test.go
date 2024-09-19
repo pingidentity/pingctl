@@ -13,7 +13,7 @@ import (
 func Test_RunInternalConfigSet(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := RunInternalConfigSet("pingctl.color=true")
+	err := RunInternalConfigSet("color=true")
 	if err != nil {
 		t.Errorf("RunInternalConfigSet returned error: %v", err)
 	}
@@ -33,7 +33,7 @@ func Test_RunInternalConfigSet_InvalidValue(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	expectedErrorPattern := `^failed to set configuration: value for key '.*' must be a boolean. Allowed .*: strconv.ParseBool: parsing ".*": invalid syntax$`
-	err := RunInternalConfigSet("pingctl.color=invalid")
+	err := RunInternalConfigSet("color=invalid")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -49,7 +49,7 @@ func Test_RunInternalConfigSet_NonExistentProfileName(t *testing.T) {
 	options.ConfigSetProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to set configuration: invalid profile name: '.*' profile does not exist$`
-	err := RunInternalConfigSet("pingctl.color=true")
+	err := RunInternalConfigSet("color=true")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -64,7 +64,7 @@ func Test_RunInternalConfigSet_DifferentProfile(t *testing.T) {
 	options.ConfigSetProfileOption.Flag.Changed = true
 	options.ConfigSetProfileOption.CobraParamValue = &profileName
 
-	err := RunInternalConfigSet("pingctl.color=true")
+	err := RunInternalConfigSet("color=true")
 	if err != nil {
 		t.Errorf("RunInternalConfigSet returned error: %v", err)
 	}
@@ -82,7 +82,7 @@ func Test_RunInternalConfigSet_InvalidProfileName(t *testing.T) {
 	options.ConfigSetProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to set configuration: invalid profile name: '.*'\. name must contain only alphanumeric characters, underscores, and dashes$`
-	err := RunInternalConfigSet("pingctl.color=true")
+	err := RunInternalConfigSet("color=true")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 
@@ -91,7 +91,7 @@ func Test_RunInternalConfigSet_NoValue(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
 	expectedErrorPattern := `^failed to set configuration: value for key '.*' is empty. Use 'pingctl config unset .*' to unset the key$`
-	err := RunInternalConfigSet("pingctl.color=")
+	err := RunInternalConfigSet("color=")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }
 

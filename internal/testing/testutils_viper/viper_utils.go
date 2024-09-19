@@ -16,58 +16,50 @@ const (
 )
 
 var (
-	configFileContents        string
-	defaultConfigFileContents string = fmt.Sprintf(`activeProfile: default
+	configFileContents               string
+	defaultConfigFileContentsPattern string = `activeProfile: default
 default:
     description: "default description"
-    pingctl:
-        color: true
-        outputFormat: text
+    color: true
+    outputFormat: text
     export:
         outputDirectory: %s
+    service:
         pingone:
-            region: %s
-            worker:
-                clientid: %s
-                clientsecret: %s
-                environmentid: %s
+            regionCode: %s
+            authentication:
+                type: worker
+                worker:
+                    clientid: %s
+                    clientsecret: %s
+                    environmentid: %s
         pingfederate:
-            adminapipath: "%s"
-            clientcredentialsauth:
-                clientid: "%s"
-                clientsecret: "%s"
-                scopes: "%s"
-                tokenurl: "%s"
-            httpshost: "%s"
+            adminapipath: %s
+            authentication:
+                type: clientcredentialsauth
+                clientcredentialsauth:
+                    clientid: %s
+                    clientsecret: %s
+                    scopes: %s
+                    tokenurl: %s
+            httpshost: %s
             insecureTrustAllTLS: true
             xBypassExternalValidationHeader: true
 production:
     description: "test profile description"
-    pingctl:
-        color: true
-        outputFormat: text
-    export:
+    color: true
+    outputFormat: text
+    service:
         pingfederate:
             insecureTrustAllTLS: false
-            xBypassExternalValidationHeader: false`,
-		outputDirectoryReplacement,
-		os.Getenv(options.PlatformExportPingoneRegionOption.EnvVar),
-		os.Getenv(options.PlatformExportPingoneWorkerClientIDOption.EnvVar),
-		os.Getenv(options.PlatformExportPingoneWorkerClientSecretOption.EnvVar),
-		os.Getenv(options.PlatformExportPingoneWorkerEnvironmentIDOption.EnvVar),
-		os.Getenv(options.PlatformExportPingfederateAdminAPIPathOption.EnvVar),
-		os.Getenv(options.PlatformExportPingfederateClientIDOption.EnvVar),
-		os.Getenv(options.PlatformExportPingfederateClientSecretOption.EnvVar),
-		os.Getenv(options.PlatformExportPingfederateScopesOption.EnvVar),
-		os.Getenv(options.PlatformExportPingfederateTokenURLOption.EnvVar),
-		os.Getenv(options.PlatformExportPingfederateHTTPSHostOption.EnvVar))
+            xBypassExternalValidationHeader: false`
 )
 
 func CreateConfigFile(t *testing.T) string {
 	t.Helper()
 
 	if configFileContents == "" {
-		configFileContents = strings.Replace(defaultConfigFileContents, outputDirectoryReplacement, t.TempDir(), 1)
+		configFileContents = strings.Replace(getDefaultConfigFileContents(), outputDirectoryReplacement, t.TempDir(), 1)
 	}
 
 	configFilepath := t.TempDir() + "/config.yaml"
@@ -102,7 +94,7 @@ func InitVipers(t *testing.T) {
 
 	configuration.InitAllOptions()
 
-	configFileContents = strings.Replace(defaultConfigFileContents, outputDirectoryReplacement, t.TempDir(), 1)
+	configFileContents = strings.Replace(getDefaultConfigFileContents(), outputDirectoryReplacement, t.TempDir(), 1)
 
 	configureMainViper(t)
 }
@@ -112,4 +104,19 @@ func InitVipersCustomFile(t *testing.T, fileContents string) {
 
 	configFileContents = fileContents
 	configureMainViper(t)
+}
+
+func getDefaultConfigFileContents() string {
+	return fmt.Sprintf(defaultConfigFileContentsPattern,
+		outputDirectoryReplacement,
+		os.Getenv(options.PingoneRegionCodeOption.EnvVar),
+		os.Getenv(options.PingoneAuthenticationWorkerClientIDOption.EnvVar),
+		os.Getenv(options.PingoneAuthenticationWorkerClientSecretOption.EnvVar),
+		os.Getenv(options.PingoneAuthenticationWorkerEnvironmentIDOption.EnvVar),
+		os.Getenv(options.PingfederateAdminAPIPathOption.EnvVar),
+		os.Getenv(options.PingfederateClientCredentialsAuthClientIDOption.EnvVar),
+		os.Getenv(options.PingfederateClientCredentialsAuthClientSecretOption.EnvVar),
+		os.Getenv(options.PingfederateClientCredentialsAuthScopesOption.EnvVar),
+		os.Getenv(options.PingfederateClientCredentialsAuthTokenURLOption.EnvVar),
+		os.Getenv(options.PingfederateHTTPSHostOption.EnvVar))
 }

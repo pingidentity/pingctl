@@ -9,6 +9,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/patrickcping/pingone-go-sdk-v2/management"
 	"github.com/patrickcping/pingone-go-sdk-v2/pingone"
 	"github.com/pingidentity/pingctl/internal/configuration"
 	"github.com/pingidentity/pingctl/internal/configuration/options"
@@ -25,7 +26,7 @@ var (
 
 func GetEnvironmentID() string {
 	envIdOnce.Do(func() {
-		environmentId = os.Getenv(options.PlatformExportPingoneWorkerEnvironmentIDOption.EnvVar)
+		environmentId = os.Getenv(options.PlatformExportPingoneEnvironmentIDOption.EnvVar)
 	})
 
 	return environmentId
@@ -39,20 +40,21 @@ func GetPingOneClientInfo(t *testing.T) *connector.PingOneClientInfo {
 		configuration.InitAllOptions()
 		// Grab environment vars for initializing the API client.
 		// These are set in GitHub Actions.
-		clientID := os.Getenv(options.PlatformExportPingoneWorkerClientIDOption.EnvVar)
-		clientSecret := os.Getenv(options.PlatformExportPingoneWorkerClientSecretOption.EnvVar)
+		clientID := os.Getenv(options.PingoneAuthenticationWorkerClientIDOption.EnvVar)
+		clientSecret := os.Getenv(options.PingoneAuthenticationWorkerClientSecretOption.EnvVar)
 		environmentId := GetEnvironmentID()
-		region := os.Getenv(options.PlatformExportPingoneRegionOption.EnvVar)
+		regionCode := os.Getenv(options.PingoneRegionCodeOption.EnvVar)
+		sdkRegionCode := management.EnumRegionCode(regionCode)
 
-		if clientID == "" || clientSecret == "" || environmentId == "" || region == "" {
-			t.Fatalf("Unable to retrieve env var value for one or more of clientID, clientSecret, environmentID, region.")
+		if clientID == "" || clientSecret == "" || environmentId == "" || regionCode == "" {
+			t.Fatalf("Unable to retrieve env var value for one or more of clientID, clientSecret, environmentID, regionCode.")
 		}
 
 		apiConfig := &pingone.Config{
 			ClientID:      &clientID,
 			ClientSecret:  &clientSecret,
 			EnvironmentID: &environmentId,
-			Region:        region,
+			RegionCode:    &sdkRegionCode,
 		}
 
 		// Make empty context for testing
@@ -80,10 +82,10 @@ func GetPingFederateClientInfo(t *testing.T) *connector.PingFederateClientInfo {
 
 	configuration.InitAllOptions()
 
-	httpsHost := os.Getenv(options.PlatformExportPingfederateHTTPSHostOption.EnvVar)
-	adminApiPath := os.Getenv(options.PlatformExportPingfederateAdminAPIPathOption.EnvVar)
-	pfUsername := os.Getenv(options.PlatformExportPingfederateUsernameOption.EnvVar)
-	pfPassword := os.Getenv(options.PlatformExportPingfederatePasswordOption.EnvVar)
+	httpsHost := os.Getenv(options.PingfederateHTTPSHostOption.EnvVar)
+	adminApiPath := os.Getenv(options.PingfederateAdminAPIPathOption.EnvVar)
+	pfUsername := os.Getenv(options.PingfederateBasicAuthUsernameOption.EnvVar)
+	pfPassword := os.Getenv(options.PingfederateBasicAuthPasswordOption.EnvVar)
 
 	if httpsHost == "" || adminApiPath == "" || pfUsername == "" || pfPassword == "" {
 		t.Fatalf("Unable to retrieve env var value for one or more of httpsHost, adminApiPath, pfUsername, pfPassword.")

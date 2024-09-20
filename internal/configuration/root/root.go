@@ -57,7 +57,7 @@ func initColorOption() {
 			DefValue: "true",
 		},
 		Type:     options.ENUM_BOOL,
-		ViperKey: "pingctl.color",
+		ViperKey: "color",
 	}
 }
 
@@ -101,7 +101,7 @@ func initOutputFormatOption() {
 			DefValue:  customtypes.ENUM_OUTPUT_FORMAT_TEXT,
 		},
 		Type:     options.ENUM_OUTPUT_FORMAT,
-		ViperKey: "pingctl.outputFormat",
+		ViperKey: "outputFormat",
 	}
 }
 

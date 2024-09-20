@@ -10,17 +10,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	configCommandExamples = `Command Usage Examples:
+pingctl config
+pingctl config --profile myprofile
+pingctl config --name myprofile --description "My Profile"`
+)
+
 func NewConfigCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.ExactArgs(0),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
-		Example: `pingctl config
-pingctl config --profile myprofile
-pingctl config --name myprofile --description "My Profile"`,
-		Long:  `Update an existing configuration profile's name and description. See subcommands for more profile configuration management options.`,
-		RunE:  configRunE,
-		Short: "Update an existing configuration profile's name and description. See subcommands for more profile configuration management options.",
-		Use:   "config [flags]",
+		Example:               configCommandExamples,
+		Long:                  `Update an existing configuration profile's name and description. See subcommands for more profile configuration management options.`,
+		RunE:                  configRunE,
+		Short:                 "Update an existing configuration profile's name and description. See subcommands for more profile configuration management options.",
+		Use:                   "config [flags]",
 	}
 
 	// Add subcommands

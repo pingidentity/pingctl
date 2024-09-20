@@ -89,7 +89,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			case *customtypes.Bool:
 				continue
 			case string:
-				b := customtypes.Bool(false)
+				b := new(customtypes.Bool)
 				if err = b.Set(typedValue); err != nil {
 					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a boolean value: %v", pName, typedValue, key, err)
 				}
@@ -103,7 +103,7 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			case *customtypes.UUID:
 				continue
 			case string:
-				u := customtypes.UUID("")
+				u := new(customtypes.UUID)
 				if err = u.Set(typedValue); err != nil {
 					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a UUID value: %v", pName, typedValue, key, err)
 				}
@@ -115,31 +115,31 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			case *customtypes.OutputFormat:
 				continue
 			case string:
-				o := customtypes.OutputFormat("")
+				o := new(customtypes.OutputFormat)
 				if err = o.Set(typedValue); err != nil {
 					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not an output format value: %v", pName, typedValue, key, err)
 				}
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not an output format value", pName, typedValue, key)
 			}
-		case options.ENUM_PINGONE_REGION:
+		case options.ENUM_PINGONE_REGION_CODE:
 			switch typedValue := vValue.(type) {
-			case *customtypes.PingOneRegion:
+			case *customtypes.PingoneRegionCode:
 				continue
 			case string:
-				p := customtypes.PingOneRegion("")
-				if err = p.Set(typedValue); err != nil {
-					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a PingOne region value: %v", pName, typedValue, key, err)
+				prc := new(customtypes.PingoneRegionCode)
+				if err = prc.Set(typedValue); err != nil {
+					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a Pingone Region Code value: %v", pName, typedValue, key, err)
 				}
 			default:
-				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a PingOne region value", pName, typedValue, key)
+				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a Pingone Region Code value", pName, typedValue, key)
 			}
 		case options.ENUM_STRING:
 			switch typedValue := vValue.(type) {
 			case *customtypes.String:
 				continue
 			case string:
-				s := customtypes.String("")
+				s := new(customtypes.String)
 				if err = s.Set(typedValue); err != nil {
 					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a string value: %v", pName, typedValue, key, err)
 				}
@@ -151,36 +151,125 @@ func validateProfileValues(pName string, profileViper *viper.Viper) (err error) 
 			case *customtypes.StringSlice:
 				continue
 			case string:
-				ss := customtypes.StringSlice([]string{})
+				ss := new(customtypes.StringSlice)
 				if err = ss.Set(typedValue); err != nil {
 					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a string slice value: %v", pName, typedValue, key, err)
+				}
+			case []any:
+				ss := new(customtypes.StringSlice)
+				for _, v := range typedValue {
+					switch innerTypedValue := v.(type) {
+					case string:
+						if err = ss.Set(innerTypedValue); err != nil {
+							return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a string slice value: %v", pName, typedValue, key, err)
+						}
+					default:
+						return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a string slice value", pName, typedValue, key)
+					}
 				}
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a string slice value", pName, typedValue, key)
 			}
-		case options.ENUM_MULTI_SERVICE:
+		case options.ENUM_EXPORT_SERVICES:
 			switch typedValue := vValue.(type) {
-			case *customtypes.MultiService:
+			case *customtypes.ExportServices:
 				continue
 			case string:
-				ms := customtypes.NewMultiService()
-				if err = ms.Set(typedValue); err != nil {
-					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a multi-service value: %v", pName, typedValue, key, err)
+				es := new(customtypes.ExportServices)
+				if err = es.Set(typedValue); err != nil {
+					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a export service value: %v", pName, typedValue, key, err)
+				}
+			case []any:
+				es := new(customtypes.ExportServices)
+				for _, v := range typedValue {
+					switch innerTypedValue := v.(type) {
+					case string:
+						if err = es.Set(innerTypedValue); err != nil {
+							return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a export service value: %v", pName, typedValue, key, err)
+						}
+					default:
+						return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a export service value", pName, typedValue, key)
+					}
+
 				}
 			default:
-				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a multi-service value", pName, typedValue, key)
+				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a export service value", pName, typedValue, key)
 			}
 		case options.ENUM_EXPORT_FORMAT:
 			switch typedValue := vValue.(type) {
 			case *customtypes.ExportFormat:
 				continue
 			case string:
-				ef := customtypes.ExportFormat("")
+				ef := new(customtypes.ExportFormat)
 				if err = ef.Set(typedValue); err != nil {
 					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not an export format value: %v", pName, typedValue, key, err)
 				}
 			default:
 				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not an export format value", pName, typedValue, key)
+			}
+		case options.ENUM_REQUEST_HTTP_METHOD:
+			switch typedValue := vValue.(type) {
+			case *customtypes.HTTPMethod:
+				continue
+			case string:
+				hm := new(customtypes.HTTPMethod)
+				if err = hm.Set(typedValue); err != nil {
+					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not an HTTP method value: %v", pName, typedValue, key, err)
+				}
+			default:
+				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not an HTTP method value", pName, typedValue, key)
+			}
+		case options.ENUM_REQUEST_SERVICE:
+			switch typedValue := vValue.(type) {
+			case *customtypes.RequestService:
+				continue
+			case string:
+				rs := new(customtypes.RequestService)
+				if err = rs.Set(typedValue); err != nil {
+					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a request service value: %v", pName, typedValue, key, err)
+				}
+			default:
+				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a request service value", pName, typedValue, key)
+			}
+		case options.ENUM_INT:
+			switch typedValue := vValue.(type) {
+			case *customtypes.Int:
+				continue
+			case int:
+				continue
+			case int64:
+				continue
+			case string:
+				i := new(customtypes.Int)
+				if err = i.Set(typedValue); err != nil {
+					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not an int value: %v", pName, typedValue, key, err)
+				}
+			default:
+				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not an int value", pName, typedValue, key)
+			}
+		case options.ENUM_PINGFEDERATE_AUTH_TYPE:
+			switch typedValue := vValue.(type) {
+			case *customtypes.PingfederateAuthenticationType:
+				continue
+			case string:
+				pfa := new(customtypes.PingfederateAuthenticationType)
+				if err = pfa.Set(typedValue); err != nil {
+					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a PingFederate Authentication Type value: %v", pName, typedValue, key, err)
+				}
+			default:
+				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a PingFederate Authentication Type value", pName, typedValue, key)
+			}
+		case options.ENUM_PINGONE_AUTH_TYPE:
+			switch typedValue := vValue.(type) {
+			case *customtypes.PingoneAuthenticationType:
+				continue
+			case string:
+				pat := new(customtypes.PingoneAuthenticationType)
+				if err = pat.Set(typedValue); err != nil {
+					return fmt.Errorf("profile '%s': variable type '%T' for key '%s' is not a PingOne Authentication Type value: %v", pName, typedValue, key, err)
+				}
+			default:
+				return fmt.Errorf("profile '%s': variable type %T for key '%s' is not a PingOne Authentication Type value", pName, typedValue, key)
 			}
 		default:
 			return fmt.Errorf("profile '%s': variable type '%s' for key '%s' is not recognized", pName, opt.Type, key)

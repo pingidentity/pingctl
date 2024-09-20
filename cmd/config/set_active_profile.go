@@ -10,16 +10,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	setActiveProfileCommandExamples = `Command Usage Examples:
+pingctl config set-active-profile
+pingctl config set-active-profile --profile myprofile`
+)
+
 func NewConfigSetActiveProfileCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.ExactArgs(0),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
-		Example: `pingctl config set-active-profile
-pingctl config set-active-profile --profile myprofile`,
-		Long:  `Set a configuration profile as the in-use profile for pingctl.`,
-		RunE:  configSetActiveProfileRunE,
-		Short: "Set a configuration profile as the in-use profile for pingctl.",
-		Use:   "set-active-profile [flags]",
+		Example:               setActiveProfileCommandExamples,
+		Long:                  `Set a configuration profile as the in-use profile for pingctl.`,
+		RunE:                  configSetActiveProfileRunE,
+		Short:                 "Set a configuration profile as the in-use profile for pingctl.",
+		Use:                   "set-active-profile [flags]",
 	}
 
 	cmd.Flags().AddFlag(options.ConfigSetActiveProfileOption.Flag)

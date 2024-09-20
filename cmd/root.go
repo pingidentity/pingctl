@@ -8,6 +8,7 @@ import (
 	"github.com/pingidentity/pingctl/cmd/config"
 	"github.com/pingidentity/pingctl/cmd/feedback"
 	"github.com/pingidentity/pingctl/cmd/platform"
+	"github.com/pingidentity/pingctl/cmd/request"
 	"github.com/pingidentity/pingctl/internal/configuration"
 	"github.com/pingidentity/pingctl/internal/configuration/options"
 	"github.com/pingidentity/pingctl/internal/logger"
@@ -15,6 +16,16 @@ import (
 	"github.com/pingidentity/pingctl/internal/profiles"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+)
+
+const (
+	ConfigurationFileFormat = `Configuration File Format:
+activeProfile: <ProfileName>
+
+<ProfileName>:
+	color: <true|false>
+	outputFormat: <Format>
+	...`
 )
 
 func init() {
@@ -30,6 +41,7 @@ func init() {
 // rootCmd represents the base command when called without any subcommands
 func NewRootCommand() *cobra.Command {
 	cmd := &cobra.Command{
+		Example:       ConfigurationFileFormat,
 		Long:          `A CLI tool for managing Ping Identity products.`,
 		Short:         "A CLI tool for managing Ping Identity products.",
 		SilenceErrors: true, // Upon error in RunE method, let output package in main.go handle error output
@@ -42,6 +54,7 @@ func NewRootCommand() *cobra.Command {
 		config.NewConfigCommand(),
 		feedback.NewFeedbackCommand(),
 		platform.NewPlatformCommand(),
+		request.NewRequestCommand(),
 	)
 
 	cmd.PersistentFlags().AddFlag(options.RootConfigOption.Flag)

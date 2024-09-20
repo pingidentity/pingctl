@@ -13,6 +13,7 @@ import (
 
 	"github.com/pingidentity/pingctl/internal/connector"
 	"github.com/pingidentity/pingctl/internal/connector/common"
+	"github.com/pingidentity/pingctl/internal/customtypes"
 )
 
 var (
@@ -76,7 +77,7 @@ func singleResourceTerraformPlanGenerateConfigOut(t *testing.T, resource connect
 	}
 
 	// Export the resource
-	if err := common.WriteFiles([]connector.ExportableResource{resource}, connector.ENUMEXPORTFORMAT_HCL, exportDir, true); err != nil {
+	if err := common.WriteFiles([]connector.ExportableResource{resource}, customtypes.ENUM_EXPORT_FORMAT_HCL, exportDir, true); err != nil {
 		t.Fatalf("Failed to export application resource: %v", err)
 	}
 

@@ -13,7 +13,7 @@ import (
 func Test_RunInternalConfigGet(t *testing.T) {
 	testutils_viper.InitVipers(t)
 
-	err := RunInternalConfigGet("pingctl")
+	err := RunInternalConfigGet("service")
 	if err != nil {
 		t.Errorf("RunInternalConfigGet returned error: %v", err)
 	}
@@ -39,7 +39,7 @@ func Test_RunInternalConfigGet_DifferentProfile(t *testing.T) {
 	options.ConfigGetProfileOption.Flag.Changed = true
 	options.ConfigGetProfileOption.CobraParamValue = &profileName
 
-	err := RunInternalConfigGet("pingctl")
+	err := RunInternalConfigGet("service")
 	if err != nil {
 		t.Errorf("RunInternalConfigGet returned error: %v", err)
 	}
@@ -57,6 +57,6 @@ func Test_RunInternalConfigGet_InvalidProfileName(t *testing.T) {
 	options.ConfigGetProfileOption.CobraParamValue = &profileName
 
 	expectedErrorPattern := `^failed to get configuration: invalid profile name: '.*' profile does not exist$`
-	err := RunInternalConfigGet("pingctl")
+	err := RunInternalConfigGet("service")
 	testutils.CheckExpectedError(t, err, &expectedErrorPattern)
 }

@@ -107,8 +107,8 @@ func printText(opts Opts) {
 	if opts.Fields != nil {
 		fmt.Println(cyan("Additional Information:"))
 		for k, v := range opts.Fields {
-			fmt.Println(cyan("%s: %s", k, v))
-			l.Info().Msgf("%s: %s", k, v)
+			fmt.Println(cyan("%s: %v", k, v))
+			l.Info().Msgf("%s: %v", k, v)
 		}
 	}
 

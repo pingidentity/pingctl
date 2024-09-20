@@ -7,11 +7,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	listProfilesCommandExamples = `Command Usage Examples:
+pingctl config list-profiles`
+)
+
 func NewConfigListProfilesCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.ExactArgs(0),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
-		Example:               `pingctl config list-profiles`,
+		Example:               listProfilesCommandExamples,
 		Long:                  `List all configuration profiles from pingctl.`,
 		RunE:                  configListProfilesRunE,
 		Short:                 "List all configuration profiles from pingctl.",

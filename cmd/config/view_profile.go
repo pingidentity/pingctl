@@ -8,16 +8,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	viewProfileCommandExamples = `Command Usage Examples:
+pingctl config view-profile
+pingctl config view-profile --profile myprofile`
+)
+
 func NewConfigViewProfileCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.ExactArgs(0),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
-		Example: `pingctl config view-profile
-pingctl config view-profile --profile myprofile`,
-		Long:  `View a configuration profile from pingctl.`,
-		RunE:  configViewProfileRunE,
-		Short: "View a configuration profile from pingctl.",
-		Use:   "view-profile [flags]",
+		Example:               viewProfileCommandExamples,
+		Long:                  `View a configuration profile from pingctl.`,
+		RunE:                  configViewProfileRunE,
+		Short:                 "View a configuration profile from pingctl.",
+		Use:                   "view-profile [flags]",
 	}
 
 	cmd.Flags().AddFlag(options.ConfigViewProfileOption.Flag)

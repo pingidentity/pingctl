@@ -8,17 +8,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	configGetCommandExamples = `Command Usage Examples:
+pingctl config get pingone
+pingctl config get --profile myProfile color
+pingctl config get service.pingone.authentication.worker.environmentID`
+)
+
 func NewConfigGetCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.ExactArgs(1),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
-		Example: `pingctl config get pingone
-pingctl config get --profile myProfile pingctl.color
-pingctl config get pingone.export.environmentID`,
-		Long:  `Get pingctl configuration settings.`,
-		RunE:  configGetRunE,
-		Short: "Get pingctl configuration settings.",
-		Use:   "get [flags] key",
+		Example:               configGetCommandExamples,
+		Long:                  `Get pingctl configuration settings.`,
+		RunE:                  configGetRunE,
+		Short:                 "Get pingctl configuration settings.",
+		Use:                   "get [flags] key",
 	}
 
 	cmd.Flags().AddFlag(options.ConfigGetProfileOption.Flag)

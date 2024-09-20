@@ -4,10 +4,6 @@ import (
 	_ "embed"
 )
 
-const (
-	ENUMEXPORTFORMAT_HCL = "HCL"
-)
-
 // Embed import block template needed for export generation
 //
 //go:embed templates/hcl_import_block.template

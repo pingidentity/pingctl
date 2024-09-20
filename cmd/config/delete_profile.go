@@ -10,16 +10,21 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const (
+	deleteProfileCommandExamples = `Command Usage Examples:
+pingctl config delete-profile
+pingctl config delete-profile --profile myprofile`
+)
+
 func NewConfigDeleteProfileCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.ExactArgs(0),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
-		Example: `pingctl config delete-profile
-pingctl config delete-profile --profile myprofile`,
-		Long:  `Delete a configuration profile from pingctl.`,
-		RunE:  configDeleteProfileRunE,
-		Short: "Delete a configuration profile from pingctl.",
-		Use:   "delete-profile [flags]",
+		Example:               deleteProfileCommandExamples,
+		Long:                  `Delete a configuration profile from pingctl.`,
+		RunE:                  configDeleteProfileRunE,
+		Short:                 "Delete a configuration profile from pingctl.",
+		Use:                   "delete-profile [flags]",
 	}
 
 	cmd.Flags().AddFlag(options.ConfigDeleteProfileOption.Flag)

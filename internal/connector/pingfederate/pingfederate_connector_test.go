@@ -20,11 +20,9 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 		ignoredErrors []string
 	}{
 		{
-			name:     "PingFederateAuthenticationApiApplication",
-			resource: resources.AuthenticationApiApplication(PingFederateClientInfo),
-			ignoredErrors: []string{
-				"Error: Invalid Attribute Value", // TODO - Remove with PDI-1925 fix
-			},
+			name:          "PingFederateAuthenticationApiApplication",
+			resource:      resources.AuthenticationApiApplication(PingFederateClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:          "PingFederateAuthenticationApiSettings",
@@ -69,7 +67,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			name:     "PingFederateDataStore",
 			resource: resources.DataStore(PingFederateClientInfo),
 			ignoredErrors: []string{
-				"Error: 'password' and 'user_dn' must be set together",
+				"Error: Invalid attribute configuration",
 			},
 		},
 		{
@@ -104,7 +102,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			name:     "PingFederateKerberosRealm",
 			resource: resources.KerberosRealm(PingFederateClientInfo),
 			ignoredErrors: []string{
-				"Error: Property Required:",
+				"Error: Invalid attribute configuration",
 			},
 		},
 		{
@@ -126,7 +124,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			name:     "PingFederateOAuthAccessTokenMapping",
 			resource: resources.OAuthAccessTokenMapping(PingFederateClientInfo),
 			ignoredErrors: []string{
-				"Error: Invalid attribute combination",
+				"Error: Invalid attribute configuration",
 				"Error: Invalid Attribute Value Length",
 			},
 		},
@@ -139,9 +137,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			name:     "PingFederateOAuthClient",
 			resource: resources.OAuthClient(PingFederateClientInfo),
 			ignoredErrors: []string{
-				"Error: persistent_grant_expiration_type must be configured to \"OVERRIDE_SERVER_DEFAULT\" to modify the other persistent_grant_expiration values.",
-				"Error: client_auth.secret cannot be empty when \"CLIENT_CREDENTIALS\" is included in grant_types.",
-				"Error: Invalid Attribute Value",
+				"Error: Invalid attribute configuration",
 			},
 		},
 		{
@@ -160,9 +156,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			name:     "PingFederatePasswordCredentialValidator",
 			resource: resources.PasswordCredentialValidator(PingFederateClientInfo),
 			ignoredErrors: []string{
-				"Error: The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator",
-				"Error: The \"Search Base\" field is required for the LDAP Username Password Credential Validator",
-				"Error: The \"Search Filter\" field is required for the LDAP Username Password Credential Validator",
+				"Error: Missing Configuration for Required Attribute",
 			},
 		},
 		{
@@ -178,11 +172,9 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			},
 		},
 		{
-			name:     "PingFederateServerSettingsSystemKeys",
-			resource: resources.ServerSettingsSystemKeys(PingFederateClientInfo),
-			ignoredErrors: []string{
-				"Error: Invalid Attribute Combination",
-			},
+			name:          "PingFederateServerSettingsSystemKeys",
+			resource:      resources.ServerSettingsSystemKeys(PingFederateClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:          "PingFederateSessionSettings",

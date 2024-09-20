@@ -22,21 +22,20 @@ func initDataOption() {
 	cobraParamName := "data"
 	cobraValue := new(customtypes.String)
 	defaultValue := customtypes.String("")
-	envVar := "PINGCTL_REQUEST_DATA"
 
 	options.RequestDataOption = options.Option{
 		CobraParamName:  cobraParamName,
 		CobraParamValue: cobraValue,
 		DefaultValue:    &defaultValue,
-		EnvVar:          envVar,
+		EnvVar:          "", // No environment variable
 		Flag: &pflag.Flag{
 			Name:     cobraParamName,
-			Usage:    fmt.Sprintf("The data to send in the request. Use prefix '@' to specify data filepath instead of raw-data. Also configurable via environment variable %s.", envVar),
+			Usage:    "The data to send in the request. Use prefix '@' to specify data filepath instead of raw data.",
 			Value:    cobraValue,
 			DefValue: "",
 		},
 		Type:     options.ENUM_STRING,
-		ViperKey: "request.data",
+		ViperKey: "", // No viper key
 	}
 }
 

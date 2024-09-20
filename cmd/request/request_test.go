@@ -1,6 +1,11 @@
 package request_test
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"regexp"
 	"testing"
 
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
@@ -9,12 +14,44 @@ import (
 
 // Test Request Command Executes without issue
 func TestRequestCmd_Execute(t *testing.T) {
-	err := testutils_cobra.ExecutePingctl(t, "request",
+	originalStdout := os.Stdout
+	pipeReader, pipeWriter, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("Failed to create pipe: %v", err)
+	}
+	defer pipeReader.Close()
+	os.Stdout = pipeWriter
+
+	err = testutils_cobra.ExecutePingctl(t, "request",
 		"--service", "pingone",
 		"--http-method", "GET",
 		"environments",
 	)
 	testutils.CheckExpectedError(t, err, nil)
+
+	os.Stdout = originalStdout
+	pipeWriter.Close()
+
+	pipeReaderOut, err := io.ReadAll(pipeReader)
+	if err != nil {
+		t.Fatalf("Failed to read from pipe: %v", err)
+	}
+
+	// Capture response json body
+	captureGroupName := "BodyJSON"
+	re := regexp.MustCompile(fmt.Sprintf(`(?s)^.*response: (?P<%s>\{.*\}).*status: .*$`, captureGroupName))
+	matchData := re.FindSubmatch(pipeReaderOut)
+
+	for index, name := range re.SubexpNames() {
+		if name == captureGroupName {
+			bodyJSON := matchData[index]
+
+			// Check for valid JSON
+			if !json.Valid(bodyJSON) {
+				t.Errorf("Invalid JSON: %s", bodyJSON)
+			}
+		}
+	}
 }
 
 // Test Request Command fails when provided too many arguments

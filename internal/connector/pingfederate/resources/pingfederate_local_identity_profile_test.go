@@ -11,17 +11,17 @@ import (
 func TestPingFederateLocalIdentityIdentityProfileExport(t *testing.T) {
 	// Get initialized apiClient and resource
 	PingFederateClientInfo := testutils.GetPingFederateClientInfo(t)
-	resource := resources.LocalIdentityIdentityProfile(PingFederateClientInfo)
+	resource := resources.LocalIdentityProfile(PingFederateClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{
 		{
-			ResourceType: "pingfederate_local_identity_identity_profile",
+			ResourceType: "pingfederate_local_identity_profile",
 			ResourceName: "Admin Identity Profile",
 			ResourceID:   "adminIdentityProfile",
 		},
 		{
-			ResourceType: "pingfederate_local_identity_identity_profile",
+			ResourceType: "pingfederate_local_identity_profile",
 			ResourceName: "Registration Identity Profile",
 			ResourceID:   "regIdentityProfile",
 		},

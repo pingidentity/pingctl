@@ -106,8 +106,8 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			},
 		},
 		{
-			name:          "PingFederateLocalIdentityIdentityProfile",
-			resource:      resources.LocalIdentityIdentityProfile(PingFederateClientInfo),
+			name:          "PingFederateLocalIdentityProfile",
+			resource:      resources.LocalIdentityProfile(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
 		{

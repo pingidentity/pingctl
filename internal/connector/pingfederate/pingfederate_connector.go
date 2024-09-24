@@ -55,7 +55,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.IDPSPConnection(&c.clientInfo),
 		resources.IncomingProxySettings(&c.clientInfo),
 		resources.KerberosRealm(&c.clientInfo),
-		resources.LocalIdentityIdentityProfile(&c.clientInfo),
+		resources.LocalIdentityProfile(&c.clientInfo),
 		resources.NotificationPublishersSettings(&c.clientInfo),
 		resources.OAuthAccessTokenManager(&c.clientInfo),
 		resources.OAuthAccessTokenMapping(&c.clientInfo),

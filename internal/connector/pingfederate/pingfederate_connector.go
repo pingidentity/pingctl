@@ -71,6 +71,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.ServerSettings(&c.clientInfo),
 		resources.ServerSettingsGeneral(&c.clientInfo),
 		resources.ServerSettingsSystemKeys(&c.clientInfo),
+		resources.SessionAuthenticationPoliciesGlobal(&c.clientInfo),
 		resources.SessionSettings(&c.clientInfo),
 		resources.SPAuthenticationPolicyContractMapping(&c.clientInfo),
 		resources.VirtualHostNames(&c.clientInfo),

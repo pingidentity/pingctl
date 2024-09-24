@@ -197,6 +197,13 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
+			name:     "PingFederateSessionAuthenticationPoliciesGlobal",
+			resource: resources.SessionAuthenticationPoliciesGlobal(PingFederateClientInfo),
+			ignoredErrors: []string{
+				"Error: Invalid attribute configuration",
+			},
+		},
+		{
 			name:          "PingFederateSessionSettings",
 			resource:      resources.SessionSettings(PingFederateClientInfo),
 			ignoredErrors: nil,

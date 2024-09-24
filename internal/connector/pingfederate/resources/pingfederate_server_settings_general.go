@@ -29,8 +29,8 @@ func (r *PingFederateServerSettingsGeneralResource) ExportAll() (*[]connector.Im
 
 	l.Debug().Msgf("Generating Import Blocks for all %s resources...", r.ResourceType())
 
-	ServerSettingsGeneralId := "pingfederate_server_settings_general_singleton_id"
-	ServerSettingsGeneralName := "Server Settings General"
+	serverSettingsGeneralId := "pingfederate_server_settings_general_singleton_id"
+	serverSettingsGeneralName := "Server Settings General"
 
 	commentData := map[string]string{
 		"Resource Type": r.ResourceType(),
@@ -39,8 +39,8 @@ func (r *PingFederateServerSettingsGeneralResource) ExportAll() (*[]connector.Im
 
 	importBlocks = append(importBlocks, connector.ImportBlock{
 		ResourceType:       r.ResourceType(),
-		ResourceName:       ServerSettingsGeneralName,
-		ResourceID:         ServerSettingsGeneralId,
+		ResourceName:       serverSettingsGeneralName,
+		ResourceID:         serverSettingsGeneralId,
 		CommentInformation: common.GenerateCommentInformation(commentData),
 	})
 

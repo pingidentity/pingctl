@@ -69,6 +69,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.PingoneConnection(&c.clientInfo),
 		resources.RedirectValidation(&c.clientInfo),
 		resources.ServerSettings(&c.clientInfo),
+		resources.ServerSettingsGeneral(&c.clientInfo),
 		resources.ServerSettingsSystemKeys(&c.clientInfo),
 		resources.SessionSettings(&c.clientInfo),
 		resources.SPAuthenticationPolicyContractMapping(&c.clientInfo),

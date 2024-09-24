@@ -187,6 +187,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			},
 		},
 		{
+			name:          "PingFederateServerSettingsGeneral",
+			resource:      resources.ServerSettingsGeneral(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
 			name:          "PingFederateServerSettingsSystemKeys",
 			resource:      resources.ServerSettingsSystemKeys(PingFederateClientInfo),
 			ignoredErrors: nil,

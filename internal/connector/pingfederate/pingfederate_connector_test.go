@@ -151,6 +151,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
+			name:          "PingFederateOpenIDConnectPolicy",
+			resource:      resources.OpenIDConnectPolicy(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
 			name:     "PingFederateOpenIDConnectSettings",
 			resource: resources.OpenIDConnectSettings(PingFederateClientInfo),
 			ignoredErrors: []string{

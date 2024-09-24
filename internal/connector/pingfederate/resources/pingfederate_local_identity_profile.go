@@ -10,21 +10,21 @@ import (
 
 // Verify that the resource satisfies the exportable resource interface
 var (
-	_ connector.ExportableResource = &PingFederateLocalIdentityIdentityProfileResource{}
+	_ connector.ExportableResource = &PingFederateLocalIdentityProfileResource{}
 )
 
-type PingFederateLocalIdentityIdentityProfileResource struct {
+type PingFederateLocalIdentityProfileResource struct {
 	clientInfo *connector.PingFederateClientInfo
 }
 
-// Utility method for creating a PingFederateLocalIdentityIdentityProfileResource
-func LocalIdentityIdentityProfile(clientInfo *connector.PingFederateClientInfo) *PingFederateLocalIdentityIdentityProfileResource {
-	return &PingFederateLocalIdentityIdentityProfileResource{
+// Utility method for creating a PingFederateLocalIdentityProfileResource
+func LocalIdentityProfile(clientInfo *connector.PingFederateClientInfo) *PingFederateLocalIdentityProfileResource {
+	return &PingFederateLocalIdentityProfileResource{
 		clientInfo: clientInfo,
 	}
 }
 
-func (r *PingFederateLocalIdentityIdentityProfileResource) ExportAll() (*[]connector.ImportBlock, error) {
+func (r *PingFederateLocalIdentityProfileResource) ExportAll() (*[]connector.ImportBlock, error) {
 	l := logger.Get()
 
 	l.Debug().Msgf("Fetching all %s resources...", r.ResourceType())
@@ -62,9 +62,9 @@ func (r *PingFederateLocalIdentityIdentityProfileResource) ExportAll() (*[]conne
 
 		if localIdentityProfileIdOk && localIdentityProfileNameOk {
 			commentData := map[string]string{
-				"Resource Type": r.ResourceType(),
-				"Local Identity Identity Profile Resource ID":   *localIdentityProfileId,
-				"Local Identity Identity Profile Resource Name": *localIdentityProfileName,
+				"Resource Type":                        r.ResourceType(),
+				"Local Identity Profile Resource ID":   *localIdentityProfileId,
+				"Local Identity Profile Resource Name": *localIdentityProfileName,
 			}
 
 			importBlocks = append(importBlocks, connector.ImportBlock{
@@ -79,6 +79,6 @@ func (r *PingFederateLocalIdentityIdentityProfileResource) ExportAll() (*[]conne
 	return &importBlocks, nil
 }
 
-func (r *PingFederateLocalIdentityIdentityProfileResource) ResourceType() string {
-	return "pingfederate_local_identity_identity_profile"
+func (r *PingFederateLocalIdentityProfileResource) ResourceType() string {
+	return "pingfederate_local_identity_profile"
 }

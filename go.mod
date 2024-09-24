@@ -1,6 +1,8 @@
 module github.com/pingidentity/pingctl
 
-go 1.21.6
+go 1.22.0
+
+toolchain go1.23.1
 
 require (
 	github.com/fatih/color v1.17.0
@@ -12,7 +14,7 @@ require (
 	github.com/patrickcping/pingone-go-sdk-v2/mfa v0.20.0
 	github.com/patrickcping/pingone-go-sdk-v2/risk v0.16.0
 	github.com/pavius/impi v0.0.3
-	github.com/pingidentity/pingfederate-go-client/v1210 v1210.0.2
+	github.com/pingidentity/pingfederate-go-client/v1210 v1210.0.3
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5
@@ -133,7 +135,7 @@ require (
 	github.com/patrickcping/pingone-go-sdk-v2/authorize v0.6.0 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/credentials v0.9.0 // indirect
 	github.com/patrickcping/pingone-go-sdk-v2/verify v0.7.0 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/polyfloyd/go-errorlint v1.4.5 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
@@ -187,14 +189,14 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
-	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
+	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20230307190834-24139beb5833 // indirect
-	golang.org/x/mod v0.20.0 // indirect
-	golang.org/x/oauth2 v0.22.0 // indirect
+	golang.org/x/mod v0.21.0 // indirect
+	golang.org/x/oauth2 v0.23.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.24.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
-	golang.org/x/tools v0.24.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
+	golang.org/x/tools v0.25.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

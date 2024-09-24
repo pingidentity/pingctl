@@ -8,22 +8,17 @@ import (
 	"github.com/pingidentity/pingctl/internal/testing/testutils"
 )
 
-func TestPingFederateLocalIdentityIdentityProfileExport(t *testing.T) {
+func TestPingFederateSessionAuthenticationPoliciesGlobalExport(t *testing.T) {
 	// Get initialized apiClient and resource
 	PingFederateClientInfo := testutils.GetPingFederateClientInfo(t)
-	resource := resources.LocalIdentityIdentityProfile(PingFederateClientInfo)
+	resource := resources.SessionAuthenticationPoliciesGlobal(PingFederateClientInfo)
 
 	// Defined the expected ImportBlocks for the resource
 	expectedImportBlocks := []connector.ImportBlock{
 		{
-			ResourceType: "pingfederate_local_identity_identity_profile",
-			ResourceName: "Admin Identity Profile",
-			ResourceID:   "adminIdentityProfile",
-		},
-		{
-			ResourceType: "pingfederate_local_identity_identity_profile",
-			ResourceName: "Registration Identity Profile",
-			ResourceID:   "regIdentityProfile",
+			ResourceType: "pingfederate_session_authentication_policies_global",
+			ResourceName: "Session Authentication Policies Global",
+			ResourceID:   "pingfederate_session_authentication_policies_global_singleton_id",
 		},
 	}
 

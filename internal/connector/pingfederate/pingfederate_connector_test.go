@@ -156,11 +156,9 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
-			name:     "PingFederateOpenIDConnectSettings",
-			resource: resources.OpenIDConnectSettings(PingFederateClientInfo),
-			ignoredErrors: []string{
-				"Error: Missing Configuration for Required Attribute",
-			},
+			name:          "PingFederateOpenIDConnectSettings",
+			resource:      resources.OpenIDConnectSettings(PingFederateClientInfo),
+			ignoredErrors: nil,
 		},
 		{
 			name:     "PingFederatePasswordCredentialValidator",

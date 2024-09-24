@@ -66,6 +66,7 @@ func (c *PingfederateConnector) Export(format, outputDir string, overwriteExport
 		resources.OpenIDConnectPolicy(&c.clientInfo),
 		resources.OpenIDConnectSettings(&c.clientInfo),
 		resources.PasswordCredentialValidator(&c.clientInfo),
+		resources.PingoneConnection(&c.clientInfo),
 		resources.RedirectValidation(&c.clientInfo),
 		resources.ServerSettings(&c.clientInfo),
 		resources.ServerSettingsSystemKeys(&c.clientInfo),

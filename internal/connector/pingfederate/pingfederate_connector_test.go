@@ -197,6 +197,11 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 			ignoredErrors: nil,
 		},
 		{
+			name:          "PingFederateSessionApplicationPolicy",
+			resource:      resources.SessionApplicationPolicy(PingFederateClientInfo),
+			ignoredErrors: nil,
+		},
+		{
 			name:     "PingFederateSessionAuthenticationPoliciesGlobal",
 			resource: resources.SessionAuthenticationPoliciesGlobal(PingFederateClientInfo),
 			ignoredErrors: []string{

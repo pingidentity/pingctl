@@ -112,7 +112,7 @@ func TestPingFederateTerraformPlan(t *testing.T) {
 		},
 		{
 			name:          "PingFederateNotificationPublishersSettings",
-			resource:      resources.NotificationPublishersSettings(PingFederateClientInfo),
+			resource:      resources.NotificationPublisherSettings(PingFederateClientInfo),
 			ignoredErrors: nil,
 		},
 		{

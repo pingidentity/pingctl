@@ -9,10 +9,9 @@ import (
 )
 
 const (
-	configGetCommandExamples = `Command Usage Examples:
-pingctl config get pingone
-pingctl config get --profile myProfile color
-pingctl config get service.pingone.authentication.worker.environmentID`
+	configGetCommandExamples = `  pingctl config get pingone
+  pingctl config get --profile myProfile color
+  pingctl config get service.pingone.authentication.worker.environmentID`
 )
 
 func NewConfigGetCommand() *cobra.Command {

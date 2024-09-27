@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	setActiveProfileCommandExamples = `Command Usage Examples:
-pingctl config set-active-profile
-pingctl config set-active-profile --profile myprofile`
+	setActiveProfileCommandExamples = `  pingctl config set-active-profile
+  pingctl config set-active-profile --profile myprofile`
 )
 
 func NewConfigSetActiveProfileCommand() *cobra.Command {

@@ -11,12 +11,11 @@ import (
 )
 
 const (
-	commandExamples = `Command Usage Examples:
-pingctl request --service pingone environments
-pingctl request --service pingone --http-method GET environments/{{environmentID}}
-pingctl request --service pingone --http-method POST --data {{raw-data}} environments
-pingctl request --service pingone --http-method POST --data @{{filepath}} environments
-pingctl request --service pingone --http-method DELETE environments/{{environmentID}}`
+	commandExamples = `  pingctl request --service pingone environments
+  pingctl request --service pingone --http-method GET environments/{{environmentID}}
+  pingctl request --service pingone --http-method POST --data {{raw-data}} environments
+  pingctl request --service pingone --http-method POST --data @{{filepath}} environments
+  pingctl request --service pingone --http-method DELETE environments/{{environmentID}}`
 
 	profileConfigurationFormat = `Profile Configuration Format:
 request:

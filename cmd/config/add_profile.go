@@ -11,10 +11,9 @@ import (
 )
 
 const (
-	addProfilecommandExamples = `Command Usage Examples:
-pingctl config add-profile
-pingctl config add-profile --name myprofile --description "My Profile desc"
-pingctl config add-profile --set-active=true`
+	addProfilecommandExamples = `  pingctl config add-profile
+  pingctl config add-profile --name myprofile --description "My Profile desc"
+  pingctl config add-profile --set-active=true`
 )
 
 func NewConfigAddProfileCommand() *cobra.Command {

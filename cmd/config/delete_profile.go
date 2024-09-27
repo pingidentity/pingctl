@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	deleteProfileCommandExamples = `Command Usage Examples:
-pingctl config delete-profile
-pingctl config delete-profile --profile myprofile`
+	deleteProfileCommandExamples = `  pingctl config delete-profile
+  pingctl config delete-profile --profile myprofile`
 )
 
 func NewConfigDeleteProfileCommand() *cobra.Command {

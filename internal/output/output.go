@@ -107,8 +107,15 @@ func printText(opts Opts) {
 	if opts.Fields != nil {
 		fmt.Println(cyan("Additional Information:"))
 		for k, v := range opts.Fields {
-			fmt.Println(cyan("%s: %v", k, v))
-			l.Info().Msgf("%s: %v", k, v)
+			switch typedValue := v.(type) {
+			// If the value is a json.RawMessage, print it as a string
+			case json.RawMessage:
+				fmt.Println(cyan("%s: %s", k, typedValue))
+				l.Info().Msgf("%s: %s", k, typedValue)
+			default:
+				fmt.Println(cyan("%s: %v", k, v))
+				l.Info().Msgf("%s: %v", k, v)
+			}
 		}
 	}
 

@@ -98,19 +98,19 @@ func runInternalPingOneRequest(uri string) (err error) {
 
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		output.Print(output.Opts{
-			Message: "Custom request failed.",
+			Message: "Custom request",
 			Result:  output.ENUM_RESULT_FAILURE,
 			Fields: map[string]any{
-				"response": string(body),
+				"response": json.RawMessage(body),
 				"status":   res.StatusCode,
 			},
 		})
 	} else {
 		output.Print(output.Opts{
-			Message: "Custom request successful.",
+			Message: "Custom request",
 			Result:  output.ENUM_RESULT_SUCCESS,
 			Fields: map[string]any{
-				"response": string(body),
+				"response": json.RawMessage(body),
 				"status":   res.StatusCode,
 			},
 		})

@@ -11,10 +11,9 @@ import (
 )
 
 const (
-	configCommandExamples = `Command Usage Examples:
-pingctl config
-pingctl config --profile myprofile
-pingctl config --name myprofile --description "My Profile"`
+	configCommandExamples = `  pingctl config
+  pingctl config --profile myprofile
+  pingctl config --name myprofile --description "My Profile"`
 )
 
 func NewConfigCommand() *cobra.Command {

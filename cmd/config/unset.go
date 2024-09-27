@@ -9,9 +9,8 @@ import (
 )
 
 const (
-	configUnsetCommandExamples = `Command Usage Examples:
-pingctl config unset color
-pingctl config unset --profile myProfile service.pingone.regionCode`
+	configUnsetCommandExamples = `  pingctl config unset color
+  pingctl config unset --profile myProfile service.pingone.regionCode`
 )
 
 func NewConfigUnsetCommand() *cobra.Command {

@@ -11,7 +11,7 @@ func NewFeedbackCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Args:                  common.ExactArgs(0),
 		DisableFlagsInUseLine: true, // We write our own flags in @Use attribute
-		Example:               `pingctl feedback`,
+		Example:               `  pingctl feedback`,
 		Long: `A command to provide the user information
 on how to give feedback or get help with the tool
 through the use of the GitHub repository's issue tracker.`,

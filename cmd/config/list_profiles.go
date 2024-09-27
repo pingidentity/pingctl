@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	listProfilesCommandExamples = `Command Usage Examples:
-pingctl config list-profiles`
+	listProfilesCommandExamples = `  pingctl config list-profiles`
 )
 
 func NewConfigListProfilesCommand() *cobra.Command {

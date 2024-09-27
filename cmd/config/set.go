@@ -9,9 +9,8 @@ import (
 )
 
 const (
-	configSetCommandExamples = `Command Usage Examples:
-pingctl config set color=true
-pingctl config set --profile myProfile service.pingone.regionCode=AP`
+	configSetCommandExamples = `  pingctl config set color=true
+  pingctl config set --profile myProfile service.pingone.regionCode=AP`
 )
 
 func NewConfigSetCommand() *cobra.Command {

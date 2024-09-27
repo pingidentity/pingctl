@@ -11,16 +11,15 @@ import (
 )
 
 const (
-	commandExamples = `Command Usage Examples:
-pingctl platform export
-pingctl platform export --output-directory dir --overwrite
-pingctl platform export --export-format HCL
-pingctl platform export --services pingone-platform,pingone-sso
-pingctl platform export --services pingone-platform --pingone-client-environment-id envID --pingone-worker-client-id clientID --pingone-worker-client-secret clientSecret --pingone-region-code regionCode
-pingctl platform export --service pingfederate --pingfederate-username user --pingfederate-password password
-pingctl platform export --service pingfederate --pingfederate-client-id clientID --pingfederate-client-secret clientSecret --pingfederate-token-url tokenURL
-pingctl platform export --service pingfederate --pingfederate-access-token accessToken
-pingctl platform export --service pingfederate --x-bypass-external-validation=false --ca-certificate-pem-files "/path/to/cert.pem,/path/to/cert2.pem" --insecure-trust-all-tls=false`
+	commandExamples = `  pingctl platform export
+  pingctl platform export --output-directory dir --overwrite
+  pingctl platform export --export-format HCL
+  pingctl platform export --services pingone-platform,pingone-sso
+  pingctl platform export --services pingone-platform --pingone-client-environment-id envID --pingone-worker-client-id clientID --pingone-worker-client-secret clientSecret --pingone-region-code regionCode
+  pingctl platform export --service pingfederate --pingfederate-username user --pingfederate-password password
+  pingctl platform export --service pingfederate --pingfederate-client-id clientID --pingfederate-client-secret clientSecret --pingfederate-token-url tokenURL
+  pingctl platform export --service pingfederate --pingfederate-access-token accessToken
+  pingctl platform export --service pingfederate --x-bypass-external-validation=false --ca-certificate-pem-files "/path/to/cert.pem,/path/to/cert2.pem" --insecure-trust-all-tls=false`
 
 	profileConfigurationFormat = `Profile Configuration Format:
 export:
